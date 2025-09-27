@@ -60,6 +60,13 @@
       "zoomOut": "Zoom Out",
       "fitToContentView": "Fit to Content",
       "resetView": "Reset View"
+    },
+    "deleteView": {
+      "button": "Delete View",
+      "confirmTitle": "Confirm Deletion",
+      "confirm": "Are you sure you want to delete this view? This action cannot be undone.",
+      "confirmButton": "Delete",
+      "cancel": "Cancel"
     }
   },
   "viewNode": {

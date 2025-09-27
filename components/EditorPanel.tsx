@@ -10,14 +10,16 @@ interface EditorPanelProps {
   node: Node<ViewNodeData>;
   onNodeDataChange: (nodeId: string, newData: Partial<ViewNodeData>) => void;
   onNodeSizeChange: (nodeId: string, width: number, height: number) => void;
+  onDeleteNode: (nodeId: string) => void;
   onClose: () => void;
   allNodes: Node<ViewNodeData>[];
   sizeOptions: { label: string; width: number; height: number }[];
 }
 
-const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeChange, onClose, allNodes, sizeOptions }) => {
+const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeChange, onDeleteNode, onClose, allNodes, sizeOptions }) => {
   const { t } = useTranslation();
   const [title, setTitle] = useState(node.data.title);
+  const [isDeleteConfirmVisible, setIsDeleteConfirmVisible] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,7 +95,29 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
 
 
   return (
-    <div className="w-96 bg-white shadow-lg flex flex-col z-10 border-l border-gray-200 h-full">
+    <div className="w-96 bg-white shadow-lg flex flex-col z-10 border-l border-gray-200 h-full relative">
+        {isDeleteConfirmVisible && (
+            <div className="absolute inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-30">
+                <div className="bg-white rounded-lg shadow-xl p-6 w-full">
+                    <h3 className="text-lg font-medium text-gray-900">{t('editorPanel.deleteView.confirmTitle')}</h3>
+                    <p className="mt-2 text-sm text-gray-500">{t('editorPanel.deleteView.confirm')}</p>
+                    <div className="mt-4 flex justify-end gap-2">
+                        <Button variant="secondary" onClick={() => setIsDeleteConfirmVisible(false)}>
+                            {t('editorPanel.deleteView.cancel')}
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                onDeleteNode(node.id);
+                                // No need to hide modal, component will unmount
+                            }}
+                            className="bg-red-600 hover:bg-red-700 focus:ring-red-500 text-white"
+                        >
+                            {t('editorPanel.deleteView.confirmButton')}
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        )}
         <div className="p-4 border-b border-gray-200 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-800">{t('editorPanel.title')}</h2>
             <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
@@ -167,6 +191,16 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
                     />
                 ))}
             </div>
+        </div>
+        <div className="p-4 border-t border-gray-200">
+            <Button
+                onClick={() => setIsDeleteConfirmVisible(true)}
+                variant="outline"
+                className="w-full text-red-600 border-red-300 hover:bg-red-50 focus:ring-red-500"
+            >
+                <TrashIcon className="w-4 h-4 mr-2" />
+                {t('editorPanel.deleteView.button')}
+            </Button>
         </div>
     </div>
   );

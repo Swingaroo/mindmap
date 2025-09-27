@@ -255,6 +255,30 @@ const App: FC = () => {
     );
   }, []);
 
+  const handleDeleteNode = useCallback((nodeIdToDelete: string) => {
+    setNodes(currentNodes => {
+        const nodesWithoutDeleted = currentNodes.filter(node => node.id !== nodeIdToDelete);
+        
+        return nodesWithoutDeleted.map(node => {
+            const elementsWithCleanedLinks = node.data.elements.filter(element => 
+                !(element.type === 'link' && element.targetViewId === nodeIdToDelete)
+            );
+
+            if (elementsWithCleanedLinks.length === node.data.elements.length) {
+                return node; // No changes
+            }
+
+            return {
+                ...node,
+                data: {
+                    ...node.data,
+                    elements: elementsWithCleanedLinks,
+                }
+            };
+        });
+    });
+  }, [setNodes]);
+
   const handleSave = useCallback(() => {
     // The `nodes` state is already clean. The functions and extra properties are only
     // added in the `nodesForFlow` memo, so no cleanup is needed here.
@@ -480,6 +504,7 @@ const App: FC = () => {
               node={selectedNode} 
               onNodeDataChange={handleNodeDataChange}
               onNodeSizeChange={handleNodeSizeChange}
+              onDeleteNode={handleDeleteNode}
               onClose={() => handlePaneClick()} // Re-use handlePaneClick to deselect
               allNodes={nodes}
               sizeOptions={viewSizeOptions}
