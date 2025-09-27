@@ -86,7 +86,7 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
 
 
   return (
-    <div className="w-96 bg-white shadow-lg flex flex-col z-10 border-l border-gray-200">
+    <div className="w-96 bg-white shadow-lg flex flex-col z-10 border-l border-gray-200 h-full">
         <div className="p-4 border-b border-gray-200 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-800">Edit View</h2>
             <button onClick={onClose} className="text-gray-500 hover:text-gray-800">

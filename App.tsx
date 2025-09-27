@@ -73,8 +73,14 @@ const App: FC = () => {
   }, [clearHighlight]);
   
   const onFocus = useCallback((id: string) => {
-    fitView({ nodes: [{ id }], duration: 800, padding: 0.2 });
+    // First, set the node as selected. This will trigger a re-render
+    // which, if in edit mode, will show the EditorPanel and shrink the flow canvas.
     setNodes(nds => nds.map(n => ({ ...n, selected: n.id === id })));
+    
+    // Use setTimeout to defer fitView until after the re-render has completed.
+    setTimeout(() => {
+        fitView({ nodes: [{ id }], duration: 800, padding: 0.1 });
+    }, 0);
   }, [fitView, setNodes]);
 
   const handleNodeDataChange = useCallback((nodeId: string, newData: Partial<ViewNodeData>) => {
@@ -226,37 +232,38 @@ const App: FC = () => {
         isHighlighterActive={isHighlighterActive}
         onToggleHighlighter={handleToggleHighlighter}
       />
-      <div className={`flex-grow flex relative ${isHighlighterActive ? 'highlighter-cursor' : ''}`}>
-        <ReactFlow
-          nodes={nodesForFlow}
-          onNodesChange={onNodesChange}
-          onNodeClick={handleNodeClick}
-          onPaneClick={handlePaneClick}
-          nodeTypes={nodeTypes}
-          fitView
-          className="bg-gray-50"
-          proOptions={{ hideAttribution: true }}
-          nodesDraggable={!isReadOnly}
-          nodesConnectable={false}
-          elementsSelectable={true}
-          snapToGrid={true}
-          snapGrid={snapGrid}
-        >
-          <Controls />
-          <MiniMap 
-            pannable 
-            zoomable
-            style={{
-              backgroundColor: '#f9fafb',
-              border: '1px solid #e5e7eb',
-            }}
-            nodeColor={(node) => node.selected ? '#4f46e5' : '#c7d2fe'}
-            nodeStrokeColor="#4f46e5"
-            nodeBorderRadius={2}
-          />
-        </ReactFlow>
+      <div className={`flex-grow flex min-h-0 ${isHighlighterActive ? 'highlighter-cursor' : ''}`}>
+        <div className="flex-grow h-full relative">
+            <ReactFlow
+              nodes={nodesForFlow}
+              onNodesChange={onNodesChange}
+              onNodeClick={handleNodeClick}
+              onPaneClick={handlePaneClick}
+              nodeTypes={nodeTypes}
+              fitView
+              className="bg-gray-50"
+              proOptions={{ hideAttribution: true }}
+              nodesDraggable={!isReadOnly}
+              nodesConnectable={false}
+              elementsSelectable={true}
+              snapToGrid={true}
+              snapGrid={snapGrid}
+            >
+              <Controls />
+              <MiniMap 
+                pannable 
+                zoomable
+                style={{
+                  backgroundColor: '#f9fafb',
+                  border: '1px solid #e5e7eb',
+                }}
+                nodeColor={(node) => node.selected ? '#4f46e5' : '#c7d2fe'}
+                nodeStrokeColor="#4f46e5"
+                nodeBorderRadius={2}
+              />
+            </ReactFlow>
+        </div>
         {selectedNode && !isReadOnly && (
-          <div className="absolute right-0 top-0 h-full">
             <EditorPanel 
               key={selectedNode.id}
               node={selectedNode} 
@@ -266,7 +273,6 @@ const App: FC = () => {
               allNodes={nodes}
               sizeOptions={viewSizeOptions}
             />
-          </div>
         )}
       </div>
     </div>
