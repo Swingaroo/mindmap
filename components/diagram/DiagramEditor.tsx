@@ -270,6 +270,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
               isSelected={isSelected}
               isEditing={isEditing}
               onMouseDown={(e) => handleMouseDown(e, figure)}
+              onClick={(e) => e.stopPropagation()}
               onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(figure.id, 'figure'); }}
               className={`cursor-pointer ${connecting ? 'cursor-crosshair' : ''}`}
             />
