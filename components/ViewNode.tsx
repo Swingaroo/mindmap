@@ -8,6 +8,7 @@ import { useTranslation } from '../i18n';
 
 const converter = new showdown.Converter();
 converter.setOption('simpleLineBreaks', true);
+converter.setOption('openLinksInNewWindow', true);
 
 const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
   const { id: nodeId, title, elements, onFocus, isReadOnly, onNodeDataChange, isHighlighterActive, onHighlightElement } = data;
@@ -106,12 +107,16 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
               );
             case 'image':
               return (
-                <img 
-                  key={element.id} 
-                  src={element.src} 
-                  alt={t('viewNode.altContentImage')}
-                  className="max-w-full h-auto rounded"
-                />
+                <div key={element.id}>
+                  <img 
+                    src={element.src} 
+                    alt={t('viewNode.altContentImage')}
+                    className="max-w-full h-auto rounded"
+                  />
+                  {element.caption && (
+                    <p className="text-xs text-gray-600 mt-2 text-center italic">{element.caption}</p>
+                  )}
+                </div>
               );
             case 'link':
               return (

@@ -31,6 +31,7 @@ const nodeTypes = { viewNode: ViewNode };
 // PDF Rendering Components
 const pdfConverter = new showdown.Converter();
 pdfConverter.setOption('simpleLineBreaks', true);
+pdfConverter.setOption('openLinksInNewWindow', true);
 
 interface PdfViewNodeProps {
   node: Node<ViewNodeData>;
@@ -55,7 +56,12 @@ const PdfViewNode: FC<PdfViewNodeProps> = ({ node, nodeToPageMap, t }) => {
                             }
                             return <p key={element.id} className="text-xl font-bold text-gray-900 break-words">{element.content}</p>;
                         case 'image':
-                            return <img key={element.id} src={element.src} alt={t('pdf.altContentImage')} className="max-w-full h-auto rounded" />;
+                            return (
+                                <div key={element.id} className="py-2">
+                                    <img src={element.src} alt={t('pdf.altContentImage')} className="max-w-full h-auto rounded" />
+                                    {element.caption && <p className="text-xs text-gray-600 mt-2 text-center italic">{element.caption}</p>}
+                                </div>
+                            );
                         case 'link': {
                             const pageNum = nodeToPageMap.get(element.targetViewId);
                             const linkText = `${element.content}${pageNum ? ` (p. ${pageNum})` : ''}`;

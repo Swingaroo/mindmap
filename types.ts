@@ -18,6 +18,7 @@ export interface TextElement extends BaseElement {
 export interface ImageElement extends BaseElement {
   type: 'image';
   src: string; // base64 data URL
+  caption?: string;
 }
 
 export interface LinkElement extends BaseElement {

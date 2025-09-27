@@ -1,3 +1,4 @@
+
 {
   "appName": "MindMap Presenter",
   "app": {
@@ -38,7 +39,9 @@
       "bodyPlaceholder": "Enter content using Markdown..."
     },
     "imageElement": {
-      "alt": "user content"
+      "alt": "user content",
+      "captionLabel": "Caption",
+      "captionPlaceholder": "Enter a caption for the image..."
     },
     "linkElement": {
       "placeholder": "Link text",
@@ -113,8 +116,13 @@
       "element5_content": "Go to the next view"
     },
     "howItWorks": {
-      "title": "How it Works",
-      "element1_content": "* Add views with the button in the toolbar.\n* Click on a view to select and edit it.\n* Use links to navigate between views.\n* Save and load your work."
+      "title": "Markdown Typography Guide",
+      "element1_content": "# Markdown Samples\n\nThis view demonstrates various Markdown elements you can use.\n\n---\n\n## Typography\n\n*   **Bold Text**\n*   *Italic Text*\n*   `Inline Code`\n\n## Lists\n\n1.  First ordered list item\n2.  Another item\n    *   Unordered sub-list.\n\n## Block Elements\n\n> This is a blockquote. It's great for highlighting important information or quotes from a source.\n\n```javascript\n// This is a code block\nfunction greet(name) {\n  console.log(`Hello, ${name}!`);\n}\n```\n\n## Links\n\nYou can also add standard Markdown links like this one to [Google](https://www.google.com)."
+    },
+    "sampleImage": {
+      "title": "Sample Image View",
+      "imageSrc": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1002.jpg",
+      "imageCaption": "This is a sample image with a caption."
     }
   }
 }

@@ -63,7 +63,12 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        const newElement: ImageElement = { id: uuidv4(), type: 'image', src: reader.result as string };
+        const newElement: ImageElement = {
+          id: uuidv4(),
+          type: 'image',
+          src: reader.result as string,
+          caption: file.name,
+        };
         updateElements([...node.data.elements, newElement]);
       };
       reader.readAsDataURL(file);
@@ -316,7 +321,17 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                 </div>
             )}
             {element.type === 'image' && (
-                <img src={element.src} alt={t('editorPanel.imageElement.alt')} className="max-w-full h-auto rounded-md" />
+                <div>
+                    <img src={element.src} alt={t('editorPanel.imageElement.alt')} className="max-w-full h-auto rounded-md" />
+                    <label className="block text-xs font-medium text-gray-500 mt-2 mb-1">{t('editorPanel.imageElement.captionLabel')}</label>
+                    <textarea
+                        value={element.caption || ''}
+                        onChange={(e) => onChange(element.id, { caption: e.target.value })}
+                        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                        rows={2}
+                        placeholder={t('editorPanel.imageElement.captionPlaceholder')}
+                    />
+                </div>
             )}
             {element.type === 'link' && (
                  <div>
