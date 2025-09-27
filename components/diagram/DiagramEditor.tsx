@@ -11,6 +11,8 @@ interface DiagramEditorProps {
   onDoneEditing?: () => void;
   height?: number;
   viewBox?: [number, number, number, number];
+  isHighlighterActive?: boolean;
+  onHighlightElement?: (element: HTMLElement | SVGElement) => void;
 }
 
 const figureRadii: Record<DiagramFigureType, number> = {
@@ -20,7 +22,7 @@ const figureRadii: Record<DiagramFigureType, number> = {
   [DiagramFigureType.Actor]: 41,
 };
 
-const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = false, onChange, onDoneEditing, height, viewBox }) => {
+const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = false, onChange, onDoneEditing, height, viewBox, isHighlighterActive, onHighlightElement }) => {
   const [selectedElement, setSelectedElement] = useState<{ type: 'figure' | 'arrow'; id: string } | null>(null);
   const [connecting, setConnecting] = useState<{ sourceId: string } | null>(null);
   const [dragging, setDragging] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
@@ -60,7 +62,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
   };
 
   const handleMouseDown = (e: MouseEvent<SVGGElement>, figure: DiagramFigure) => {
-    if (isReadOnly || editingLabel) return;
+    if (isReadOnly || editingLabel || isHighlighterActive) return;
     e.stopPropagation();
 
     if (connecting) {
@@ -112,6 +114,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
   };
   
   const handleSvgClick = () => {
+      if (isHighlighterActive) return;
       setSelectedElement(null);
       setConnecting(null);
   };
@@ -263,7 +266,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onClick={handleSvgClick}
-        className={!isReadOnly ? 'cursor-grab active:cursor-grabbing' : ''}
+        className={!isReadOnly && !isHighlighterActive ? 'cursor-grab active:cursor-grabbing' : ''}
         preserveAspectRatio="xMidYMin meet"
       >
         <defs>
@@ -329,7 +332,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                 className={strokeClass}
                 strokeWidth="2"
                 {...markerProps}
-                onClick={(e) => { e.stopPropagation(); setSelectedElement({type: 'arrow', id: arrow.id}); }}
+                onClick={(e) => { e.stopPropagation(); if(!isHighlighterActive) setSelectedElement({type: 'arrow', id: arrow.id}); }}
                 onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(arrow.id, 'arrow'); }}
               />
               {!isEditing && arrow.label && (() => {
@@ -348,7 +351,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                   return (
                     <g
                       className="cursor-pointer"
-                      onClick={(e) => { e.stopPropagation(); setSelectedElement({ type: 'arrow', id: arrow.id }); }}
+                      onClick={(e) => { e.stopPropagation(); if(!isHighlighterActive) setSelectedElement({ type: 'arrow', id: arrow.id }); }}
                       onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(arrow.id, 'arrow'); }}
                     >
                       <rect
@@ -392,7 +395,12 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
               isSelected={isSelected}
               isEditing={isEditing}
               onMouseDown={(e) => handleMouseDown(e, figure)}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isHighlighterActive && onHighlightElement) {
+                    onHighlightElement(e.currentTarget as SVGElement);
+                }
+              }}
               onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(figure.id, 'figure'); }}
               className={`cursor-pointer ${connecting ? 'cursor-crosshair' : ''}`}
             />

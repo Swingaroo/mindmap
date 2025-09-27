@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useState, useMemo, useEffect } from 'react';
+import React, { FC, useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -27,12 +27,50 @@ const App: FC = () => {
   
   const [nodes, setNodes] = useState<Node<ViewNodeData>[]>(initialNodes);
   const [selectedNode, setSelectedNode] = useState<Node<ViewNodeData> | null>(null);
-  const [isReadOnly, setIsReadOnly] = useState(false);
+  const [isReadOnly, setIsReadOnly] = useState(true);
+  const [isHighlighterActive, setIsHighlighterActive] = useState(false);
+  const highlightedElementRef = useRef<HTMLElement | SVGElement | null>(null);
 
   useEffect(() => {
     const currentlySelected = nodes.find(n => n.selected);
     setSelectedNode(currentlySelected || null);
   }, [nodes]);
+
+  const clearHighlight = useCallback(() => {
+    if (highlightedElementRef.current) {
+        if (highlightedElementRef.current instanceof SVGElement) {
+            highlightedElementRef.current.style.filter = '';
+        } else {
+            highlightedElementRef.current.style.backgroundColor = '';
+            highlightedElementRef.current.style.boxShadow = '';
+            highlightedElementRef.current.style.borderRadius = '';
+        }
+        highlightedElementRef.current = null;
+    }
+  }, []);
+
+  const handleToggleHighlighter = useCallback(() => {
+      setIsHighlighterActive(prev => {
+          if (prev) { // If turning off
+              clearHighlight();
+          }
+          return !prev;
+      });
+  }, [clearHighlight]);
+
+  const handleHighlightElement = useCallback((element: HTMLElement | SVGElement) => {
+    clearHighlight();
+
+    if (element instanceof SVGElement) {
+        element.style.filter = 'drop-shadow(2px 2px 3px rgba(255, 255, 0, 0.8)) drop-shadow(-2px -2px 3px rgba(255, 255, 0, 0.8))';
+    } else {
+        // Apply new highlight for HTML elements
+        element.style.backgroundColor = 'rgba(255, 255, 0, 0.4)';
+        element.style.boxShadow = '0 0 0 2px rgba(255, 255, 0, 0.7)';
+        element.style.borderRadius = '3px';
+    }
+    highlightedElementRef.current = element;
+  }, [clearHighlight]);
   
   const onFocus = useCallback((id: string) => {
     fitView({ nodes: [{ id }], duration: 800, padding: 0.2 });
@@ -60,9 +98,11 @@ const App: FC = () => {
             isReadOnly,
             onFocus,
             onNodeDataChange: handleNodeDataChange,
+            isHighlighterActive,
+            onHighlightElement: handleHighlightElement,
         }
     }))
-  ), [nodes, isReadOnly, onFocus, handleNodeDataChange]);
+  ), [nodes, isReadOnly, onFocus, handleNodeDataChange, isHighlighterActive, handleHighlightElement]);
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -81,7 +121,8 @@ const App: FC = () => {
 
   const handlePaneClick = useCallback(() => {
     setNodes(nds => nds.map(n => ({ ...n, selected: false })));
-  }, [setNodes]);
+    clearHighlight();
+  }, [setNodes, clearHighlight]);
 
   const handleAddView = useCallback(() => {
     const newNodeId = uuidv4();
@@ -173,11 +214,19 @@ const App: FC = () => {
         onLoad={handleLoad}
         isReadOnly={isReadOnly}
         onToggleReadOnly={() => {
+            // If turning off readonly mode, ensure highlighter is also turned off
+            if (isReadOnly) { // isReadOnly is true, about to become false
+                if (isHighlighterActive) {
+                    handleToggleHighlighter();
+                }
+            }
             setIsReadOnly(prev => !prev);
             setNodes(nds => nds.map(n => ({...n, selected: false})));
         }}
+        isHighlighterActive={isHighlighterActive}
+        onToggleHighlighter={handleToggleHighlighter}
       />
-      <div className="flex-grow flex relative">
+      <div className={`flex-grow flex relative ${isHighlighterActive ? 'highlighter-cursor' : ''}`}>
         <ReactFlow
           nodes={nodesForFlow}
           onNodesChange={onNodesChange}

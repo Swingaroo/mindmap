@@ -78,6 +78,8 @@ export interface ViewNodeData {
   onFocus?: (id: string) => void;
   isReadOnly?: boolean;
   onNodeDataChange?: (nodeId: string, newData: Partial<ViewNodeData>) => void;
+  isHighlighterActive?: boolean;
+  onHighlightElement?: (element: HTMLElement | SVGElement) => void;
 }
 
 export interface Presentation {

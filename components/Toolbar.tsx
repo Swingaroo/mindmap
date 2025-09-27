@@ -7,9 +7,11 @@ interface ToolbarProps {
   onLoad: () => void;
   isReadOnly: boolean;
   onToggleReadOnly: () => void;
+  isHighlighterActive?: boolean;
+  onToggleHighlighter?: () => void;
 }
 
-const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onLoad, isReadOnly, onToggleReadOnly }) => {
+const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onLoad, isReadOnly, onToggleReadOnly, isHighlighterActive, onToggleHighlighter }) => {
   return (
     <div className="w-full bg-white shadow-md p-2 flex items-center justify-between z-10">
       <h1 className="text-xl font-bold text-gray-800">MindMap Presenter</h1>
@@ -28,15 +30,24 @@ const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onLoad, isReadOnly, onTo
             )}
         </Button>
         <div className="w-px bg-gray-300 h-8 mx-2"></div>
-        <Button onClick={onAddView} disabled={isReadOnly}>
-            <PlusIcon className="w-5 h-5 mr-1" />
-            Add View
-        </Button>
-        <Button onClick={onSave} variant="secondary" disabled={isReadOnly}>
-            <SaveIcon className="w-5 h-5 mr-1" />
-            Save
-        </Button>
-        <Button onClick={onLoad} variant="secondary" disabled={isReadOnly}>
+        {isReadOnly ? (
+            <Button onClick={onToggleHighlighter} variant={isHighlighterActive ? 'secondary' : 'outline'} title="Toggle highlighter tool">
+                <HighlighterIcon className="w-5 h-5 mr-1" />
+                Highlighter
+            </Button>
+        ) : (
+            <>
+                <Button onClick={onAddView}>
+                    <PlusIcon className="w-5 h-5 mr-1" />
+                    Add View
+                </Button>
+                <Button onClick={onSave} variant="secondary">
+                    <SaveIcon className="w-5 h-5 mr-1" />
+                    Save
+                </Button>
+            </>
+        )}
+        <Button onClick={onLoad} variant="secondary">
             <LoadIcon className="w-5 h-5 mr-1" />
             Load
         </Button>
@@ -75,6 +86,12 @@ const EditIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
     </svg>
+);
+
+const HighlighterIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.998 15.998 0 011.622-3.385m5.043.025a15.998 15.998 0 001.622-3.385m3.388 1.62a15.998 15.998 0 00-1.622-3.385m0 0a3 3 0 10-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 00-3.388-1.62m5.043.025a15.998 15.998 0 01-1.622-3.385" />
+  </svg>
 );
 
 

@@ -1,4 +1,4 @@
-import React, { FC, memo, useState, SVGProps } from 'react';
+import React, { FC, memo, useState, SVGProps, useRef } from 'react';
 import { NodeProps } from 'reactflow';
 import showdown from 'showdown';
 import { ViewNodeData, TextStyle, DiagramState, ViewElement } from '../types';
@@ -9,8 +9,9 @@ const converter = new showdown.Converter();
 converter.setOption('simpleLineBreaks', true);
 
 const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
-  const { id: nodeId, title, elements, onFocus, isReadOnly, onNodeDataChange } = data;
+  const { id: nodeId, title, elements, onFocus, isReadOnly, onNodeDataChange, isHighlighterActive, onHighlightElement } = data;
   const [editingDiagramId, setEditingDiagramId] = useState<string | null>(null);
+  const contentContainerRef = useRef<HTMLDivElement>(null);
 
   const handleDiagramChange = (diagramId: string, newDiagramState: DiagramState) => {
     if (!nodeId || !onNodeDataChange) return;
@@ -24,6 +25,32 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
     setEditingDiagramId(prevId => (prevId === diagramId ? null : diagramId));
   };
 
+  const handleContentClick = (e: React.MouseEvent) => {
+    if (isHighlighterActive && onHighlightElement && contentContainerRef.current) {
+        e.stopPropagation();
+        const target = e.target as HTMLElement;
+
+        // If click is inside a diagram, let the diagram's handler take care of it.
+        if (target.closest('.diagram-container')) {
+            return;
+        }
+
+        // Allow links to function normally
+        if (target.closest('a, button')) {
+            return;
+        }
+
+        // Find the closest highlightable ancestor element.
+        const highlightableElement = target.closest(
+            'p, li, h1, h2, h3, h4, h5, h6, img, pre, blockquote'
+        );
+
+        if (highlightableElement && contentContainerRef.current.contains(highlightableElement)) {
+            onHighlightElement(highlightableElement as HTMLElement);
+        }
+    }
+  };
+
   return (
     <div className={`
       bg-white shadow-md border h-full w-full
@@ -34,7 +61,11 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
         <h3 className="font-semibold text-gray-800 break-words">{title}</h3>
       </div>
       
-      <div className="p-4 space-y-2 flex-grow overflow-y-auto">
+      <div 
+        ref={contentContainerRef}
+        onClick={handleContentClick}
+        className="p-4 space-y-2 flex-grow overflow-y-auto"
+      >
         {elements.map(element => {
           switch (element.type) {
             case 'text':
@@ -83,7 +114,7 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
             case 'diagram': {
                 const isEditingThisDiagram = editingDiagramId === element.id;
                 return (
-                    <div key={element.id} className="py-2">
+                    <div key={element.id} className="py-2 diagram-container">
                         <div className="relative">
                             {!isReadOnly && !isEditingThisDiagram && (
                                 <div className="absolute top-2 right-2 z-10">
@@ -100,6 +131,8 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
                                 onDoneEditing={() => handleToggleDiagramEdit(element.id)}
                                 height={element.height}
                                 viewBox={element.viewBox}
+                                isHighlighterActive={isHighlighterActive}
+                                onHighlightElement={onHighlightElement}
                             />
                         </div>
                         {element.caption && (
