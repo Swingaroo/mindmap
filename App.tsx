@@ -12,113 +12,152 @@ import ReactFlow, {
   ReactFlowProvider,
   MiniMap,
   BackgroundVariant,
+  NodeProps,
 } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 import showdown from 'showdown';
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
 
 import { getInitialNodes, viewSizeOptions } from './constants';
-import { Presentation, TextStyle, ViewNodeData, ViewElement } from './types';
+import { Presentation, TextStyle, ViewNodeData, ViewElement, DiagramElement, ImageElement } from './types';
 import ViewNode from './components/ViewNode';
 import Toolbar from './components/Toolbar';
 import EditorPanel from './components/EditorPanel';
 import DiagramEditor from './components/diagram/DiagramEditor';
-import { useTranslation, TFunction } from './i18n';
+import { useTranslation, TFunction, I18nProvider } from './i18n';
 
 const nodeTypes = { viewNode: ViewNode };
+declare const html2pdf: any;
 
-// PDF Rendering Components
-const pdfConverter = new showdown.Converter();
-pdfConverter.setOption('simpleLineBreaks', true);
-pdfConverter.setOption('openLinksInNewWindow', true);
+const PrintableDocument: FC<{
+  pageLayout: Node<ViewNodeData>[][],
+  onRendered: () => void,
+}> = ({ pageLayout, onRendered }) => {
+  const { t } = useTranslation();
 
-interface PdfViewNodeProps {
-  node: Node<ViewNodeData>;
-  nodeToPageMap: Map<string, number>;
-  t: TFunction;
-}
-
-const PdfViewNode: FC<PdfViewNodeProps> = ({ node, nodeToPageMap, t }) => {
-    const { title, elements } = node.data;
-    return (
-        <div className="bg-white border border-gray-300 h-full w-full flex flex-col font-sans">
-            <div className="px-4 pt-3 pb-2 border-b border-gray-200">
-                <h3 className="font-semibold text-gray-800 break-words">{title}</h3>
-            </div>
-            <div className="p-4 space-y-2 flex-grow overflow-y-auto">
-                {elements.map(element => {
-                    switch (element.type) {
-                        case 'text':
-                            if (element.style === TextStyle.Body) {
-                                const htmlContent = pdfConverter.makeHtml(element.content);
-                                return <div key={element.id} className="text-sm text-gray-700 break-words leading-normal [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_strong]:font-bold [&_b]:font-bold [&_em]:italic [&_i]:italic [&_p]:m-0" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
-                            }
-                            return <p key={element.id} className="text-xl font-bold text-gray-900 break-words leading-normal">{element.content}</p>;
-                        case 'image':
-                            return (
-                                <div key={element.id} className="py-2">
-                                    <img src={element.src} alt={t('pdf.altContentImage')} className="max-w-full h-auto rounded" />
-                                    {element.caption && <p className="text-xs text-gray-600 mt-2 text-center italic">{element.caption}</p>}
-                                </div>
-                            );
-                        case 'link': {
-                            const pageNum = nodeToPageMap.get(element.targetViewId);
-                            const linkText = `${element.content}${pageNum ? ` (p. ${pageNum})` : ''}`;
-                            return <div key={element.id} className="w-full text-left text-sm text-indigo-600 p-1">&rarr; {linkText}</div>;
-                        }
-                        case 'diagram':
-                            return (
-                                <div key={element.id} className="py-2">
-                                    <DiagramEditor diagramState={element.diagramState} isReadOnly={true} onChange={() => {}} height={element.height} viewBox={element.viewBox} t={t} />
-                                    {element.caption && <p className="text-xs text-gray-600 mt-2 text-center italic">{element.caption}</p>}
-                                </div>
-                            );
-                        default: return null;
-                    }
-                })}
-            </div>
-        </div>
-    );
-};
-
-interface PdfPageProps {
-  pageNodes: Node<ViewNodeData>[];
-  nodeToPageMap: Map<string, number>;
-  onRender: () => void;
-  t: TFunction;
-}
-
-const PdfPage: FC<PdfPageProps> = ({ pageNodes, nodeToPageMap, onRender, t }) => {
   useEffect(() => {
-    // Let the event loop tick once to ensure DOM is painted, especially for images
+    // With images preloaded, we only need a very short delay to ensure the DOM is painted.
     const timer = setTimeout(() => {
-        onRender();
-    }, 100); // A small delay to help with image loading
+        onRendered();
+    }, 100);
     return () => clearTimeout(timer);
-  }, [onRender]);
+  }, [onRendered]);
 
-  const containerStyle: React.CSSProperties = {
-    display: 'inline-flex',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    gap: '16px',
-  };
+  const A4_LANDSCAPE_WIDTH_PX = 1122;
+  const A4_LANDSCAPE_HEIGHT_PX = 794;
+  const PADDING = 40;
+  const GAP = 20;
+
+  const printableWidth = A4_LANDSCAPE_WIDTH_PX - PADDING * 2;
+  const printableHeight = A4_LANDSCAPE_HEIGHT_PX - PADDING * 2;
+
+  // Re-create the node map logic here as it's self-contained for printing
+  const nodeToPageMap = useMemo(() => {
+      const map = new Map<string, number>();
+      pageLayout.forEach((pageNodes, index) => {
+        pageNodes.forEach(node => map.set(node.id, index + 1));
+      });
+      return map;
+  }, [pageLayout]);
 
   return (
-    <div style={containerStyle}>
-      {pageNodes.map(node => (
-        <div key={node.id} style={{ width: node.style?.width, height: node.style?.height, flexShrink: 0 }}>
-          <PdfViewNode node={node} nodeToPageMap={nodeToPageMap} t={t} />
-        </div>
-      ))}
+    <div>
+      {pageLayout.map((pageNodes, index) => {
+        // FIX: Cast node.style.width to string before parseFloat to handle `string | number` type.
+        const totalContentWidth = pageNodes.reduce((acc, node) => acc + parseFloat(String(node.style?.width ?? '0')), 0) + (pageNodes.length > 1 ? GAP * (pageNodes.length - 1) : 0);
+        // FIX: Cast node.style.height to string before parseFloat to handle `string | number` type.
+        const maxContentHeight = Math.max(0, ...pageNodes.map(node => parseFloat(String(node.style?.height ?? '0'))));
+        
+        if (totalContentWidth === 0 || maxContentHeight === 0) {
+            return (
+                 <div key={index} style={{
+                    width: `${A4_LANDSCAPE_WIDTH_PX}px`,
+                    height: `${A4_LANDSCAPE_HEIGHT_PX}px`,
+                    backgroundColor: '#ffffff',
+                    pageBreakAfter: index < pageLayout.length - 1 ? 'always' : 'auto',
+                }}></div>
+            );
+        }
+
+        const scaleX = totalContentWidth > printableWidth ? printableWidth / totalContentWidth : 1;
+        const scaleY = maxContentHeight > printableHeight ? printableHeight / maxContentHeight : 1;
+        const scale = Math.min(scaleX, scaleY);
+
+        const containerWidth = totalContentWidth * scale;
+        const containerHeight = maxContentHeight * scale;
+
+        return (
+          <div key={index} style={{
+            width: `${A4_LANDSCAPE_WIDTH_PX}px`,
+            height: `${A4_LANDSCAPE_HEIGHT_PX}px`,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: `${PADDING}px`,
+            boxSizing: 'border-box',
+            backgroundColor: '#ffffff',
+            pageBreakAfter: index < pageLayout.length - 1 ? 'always' : 'auto',
+          }}>
+            <div style={{
+                display: 'flex',
+                gap: `${GAP * scale}px`,
+                width: `${containerWidth}px`,
+                height: `${containerHeight}px`,
+                alignItems: 'center',
+            }}>
+              {pageNodes.map(node => {
+                // FIX: Cast node.style.width to string before parseFloat to handle `string | number` type.
+                const nodeWidth = parseFloat(String(node.style?.width ?? '0'));
+                // FIX: Cast node.style.height to string before parseFloat to handle `string | number` type.
+                const nodeHeight = parseFloat(String(node.style?.height ?? '0'));
+                
+                const scaledNodeWidth = nodeWidth * scale;
+                const scaledNodeHeight = nodeHeight * scale;
+
+                const printElements = node.data.elements.map(el => {
+                    if (el.type === 'link') {
+                        const pageNum = nodeToPageMap.get(el.targetViewId);
+                        const linkText = `${el.content}${pageNum ? ` (p. ${pageNum})` : ''}`;
+                        return {...el, content: linkText };
+                    }
+                    return el;
+                });
+
+                const viewNodeProps: NodeProps<ViewNodeData> = {
+                    id: node.id,
+                    data: {
+                        ...node.data,
+                        elements: printElements,
+                        isReadOnly: true,
+                        onFocus: (targetId) => alert(t('pdf.linkAlert', { page: nodeToPageMap.get(targetId) || '?' })),
+                    },
+                    selected: false,
+                    type: 'viewNode',
+                    xPos: 0,
+                    yPos: 0,
+                    zIndex: 1,
+                    dragging: false,
+                    isConnectable: false,
+                };
+
+                return (
+                    <div key={node.id} style={{
+                        width: `${scaledNodeWidth}px`,
+                        height: `${scaledNodeHeight}px`,
+                    }}>
+                        <ViewNode {...viewNodeProps} />
+                    </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };
 
-
 const App: FC = () => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { fitView } = useReactFlow();
   
   const [nodes, setNodes] = useState<Node<ViewNodeData>[]>(() => getInitialNodes(t));
@@ -280,8 +319,6 @@ const App: FC = () => {
   }, [setNodes]);
 
   const handleSave = useCallback(() => {
-    // The `nodes` state is already clean. The functions and extra properties are only
-    // added in the `nodesForFlow` memo, so no cleanup is needed here.
     const presentation: Presentation = { nodes };
     const dataStr = JSON.stringify(presentation, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
@@ -291,40 +328,37 @@ const App: FC = () => {
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
 
-    // Append to the DOM, click, and then remove for better browser compatibility.
     document.body.appendChild(linkElement);
     linkElement.click();
     document.body.removeChild(linkElement);
   }, [nodes, t]);
 
-  const handleSaveToPdf = useCallback(async () => {
+ const handleExport = useCallback(async (format: 'pdf' | 'html') => {
     setIsGeneratingPdf(true);
+
+    const container = document.createElement('div');
+    container.style.position = 'absolute';
+    container.style.left = '-9999px';
+    document.body.appendChild(container);
+    const root = ReactDOM.createRoot(container);
+
     try {
-      const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
-          let binary = '';
-          const bytes = new Uint8Array(buffer);
-          for (let i = 0; i < bytes.byteLength; i++) {
-              binary += String.fromCharCode(bytes[i]);
-          }
-          return window.btoa(binary);
-      };
+      const imageUrls = nodes.flatMap(node =>
+        node.data.elements
+          .filter((el): el is ImageElement => el.type === 'image')
+          .map(el => el.src)
+      );
+      const preloadPromises = imageUrls.map(src =>
+        new Promise<void>((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+          img.src = src;
+        })
+      );
+      await Promise.all(preloadPromises);
 
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
-      
-      const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf';
-      const fontResponse = await fetch(fontUrl);
-      const fontBuffer = await fontResponse.arrayBuffer();
-      const fontBase64 = arrayBufferToBase64(fontBuffer);
-      pdf.addFileToVFS('Roboto-Regular.ttf', fontBase64);
-      pdf.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
-
-      const A4_WIDTH = 841.89;
-      const A4_HEIGHT = 595.28;
-      const MARGIN = 30;
-      const contentWidth = A4_WIDTH - MARGIN * 2;
-      const contentHeight = A4_HEIGHT - MARGIN * 2;
-
-      // 1. Group nodes for pages
       const sortedNodes = [...nodes].sort((a, b) => {
         if (a.position.y !== b.position.y) return a.position.y - b.position.y;
         return a.position.x - b.position.x;
@@ -348,71 +382,70 @@ const App: FC = () => {
         i += 1;
       }
 
-      // 2. Create node to page map
-      const nodeToPageMap = new Map<string, number>();
-      pageLayout.forEach((pageNodes, index) => {
-        pageNodes.forEach(node => nodeToPageMap.set(node.id, index + 1));
-      });
-
-      // 3. Render each page and add to PDF
-      const offscreenContainer = document.createElement('div');
-      offscreenContainer.style.position = 'absolute';
-      offscreenContainer.style.left = '-9999px';
-      offscreenContainer.style.top = '0px';
-      document.body.appendChild(offscreenContainer);
-      const root = ReactDOM.createRoot(offscreenContainer);
-
-      for (let i = 0; i < pageLayout.length; i++) {
-        if (i > 0) pdf.addPage();
-        const pageNodes = pageLayout[i];
-        
-        await new Promise<void>(resolve => {
-            root.render(<PdfPage pageNodes={pageNodes} nodeToPageMap={nodeToPageMap} onRender={resolve} t={t} />);
-        });
-        
-        const canvas = await html2canvas(offscreenContainer.firstChild as HTMLElement, { scale: 2, logging: false, useCORS: true });
-        const imgData = canvas.toDataURL('image/png');
-        
-        const imgProps = pdf.getImageProperties(imgData);
-        const ratio = imgProps.height / imgProps.width;
-        let imgWidth = contentWidth;
-        let imgHeight = imgWidth * ratio;
-        if (imgHeight > contentHeight) {
-            imgHeight = contentHeight;
-            imgWidth = imgHeight / ratio;
-        }
-        
-        const x = (A4_WIDTH - imgWidth) / 2;
-        const y = (A4_HEIGHT - imgHeight) / 2;
-        pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
-      }
-      
-      root.unmount();
-      document.body.removeChild(offscreenContainer);
-
-      // 4. Add page numbers
-      pdf.setFont('Roboto'); // Use the embedded font for page numbers
-      const pageCount = pdf.getNumberOfPages();
-      for (let i = 1; i <= pageCount; i++) {
-        pdf.setPage(i);
-        pdf.setFontSize(8);
-        pdf.setTextColor(150);
-        pdf.text(
-          t('pdf.pageOf', { currentPage: i, totalPages: pageCount }),
-          A4_WIDTH - MARGIN, 
-          A4_HEIGHT - 10, 
-          { align: 'right' }
+      await new Promise<void>(resolve => {
+        root.render(
+          <I18nProvider>
+            <PrintableDocument
+              pageLayout={pageLayout}
+              onRendered={resolve}
+            />
+          </I18nProvider>
         );
+      });
+      
+      if (format === 'pdf') {
+        const opt = {
+          margin: 0,
+          filename: t('app.defaultPdfFilename'),
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+          jsPDF: { unit: 'px', format: 'a4', orientation: 'landscape' },
+          pagebreak: { mode: ['css'] }
+        };
+        await html2pdf().from(container).set(opt).save();
+      } else { // html
+        const htmlContent = container.innerHTML;
+        const fullHtml = `
+          <!DOCTYPE html>
+          <html lang="${locale}">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>${t('app.defaultPdfFilename').replace('.pdf', '')}</title>
+              <script src="https://cdn.tailwindcss.com"></script>
+              <link href="https://cdn.jsdelivr.net/npm/reactflow@11.11.4/dist/style.css" rel="stylesheet">
+          </head>
+          <body class="bg-gray-200 p-8 font-sans">
+              ${htmlContent}
+          </body>
+          </html>
+        `;
+        const blob = new Blob([fullHtml], { type: 'text/html' });
+        const dataUri = URL.createObjectURL(blob);
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', t('app.defaultHtmlFilename'));
+        document.body.appendChild(linkElement);
+        linkElement.click();
+        document.body.removeChild(linkElement);
+        URL.revokeObjectURL(dataUri);
       }
 
-      pdf.save(t('app.defaultPdfFilename'));
     } catch (error) {
-      console.error("Failed to generate PDF:", error);
-      alert(t('errors.pdfGenerationFailed'));
+      console.error(`${format.toUpperCase()} generation failed:`, error);
+      const errorKey = format === 'pdf' ? 'errors.pdfGenerationFailed' : 'errors.htmlGenerationFailed';
+      alert(t(errorKey));
     } finally {
+      root.unmount();
+      if (document.body.contains(container)) {
+        document.body.removeChild(container);
+      }
       setIsGeneratingPdf(false);
     }
-  }, [nodes, t]);
+  }, [nodes, locale, t]);
+
+  const handleSaveToPdf = useCallback(() => handleExport('pdf'), [handleExport]);
+  const handleSaveToHtml = useCallback(() => handleExport('html'), [handleExport]);
 
   const handleLoad = () => {
     const input = document.createElement('input');
@@ -466,6 +499,7 @@ const App: FC = () => {
         onAddView={handleAddView}
         onSave={handleSave}
         onSaveToPdf={handleSaveToPdf}
+        onSaveToHtml={handleSaveToHtml}
         onLoad={handleLoad}
         isReadOnly={isReadOnly}
         onToggleReadOnly={() => {

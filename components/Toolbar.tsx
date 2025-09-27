@@ -6,6 +6,7 @@ interface ToolbarProps {
   onAddView: () => void;
   onSave: () => void;
   onSaveToPdf: () => void;
+  onSaveToHtml: () => void;
   onLoad: () => void;
   isReadOnly: boolean;
   onToggleReadOnly: () => void;
@@ -15,7 +16,7 @@ interface ToolbarProps {
   onToggleMiniMap: () => void;
 }
 
-const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onSaveToPdf, onLoad, isReadOnly, onToggleReadOnly, isHighlighterActive, onToggleHighlighter, isMiniMapVisible, onToggleMiniMap }) => {
+const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onSaveToPdf, onSaveToHtml, onLoad, isReadOnly, onToggleReadOnly, isHighlighterActive, onToggleHighlighter, isMiniMapVisible, onToggleMiniMap }) => {
   const { t, locale, setLocale } = useTranslation();
   const [isSaveMenuOpen, setIsSaveMenuOpen] = useState(false);
   const saveMenuRef = useRef<HTMLDivElement>(null);
@@ -88,6 +89,15 @@ const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onSaveToPdf, onLoad, isR
                                     >
                                         <FilePdfIcon className="w-4 h-4 mr-2" />
                                         {t('toolbar.save.asPdf')}
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        onClick={() => { onSaveToHtml(); setIsSaveMenuOpen(false); }}
+                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                                    >
+                                        <FileHtmlIcon className="w-4 h-4 mr-2" />
+                                        {t('toolbar.save.asHtml')}
                                     </button>
                                 </li>
                             </ul>
@@ -203,6 +213,12 @@ const FilePdfIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 13.5v-3a.75.75 0 01.75-.75h3a.75.75 0 010 1.5h-2.25v1.5a.75.75 0 01-1.5 0zm2.25 1.5a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3a.75.75 0 01.75-.75zm-3-4.5a.75.75 0 01.75.75v1.5h1.5a.75.75 0 010 1.5h-1.5v1.5a.75.75 0 01-1.5 0v-4.5a.75.75 0 01.75-.75z" />
+    </svg>
+);
+
+const FileHtmlIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
     </svg>
 );
 

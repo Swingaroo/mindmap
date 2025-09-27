@@ -2,7 +2,8 @@
   "appName": "MindMap Presenter",
   "app": {
     "defaultJsonFilename": "презентация.json",
-    "defaultPdfFilename": "презентация.pdf"
+    "defaultPdfFilename": "презентация.pdf",
+    "defaultHtmlFilename": "презентация.html"
   },
   "toolbar": {
     "editMode": "Редактировать",
@@ -13,7 +14,8 @@
     "save": {
       "button": "Сохранить",
       "asJson": "Сохранить в файл (.json)",
-      "asPdf": "Сохранить как PDF"
+      "asPdf": "Сохранить как PDF",
+      "asHtml": "Сохранить как HTML"
     },
     "load": "Загрузить",
     "hideMinimap": "Скрыть миникарту",
@@ -97,15 +99,18 @@
     }
   },
   "pdf": {
-    "generating": "Создание PDF...",
+    "generating": "Создание...",
     "altContentImage": "контент слайда",
-    "pageOf": "Стр. {{currentPage}} из {{totalPages}}"
+    "pageOf": "Стр. {{currentPage}} из {{totalPages}}",
+    "linkAlert": "Эта ссылка ведет на страницу {{page}}. В живом приложении это бы переключило вид."
   },
   "errors": {
     "pdfGenerationFailed": "Произошла ошибка при создании PDF. Проверьте консоль для получения подробной информации.",
+    "htmlGenerationFailed": "Произошла ошибка при создании HTML-файла. Проверьте консоль для получения подробной информации.",
     "invalidFileFormat": "Неверный формат файла.",
     "fileLoadFailed": "Ошибка загрузки файла.",
-    "noOtherViewsToLink": "Нет других слайдов для ссылки. Сначала создайте другой слайд."
+    "noOtherViewsToLink": "Нет других слайдов для ссылки. Сначала создайте другой слайд.",
+    "imageLoadFailed": "[Изображение не может быть загружено в PDF]"
   },
   "defaults": {
     "newNodeTitle": "Новый слайд",

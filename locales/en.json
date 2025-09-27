@@ -3,7 +3,8 @@
   "appName": "MindMap Presenter",
   "app": {
     "defaultJsonFilename": "presentation.json",
-    "defaultPdfFilename": "presentation.pdf"
+    "defaultPdfFilename": "presentation.pdf",
+    "defaultHtmlFilename": "presentation.html"
   },
   "toolbar": {
     "editMode": "Edit Mode",
@@ -14,7 +15,8 @@
     "save": {
       "button": "Save",
       "asJson": "Save to file (.json)",
-      "asPdf": "Save as PDF"
+      "asPdf": "Save as PDF",
+      "asHtml": "Save as HTML"
     },
     "load": "Load",
     "hideMinimap": "Hide Minimap",
@@ -98,15 +100,18 @@
     }
   },
   "pdf": {
-    "generating": "Generating PDF...",
+    "generating": "Generating...",
     "altContentImage": "view content",
-    "pageOf": "Page {{currentPage}} of {{totalPages}}"
+    "pageOf": "Page {{currentPage}} of {{totalPages}}",
+    "linkAlert": "This link goes to page {{page}}. In the live app, this would jump to the view."
   },
   "errors": {
     "pdfGenerationFailed": "An error occurred while generating the PDF. Please check the console for details.",
+    "htmlGenerationFailed": "An error occurred while generating the HTML file. Please check the console for details.",
     "invalidFileFormat": "Invalid file format.",
     "fileLoadFailed": "Error loading file.",
-    "noOtherViewsToLink": "No other views to link to. Please create another view first."
+    "noOtherViewsToLink": "No other views to link to. Please create another view first.",
+    "imageLoadFailed": "[Image could not be loaded into PDF]"
   },
   "defaults": {
     "newNodeTitle": "New View",
