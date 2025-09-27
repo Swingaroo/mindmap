@@ -31,6 +31,7 @@ export enum DiagramFigureType {
   Rectangle = 'rectangle',
   Circle = 'circle',
   Cloud = 'cloud',
+  Actor = 'actor',
 }
 
 export interface DiagramFigure extends BaseElement {

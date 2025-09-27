@@ -44,9 +44,23 @@ const Cloud: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, ...props }
   </g>
 );
 
+const Actor: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, ...props }) => (
+  <g transform={`translate(${x}, ${y})`} {...props}>
+    <g className={`${isSelected ? selectedStroke : commonStroke}`} strokeWidth="2" fill="none">
+      <circle cx="0" cy="-25" r="10" className="fill-white"/>
+      <line x1="0" y1="-15" x2="0" y2="10" />
+      <line x1="-20" y1="0" x2="20" y2="0" />
+      <line x1="0" y1="10" x2="-15" y2="25" />
+      <line x1="0" y1="10" x2="15" y2="25" />
+    </g>
+    {!isEditing && <text y="40" textAnchor="middle" fontSize="12" className="select-none fill-current">{label}</text>}
+  </g>
+);
+
 
 export const FigureComponents = {
   rectangle: Rectangle,
   circle: Circle,
   cloud: Cloud,
+  actor: Actor,
 };

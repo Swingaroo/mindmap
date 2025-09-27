@@ -143,6 +143,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
             case DiagramFigureType.Rectangle: yOffset = 25; break;
             case DiagramFigureType.Circle:    yOffset = 35; break;
             case DiagramFigureType.Cloud:     yOffset = 10; break;
+            case DiagramFigureType.Actor:     yOffset = 25; break;
         }
         position = { x: figure.position.x - 60, y: figure.position.y + yOffset };
     } else { // arrow
@@ -193,6 +194,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
             <Button onClick={() => addFigure(DiagramFigureType.Rectangle)} variant="outline" size="sm">Rect</Button>
             <Button onClick={() => addFigure(DiagramFigureType.Circle)} variant="outline" size="sm">Circle</Button>
             <Button onClick={() => addFigure(DiagramFigureType.Cloud)} variant="outline" size="sm">Cloud</Button>
+            <Button onClick={() => addFigure(DiagramFigureType.Actor)} variant="outline" size="sm">Actor</Button>
             <div className="w-px h-6 bg-gray-300 mx-1"></div>
             <Button onClick={() => setConnecting({ sourceId: selectedElement?.id! })} disabled={!selectedElement || selectedElement.type !== 'figure'} variant={connecting ? 'secondary' : 'outline'} size="sm">
                 {connecting ? 'Select Target' : 'Connect'}
