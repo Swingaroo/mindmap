@@ -36,11 +36,11 @@ const Circle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, ...props 
 const Cloud: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, ...props }) => (
   <g transform={`translate(${x}, ${y})`} {...props}>
     <path 
-      d="M-40 10 C-60 10 -60 -20 -40 -20 C-20 -40 20 -40 40 -20 C60 -20 60 10 40 10 Z" 
+      d="M -37.5 -22.5 a 30 30 1 0 0 0 60 h 75 a 30 30 1 0 0 0 -60 a 15 15 1 0 0 -22.5 -15 a 22.5 22.5 1 0 0 -52.5 15 z"
       className={`fill-white ${isSelected ? selectedStroke : commonStroke}`}
       strokeWidth="2"
     />
-    {!isEditing && <text y="25" textAnchor="middle" fontSize="12" className="select-none fill-current">{label}</text>}
+    {!isEditing && <text y="50" textAnchor="middle" fontSize="12" className="select-none fill-current">{label}</text>}
   </g>
 );
 
@@ -49,7 +49,7 @@ const Actor: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, ...props }
     <g className={`${isSelected ? selectedStroke : commonStroke}`} strokeWidth="2" fill="none">
       <circle cx="0" cy="-25" r="10" className="fill-white"/>
       <line x1="0" y1="-15" x2="0" y2="10" />
-      <line x1="-20" y1="0" x2="20" y2="0" />
+      <line x1="-20" y1="-5" x2="20" y2="-5" />
       <line x1="0" y1="10" x2="-15" y2="25" />
       <line x1="0" y1="10" x2="15" y2="25" />
     </g>

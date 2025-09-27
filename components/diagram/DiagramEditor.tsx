@@ -142,7 +142,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
         switch(figure.figureType) {
             case DiagramFigureType.Rectangle: yOffset = 25; break;
             case DiagramFigureType.Circle:    yOffset = 35; break;
-            case DiagramFigureType.Cloud:     yOffset = 10; break;
+            case DiagramFigureType.Cloud:     yOffset = 38; break;
             case DiagramFigureType.Actor:     yOffset = 25; break;
         }
         position = { x: figure.position.x - 60, y: figure.position.y + yOffset };
@@ -247,6 +247,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                   textAnchor="middle"
                   fontSize="12"
                   className="select-none fill-current cursor-pointer"
+                  onClick={(e) => { e.stopPropagation(); setSelectedElement({type: 'arrow', id: arrow.id}); }}
                   onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(arrow.id, 'arrow'); }}
                 >
                   {arrow.label}
