@@ -56,6 +56,8 @@ export interface DiagramElement extends BaseElement {
   type: 'diagram';
   diagramState: DiagramState;
   caption: string;
+  height?: number;
+  viewBox?: [number, number, number, number];
 }
 
 

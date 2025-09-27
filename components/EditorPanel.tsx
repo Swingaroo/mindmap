@@ -1,10 +1,7 @@
-
-
-
 import React, { FC, useState, useRef, useCallback, SVGProps } from 'react';
 import { Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
-import { ViewNodeData, ViewElement, TextStyle, ImageElement, LinkElement, TextElement, DiagramElement } from '../types';
+import { ViewNodeData, ViewElement, TextStyle, ImageElement, LinkElement, TextElement, DiagramElement, DiagramFigure, DiagramFigureType } from '../types';
 import Button from './ui/Button';
 import DiagramEditor from './diagram/DiagramEditor';
 
@@ -52,7 +49,8 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
             id: uuidv4(), 
             type: 'diagram',
             caption: 'A new diagram',
-            diagramState: { figures: [], arrows: [] }
+            diagramState: { figures: [], arrows: [] },
+            height: 400,
         };
         updateElements([...node.data.elements, newElement]);
     }
@@ -176,6 +174,111 @@ interface ElementEditorProps {
 }
 
 const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, allNodes, currentNodeId }) => {
+    
+    const calculateFitHeight = (figures: DiagramFigure[]): number => {
+        if (figures.length === 0) {
+          return 200;
+        }
+    
+        let maxY = 0;
+    
+        for (const figure of figures) {
+          let figureBottomY;
+          const numLines = (figure.label.split('\n')).length;
+          const labelHeightAddition = (numLines - 1) * 14.4; // 12px font * 1.2em line height
+    
+          switch (figure.figureType) {
+            case DiagramFigureType.Rectangle:
+            case DiagramFigureType.Actor:
+              figureBottomY = figure.position.y + 40 + labelHeightAddition;
+              break;
+            case DiagramFigureType.Circle:
+            case DiagramFigureType.Cloud:
+              figureBottomY = figure.position.y + 50 + labelHeightAddition;
+              break;
+            default:
+              figureBottomY = figure.position.y;
+          }
+    
+          if (figureBottomY > maxY) {
+            maxY = figureBottomY;
+          }
+        }
+    
+        const PADDING_BOTTOM = 20;
+        const MIN_HEIGHT = 200;
+    
+        return Math.max(MIN_HEIGHT, Math.ceil(maxY + PADDING_BOTTOM));
+    };
+
+    const calculateFitViewBox = (figures: DiagramFigure[]): [number, number, number, number] => {
+        const svgWidth = 800;
+        const svgHeight = 400;
+
+        if (figures.length === 0) {
+            return [0, 0, svgWidth, svgHeight];
+        }
+
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+        figures.forEach(figure => {
+            const numLines = (figure.label.split('\n')).length;
+            const labelHeight = (numLines > 1) ? (numLines - 1) * 14.4 : 0;
+            const labelClearance = 15;
+
+            let bounds;
+            switch (figure.figureType) {
+                case DiagramFigureType.Rectangle:
+                    bounds = { left: figure.position.x - 50, right: figure.position.x + 50, top: figure.position.y - 25, bottom: figure.position.y + 25 + labelClearance + labelHeight };
+                    break;
+                case DiagramFigureType.Circle:
+                    bounds = { left: figure.position.x - 35, right: figure.position.x + 35, top: figure.position.y - 35, bottom: figure.position.y + 35 + labelClearance + labelHeight };
+                    break;
+                case DiagramFigureType.Cloud:
+                    bounds = { left: figure.position.x - 75, right: figure.position.x + 75, top: figure.position.y - 30, bottom: figure.position.y + 15 + labelClearance + labelHeight };
+                    break;
+                case DiagramFigureType.Actor:
+                    bounds = { left: figure.position.x - 20, right: figure.position.x + 20, top: figure.position.y - 35, bottom: figure.position.y + 25 + labelClearance + labelHeight };
+                    break;
+            }
+            if (bounds) {
+                minX = Math.min(minX, bounds.left);
+                maxX = Math.max(maxX, bounds.right);
+                minY = Math.min(minY, bounds.top);
+                maxY = Math.max(maxY, bounds.bottom);
+            }
+        });
+
+        const contentWidth = maxX - minX;
+        const contentHeight = maxY - minY;
+
+        if (contentWidth <= 0 || contentHeight <= 0) {
+            return [0, 0, svgWidth, svgHeight];
+        }
+        
+        const PADDING = 40;
+        const newVbX = minX - PADDING;
+        const newVbY = minY - PADDING;
+        const newVbWidth = contentWidth + PADDING * 2;
+        const newVbHeight = contentHeight + PADDING * 2;
+
+        return [newVbX, newVbY, newVbWidth, newVbHeight];
+    };
+
+    const handleDiagramZoom = (factor: number) => {
+        if (element.type !== 'diagram') return;
+        const svgWidth = 800;
+        const svgHeight = 400;
+        const currentVb = element.viewBox ?? [0, 0, svgWidth, svgHeight];
+        
+        const [vx, vy, vw, vh] = currentVb;
+        const newWidth = vw * factor;
+        const newHeight = vh * factor;
+        const newX = vx + (vw - newWidth) / 2;
+        const newY = vy + (vh - newHeight) / 2;
+        onChange(element.id, { viewBox: [newX, newY, newWidth, newHeight] });
+    };
+
     return (
         <div className="p-3 bg-gray-50 rounded-md border border-gray-200 relative group">
             <button onClick={() => onDelete(element.id)} className="absolute top-1 right-1 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity z-20">
@@ -245,6 +348,46 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                         rows={2}
                         placeholder="Enter a caption for the diagram..."
                     />
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                        <label className="block text-xs font-medium text-gray-500 mb-2">Diagram Height</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            <Button
+                                onClick={() => onChange(element.id, { height: Math.max(200, (element.height || 400) - 50) })}
+                                variant="outline" size="sm" title="Decrease Height"
+                            >
+                                <ArrowDownIcon className="w-4 h-4 m-auto" />
+                            </Button>
+                            <Button
+                                onClick={() => onChange(element.id, { height: calculateFitHeight(element.diagramState.figures) })}
+                                variant="outline" size="sm" title="Fit to Content"
+                            >
+                               <ArrowsUpDownIcon className="w-4 h-4 m-auto" />
+                            </Button>
+                            <Button
+                                onClick={() => onChange(element.id, { height: (element.height || 400) + 50 })}
+                                variant="outline" size="sm" title="Increase Height"
+                            >
+                                <ArrowUpIcon className="w-4 h-4 m-auto" />
+                            </Button>
+                        </div>
+                    </div>
+                     <div className="mt-2 pt-2 border-t border-gray-200">
+                        <label className="block text-xs font-medium text-gray-500 mb-2">Diagram View</label>
+                        <div className="grid grid-cols-4 gap-2">
+                            <Button onClick={() => handleDiagramZoom(1 / 1.25)} variant="outline" size="sm" title="Zoom In">
+                                <ZoomInIcon className="w-4 h-4 m-auto" />
+                            </Button>
+                             <Button onClick={() => handleDiagramZoom(1.25)} variant="outline" size="sm" title="Zoom Out">
+                                <ZoomOutIcon className="w-4 h-4 m-auto" />
+                            </Button>
+                            <Button onClick={() => onChange(element.id, { viewBox: calculateFitViewBox(element.diagramState.figures) })} variant="outline" size="sm" title="Fit to Content">
+                                <FitIcon className="w-4 h-4 m-auto" />
+                            </Button>
+                             <Button onClick={() => onChange(element.id, { viewBox: [0, 0, 800, 400] })} variant="outline" size="sm" title="Reset View">
+                                <ResetIcon className="w-4 h-4 m-auto" />
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
@@ -270,6 +413,48 @@ const DiagramIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v7.5" />
     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 12h-7.5" />
   </svg>
+);
+
+const ArrowDownIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
+  </svg>
+);
+
+const ArrowUpIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
+  </svg>
+);
+
+const ArrowsUpDownIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
+  </svg>
+);
+
+const ZoomInIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+  </svg>
+);
+
+const ZoomOutIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5h-6" />
+  </svg>
+);
+
+const FitIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m-11.25 11.25v-4.5m0 4.5h4.5m-4.5 0L9 15m11.25 0h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+  </svg>
+);
+
+const ResetIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.18-3.185m-11.665-5.156a8.25 8.25 0 0111.665 0l3.18 3.184a8.25 8.25 0 01-11.665 0L2.985 9.644z" />
+    </svg>
 );
 
 

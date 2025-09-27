@@ -9,6 +9,8 @@ interface DiagramEditorProps {
   isReadOnly?: boolean;
   onChange: (newState: DiagramState) => void;
   onDoneEditing?: () => void;
+  height?: number;
+  viewBox?: [number, number, number, number];
 }
 
 const figureRadii: Record<DiagramFigureType, number> = {
@@ -18,7 +20,7 @@ const figureRadii: Record<DiagramFigureType, number> = {
   [DiagramFigureType.Actor]: 41,
 };
 
-const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = false, onChange, onDoneEditing }) => {
+const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = false, onChange, onDoneEditing, height, viewBox }) => {
   const [selectedElement, setSelectedElement] = useState<{ type: 'figure' | 'arrow'; id: string } | null>(null);
   const [connecting, setConnecting] = useState<{ sourceId: string } | null>(null);
   const [dragging, setDragging] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
@@ -195,7 +197,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
   return (
     <div 
         className={`relative border border-gray-200 rounded-md ${!isReadOnly ? 'nodrag' : ''}`}
-        style={{ height: '400px' }}
+        style={{ height: `${height || 400}px` }}
     >
       {!isReadOnly && (
         <div className="absolute top-0 left-0 right-0 z-10 p-2 bg-white/90 backdrop-blur-sm border-b rounded-t-md flex flex-wrap gap-2 items-center">
@@ -219,12 +221,13 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
         ref={svgRef}
         width="100%"
         height="100%"
-        viewBox="0 0 800 400"
+        viewBox={viewBox ? viewBox.join(' ') : '0 0 800 400'}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onClick={handleSvgClick}
         className={!isReadOnly ? 'cursor-grab active:cursor-grabbing' : ''}
+        preserveAspectRatio="xMidYMin meet"
       >
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9.5" refY="3.5" orient="auto">

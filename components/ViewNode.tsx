@@ -98,6 +98,8 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
                                 isReadOnly={isReadOnly || !isEditingThisDiagram}
                                 onChange={(newState) => handleDiagramChange(element.id, newState)}
                                 onDoneEditing={() => handleToggleDiagramEdit(element.id)}
+                                height={element.height}
+                                viewBox={element.viewBox}
                             />
                         </div>
                         {element.caption && (
