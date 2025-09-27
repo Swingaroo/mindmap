@@ -335,9 +335,9 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
               {!isEditing && arrow.label && (() => {
                   const lines = arrow.label.split('\n');
                   const longestLine = lines.reduce((a, b) => (a.length > b.length ? a : b), '');
-                  const charWidth = 7.5; // Heuristic avg char width
+                  const charWidth = 7; // Heuristic avg char width
                   const lineHeight = 14.4; // 1.2em for 12px font
-                  const padding = 4;
+                  const padding = 2;
 
                   const boxWidth = longestLine.length * charWidth + padding * 2;
                   const boxHeight = lines.length * lineHeight + padding * 2;

@@ -355,7 +355,7 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                                 onClick={() => onChange(element.id, { height: Math.max(200, (element.height || 400) - 50) })}
                                 variant="outline" size="sm" title="Decrease Height"
                             >
-                                <ArrowDownIcon className="w-4 h-4 m-auto" />
+                                <ArrowUpIcon className="w-4 h-4 m-auto" />
                             </Button>
                             <Button
                                 onClick={() => onChange(element.id, { height: calculateFitHeight(element.diagramState.figures) })}
@@ -367,7 +367,8 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                                 onClick={() => onChange(element.id, { height: (element.height || 400) + 50 })}
                                 variant="outline" size="sm" title="Increase Height"
                             >
-                                <ArrowUpIcon className="w-4 h-4 m-auto" />
+                                
+                                <ArrowDownIcon className="w-4 h-4 m-auto" />
                             </Button>
                         </div>
                     </div>
