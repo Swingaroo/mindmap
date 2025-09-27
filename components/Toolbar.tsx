@@ -207,9 +207,9 @@ const FilePdfIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
 );
 
 const GlobeIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 21a8.955 8.955 0 004.288-1.152 4.479 4.479 0 00-1.02-6.696M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM12 21a8.955 8.955 0 01-4.288-1.152 4.478 4.478 0 011.02-6.696M3.75 9h16.5M3.75 15h16.5" />
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M11.952 1.006a10.999 10.999 0 1 0 0 21.998 10.999 10.999 0 0 0 0-21.998Z"/>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12.01 1.006v21.998M23.141 12.005H.858m2.518-6.855a16.892 16.892 0 0 1 17.256 0m0 13.71a16.892 16.892 0 0 1-17.256 0M11.152 1.293A14.004 14.004 0 0 0 6.08 12.057a14.004 14.004 0 0 0 5.071 10.79m1.713 0a14.004 14.004 0 0 0 5.071-10.79 14.004 14.004 0 0 0-5.071-10.765"/>
     </svg>
 );
 

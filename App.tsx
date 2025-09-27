@@ -52,9 +52,9 @@ const PdfViewNode: FC<PdfViewNodeProps> = ({ node, nodeToPageMap, t }) => {
                         case 'text':
                             if (element.style === TextStyle.Body) {
                                 const htmlContent = pdfConverter.makeHtml(element.content);
-                                return <div key={element.id} className="text-sm text-gray-700 break-words [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_strong]:font-bold [&_b]:font-bold [&_em]:italic [&_i]:italic [&_p]:m-0" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+                                return <div key={element.id} className="text-sm text-gray-700 break-words leading-normal [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_strong]:font-bold [&_b]:font-bold [&_em]:italic [&_i]:italic [&_p]:m-0" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
                             }
-                            return <p key={element.id} className="text-xl font-bold text-gray-900 break-words">{element.content}</p>;
+                            return <p key={element.id} className="text-xl font-bold text-gray-900 break-words leading-normal">{element.content}</p>;
                         case 'image':
                             return (
                                 <div key={element.id} className="py-2">
@@ -300,7 +300,24 @@ const App: FC = () => {
   const handleSaveToPdf = useCallback(async () => {
     setIsGeneratingPdf(true);
     try {
+      const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
+          let binary = '';
+          const bytes = new Uint8Array(buffer);
+          for (let i = 0; i < bytes.byteLength; i++) {
+              binary += String.fromCharCode(bytes[i]);
+          }
+          return window.btoa(binary);
+      };
+
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      
+      const fontUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf';
+      const fontResponse = await fetch(fontUrl);
+      const fontBuffer = await fontResponse.arrayBuffer();
+      const fontBase64 = arrayBufferToBase64(fontBuffer);
+      pdf.addFileToVFS('Roboto-Regular.ttf', fontBase64);
+      pdf.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+
       const A4_WIDTH = 841.89;
       const A4_HEIGHT = 595.28;
       const MARGIN = 30;
@@ -353,7 +370,7 @@ const App: FC = () => {
             root.render(<PdfPage pageNodes={pageNodes} nodeToPageMap={nodeToPageMap} onRender={resolve} t={t} />);
         });
         
-        const canvas = await html2canvas(offscreenContainer.firstChild as HTMLElement, { scale: 2, logging: false });
+        const canvas = await html2canvas(offscreenContainer.firstChild as HTMLElement, { scale: 2, logging: false, useCORS: true });
         const imgData = canvas.toDataURL('image/png');
         
         const imgProps = pdf.getImageProperties(imgData);
@@ -374,6 +391,7 @@ const App: FC = () => {
       document.body.removeChild(offscreenContainer);
 
       // 4. Add page numbers
+      pdf.setFont('Roboto'); // Use the embedded font for page numbers
       const pageCount = pdf.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         pdf.setPage(i);
