@@ -28,17 +28,17 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ node, onNodeDataChange, onClo
     onNodeDataChange(node.id, { elements: newElements });
   }, [node.id, onNodeDataChange]);
 
-  const addElement = (type: 'text' | 'image' | 'link') => {
-    let newElement: ViewElement;
+  // FIX: Refactored addElement to be more type-safe and distinguish between Title and Body text.
+  const addElement = (type: 'text' | 'image' | 'link', style: TextStyle = TextStyle.Body) => {
     if (type === 'text') {
-      newElement = { id: uuidv4(), type: 'text', content: 'New Text', style: TextStyle.Body };
+      const newElement: ViewElement = { id: uuidv4(), type: 'text', content: 'New Text', style };
       updateElements([...node.data.elements, newElement]);
     } else if (type === 'image') {
       imageInputRef.current?.click();
     } else if (type === 'link') {
         const otherNodes = allNodes.filter(n => n.id !== node.id);
         if (otherNodes.length > 0) {
-            newElement = { id: uuidv4(), type: 'link', content: 'Link to another view', targetViewId: otherNodes[0].id };
+            const newElement: ViewElement = { id: uuidv4(), type: 'link', content: 'Link to another view', targetViewId: otherNodes[0].id };
             updateElements([...node.data.elements, newElement]);
         } else {
             alert("No other views to link to. Please create another view first.");
@@ -95,8 +95,8 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ node, onNodeDataChange, onClo
             <div className="mb-4 border-t pt-4">
                 <h3 className="text-md font-semibold text-gray-700 mb-2">Add Content</h3>
                 <div className="grid grid-cols-3 gap-2">
-                    <Button onClick={() => addElement('text')} variant="outline">Title Text</Button>
-                    <Button onClick={() => addElement('text')} variant="outline">Body Text</Button>
+                    <Button onClick={() => addElement('text', TextStyle.Title)} variant="outline">Title Text</Button>
+                    <Button onClick={() => addElement('text', TextStyle.Body)} variant="outline">Body Text</Button>
                     <Button onClick={() => addElement('image')} variant="outline">Image</Button>
                     <Button onClick={() => addElement('link')} variant="outline">Link</Button>
                 </div>

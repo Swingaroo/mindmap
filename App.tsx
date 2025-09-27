@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useMemo, useRef } from 'react';
 import ReactFlow, {
   ReactFlowProvider,
@@ -33,6 +32,7 @@ function Flow() {
   const [nodes, setNodes] = useState<Node<ViewNodeData>[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [isReadOnly, setIsReadOnly] = useState(false);
   const { setViewport } = useReactFlow();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -65,8 +65,10 @@ function Flow() {
   }, [setNodes]);
 
   const handleNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
-    setSelectedNodeId(node.id);
-  }, []);
+    if (!isReadOnly) {
+        setSelectedNodeId(node.id);
+    }
+  }, [isReadOnly]);
 
   const clearSelection = useCallback(() => {
     setSelectedNodeId(null);
@@ -152,16 +154,33 @@ function Flow() {
             const x = node.position.x + (node.width ? node.width / 2 : 150);
             const y = node.position.y + (node.height ? node.height / 2 : 75);
             setViewport({ x, y, zoom: 1.5 }, { duration: 800 });
-            setSelectedNodeId(nodeId);
+            if (!isReadOnly) {
+                setSelectedNodeId(nodeId);
+            }
         }
-  }, [nodes, setViewport]);
+  }, [nodes, setViewport, isReadOnly]);
 
+  const toggleReadOnlyMode = useCallback(() => {
+    setIsReadOnly(prev => !prev);
+    setSelectedNodeId(null);
+  }, []);
 
   return (
     <div className="w-screen h-screen flex flex-col font-sans bg-gray-50">
-      <Toolbar onAddView={handleAddView} onSave={handleSave} onLoad={handleLoad} />
-      <div className="flex-grow flex">
+      <Toolbar 
+        onAddView={handleAddView} 
+        onSave={handleSave} 
+        onLoad={handleLoad} 
+        isReadOnly={isReadOnly}
+        onToggleReadOnly={toggleReadOnlyMode}
+      />
+      <div className="flex-grow flex relative">
         <div className="flex-grow h-full">
+           {isReadOnly && (
+            <div className="absolute top-4 right-4 bg-yellow-200 text-yellow-800 text-xs font-bold px-3 py-1 rounded-full z-20 shadow">
+                READ-ONLY MODE
+            </div>
+           )}
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -173,13 +192,16 @@ function Flow() {
             onPaneClick={clearSelection}
             fitView
             className="bg-gray-100"
+            nodesDraggable={!isReadOnly}
+            nodesConnectable={!isReadOnly}
+            elementsSelectable={!isReadOnly}
           >
             <Background color="#aaa" gap={16} />
             <Controls />
             <MiniMap />
           </ReactFlow>
         </div>
-        {selectedNode && (
+        {selectedNode && !isReadOnly && (
           <EditorPanel
             key={selectedNode.id}
             node={selectedNode}
