@@ -62,13 +62,15 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
   };
 
   return (
-    <div className={`
-      bg-white shadow-md border h-full w-full
-      ${selected ? 'border-blue-500' : 'border-gray-300'} 
-      transition-colors duration-150 ease-in-out grid grid-rows-[auto_1fr]
-    `}>
+    <div
+      className={`
+        bg-white shadow-md border flex flex-col h-full w-full
+        ${selected ? 'border-blue-500' : 'border-gray-300'} 
+        transition-colors duration-150 ease-in-out
+      `}
+    >
       <div 
-        className={`px-4 pt-3 pb-2 border-b border-gray-200 ${isReadOnly ? 'cursor-pointer' : 'cursor-move'}`}
+        className={`px-4 pt-3 pb-2 border-b border-gray-200 ${isReadOnly ? 'cursor-pointer' : 'cursor-move'} flex-shrink-0`}
         onDoubleClickCapture={handleHeaderDoubleClick}
       >
         <h3 className="font-semibold text-gray-800 break-words">{title}</h3>
@@ -77,7 +79,8 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
       <div 
         ref={contentContainerRef}
         onClick={handleContentClick}
-        className="p-4 space-y-2 overflow-y-hidden"
+        className="p-4 space-y-2 flex-grow"
+        style={{ overflow: 'hidden' }}
       >
         {elements.map(element => {
           switch (element.type) {

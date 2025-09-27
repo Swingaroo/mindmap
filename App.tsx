@@ -88,17 +88,18 @@ const PrintableDocument: FC<{
             alignItems: 'center',
             overflow: 'hidden',
             boxSizing: 'border-box',
-            pageBreakAfter: 'always',
+            paddingTop: '1px',
         };
 
         if (outputFormat === 'html') {
-            // For HTML output, simulate the full page with margins
+            // For HTML output, simulate the full page with margins and forced page breaks
             pageStyle.margin = `${MARGIN_PT * (4/3)}px auto`;
             pageStyle.boxShadow = '0 0 10px rgba(0,0,0,0.1)';
+            pageStyle.pageBreakAfter = 'always';
         }
 
         return (
-          <div key={index} style={pageStyle}>
+          <div key={index} style={pageStyle} className={outputFormat === 'pdf' ? 'printable-page' : ''}>
             <div style={{
                 width: totalContentWidth,
                 height: maxContentHeight,
@@ -437,40 +438,53 @@ const App: FC = () => {
         );
       });
       
-      const printableHtml = container.innerHTML;
-
-      const fullHtmlSource = `
-        <!DOCTYPE html>
-        <html lang="${locale}">
-        <head>
-            <meta charset="UTF-8">
-            <title>${t(`app.default${format === 'pdf' ? 'Pdf' : 'Html'}Filename`).replace(`.${format}`, '')}</title>
-            <script src="https://cdn.tailwindcss.com"></script>
-            <link href="https://cdn.jsdelivr.net/npm/reactflow@11.11.4/dist/style.css" rel="stylesheet">
-            <style>
-                body {
-                    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-                }
-                ${format === 'html' ? 'body { background-color: #e5e7eb; }' : ''}
-            </style>
-        </head>
-        <body>
-          ${printableHtml}
-        </body>
-        </html>
-      `;
-
       if (format === 'pdf') {
+        const pageElements = container.querySelectorAll('.printable-page');
+        if (pageElements.length === 0) {
+            throw new Error("No printable pages found to generate PDF.");
+        }
         const opt = {
           margin: 36, // 0.5 inch margin in points
           filename: t('app.defaultPdfFilename'),
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true, letterRendering: true },
           jsPDF: { unit: 'pt', format: 'a4', orientation: 'landscape' },
-          pagebreak: { mode: 'css' }
         };
-        await html2pdf().from(fullHtmlSource).set(opt).save();
+        
+        const worker = html2pdf().set(opt);
+        let promise = worker.from(pageElements[0]).toPdf();
+        
+        for (let i = 1; i < pageElements.length; i++) {
+            const pageElement = pageElements[i];
+            promise = promise.get('pdf').then(pdf => {
+                pdf.addPage();
+            }).from(pageElement).toPdf();
+        }
+
+        await promise.save();
+
       } else { // html
+        const printableHtml = container.innerHTML;
+        const fullHtmlSource = `
+          <!DOCTYPE html>
+          <html lang="${locale}">
+          <head>
+              <meta charset="UTF-8">
+              <title>${t('app.defaultHtmlFilename').replace('.html', '')}</title>
+              <script src="https://cdn.tailwindcss.com"></script>
+              <link href="https://cdn.jsdelivr.net/npm/reactflow@11.11.4/dist/style.css" rel="stylesheet">
+              <style>
+                  body {
+                      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+                  }
+                  ${format === 'html' ? 'body { background-color: #e5e7eb; }' : ''}
+              </style>
+          </head>
+          <body>
+            ${printableHtml}
+          </body>
+          </html>
+        `;
         const blob = new Blob([fullHtmlSource], { type: 'text/html' });
         const dataUri = URL.createObjectURL(blob);
         const linkElement = document.createElement('a');
