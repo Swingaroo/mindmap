@@ -1,7 +1,7 @@
 import React, { FC, memo, useState, SVGProps, useRef } from 'react';
 import { NodeProps } from 'reactflow';
 import showdown from 'showdown';
-import { ViewNodeData, TextStyle, DiagramState, ViewElement } from '../types';
+import { ViewNodeData, TextStyle, DiagramState, ViewElement, ImageElement } from '../types';
 import DiagramEditor from './diagram/DiagramEditor';
 import Button from './ui/Button';
 import { useTranslation } from '../i18n';
@@ -11,7 +11,7 @@ converter.setOption('simpleLineBreaks', true);
 converter.setOption('openLinksInNewWindow', true);
 
 const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
-  const { id: nodeId, title, elements, onFocus, isReadOnly, onNodeDataChange, isHighlighterActive, onHighlightElement } = data;
+  const { id: nodeId, title, elements, onFocus, isReadOnly, onNodeDataChange, isHighlighterActive, onHighlightElement, printOptions } = data;
   const [editingDiagramId, setEditingDiagramId] = useState<string | null>(null);
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
@@ -65,7 +65,7 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
     <div className={`
       bg-white shadow-md border h-full w-full
       ${selected ? 'border-blue-500' : 'border-gray-300'} 
-      transition-colors duration-150 ease-in-out flex flex-col
+      transition-colors duration-150 ease-in-out grid grid-rows-[auto_1fr]
     `}>
       <div 
         className={`px-4 pt-3 pb-2 border-b border-gray-200 ${isReadOnly ? 'cursor-pointer' : 'cursor-move'}`}
@@ -77,7 +77,7 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
       <div 
         ref={contentContainerRef}
         onClick={handleContentClick}
-        className="p-4 space-y-2 flex-grow overflow-y-auto"
+        className="p-4 space-y-2 overflow-y-hidden"
       >
         {elements.map(element => {
           switch (element.type) {
@@ -105,19 +105,29 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
                   {element.content}
                 </p>
               );
-            case 'image':
+            case 'image': {
+              const imgElement = element as ImageElement;
+              if (imgElement.src === 'CONVERSION_FAILED') {
+                return (
+                  <div key={imgElement.id} className="p-4 border border-dashed border-red-300 bg-red-50 text-red-700 rounded text-center text-sm">
+                    <p>{t('errors.imageLoadFailed')}</p>
+                    {imgElement.caption && <p className="truncate text-xs text-red-500 mt-1">{imgElement.caption}</p>}
+                  </div>
+                );
+              }
               return (
-                <div key={element.id}>
+                <div key={imgElement.id}>
                   <img 
-                    src={element.src} 
+                    src={imgElement.src} 
                     alt={t('viewNode.altContentImage')}
                     className="max-w-full h-auto rounded"
                   />
-                  {element.caption && (
-                    <p className="text-xs text-gray-600 mt-2 text-center italic">{element.caption}</p>
+                  {imgElement.caption && (
+                    <p className="text-xs text-gray-600 mt-2 text-center italic">{imgElement.caption}</p>
                   )}
                 </div>
               );
+            }
             case 'link':
               return (
                  <button
@@ -151,6 +161,7 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
                                 isHighlighterActive={isHighlighterActive}
                                 onHighlightElement={onHighlightElement}
                                 t={t}
+                                fixedWidth={printOptions?.fixedDiagramWidth}
                             />
                         </div>
                         {element.caption && (

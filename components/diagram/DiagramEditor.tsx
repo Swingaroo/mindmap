@@ -15,6 +15,7 @@ interface DiagramEditorProps {
   isHighlighterActive?: boolean;
   onHighlightElement?: (element: HTMLElement | SVGElement) => void;
   t: TFunction;
+  fixedWidth?: number;
 }
 
 const figureRadii: Record<DiagramFigureType, number> = {
@@ -24,7 +25,7 @@ const figureRadii: Record<DiagramFigureType, number> = {
   [DiagramFigureType.Actor]: 41,
 };
 
-const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = false, onChange, onDoneEditing, height, viewBox, isHighlighterActive, onHighlightElement, t }) => {
+const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = false, onChange, onDoneEditing, height, viewBox, isHighlighterActive, onHighlightElement, t, fixedWidth }) => {
   const [selectedElement, setSelectedElement] = useState<{ type: 'figure' | 'arrow'; id: string } | null>(null);
   const [connecting, setConnecting] = useState<{ sourceId: string } | null>(null);
   const [dragging, setDragging] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
@@ -261,7 +262,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
       )}
       <svg
         ref={svgRef}
-        width="100%"
+        width={fixedWidth ?? "100%"}
         height={height || 400}
         viewBox={viewBox ? viewBox.join(' ') : '0 0 800 400'}
         onMouseMove={handleMouseMove}

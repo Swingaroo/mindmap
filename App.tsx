@@ -51,32 +51,37 @@ const PrintableDocument: FC<{
       return map;
   }, [pageLayout]);
   
-  const A4_LANDSCAPE_WIDTH_PX = 1122;
-  const A4_LANDSCAPE_HEIGHT_PX = 794;
-  const PAGE_MARGIN_PX = 40;
-  const GAP = 20;
+  // A4 Page dimensions in points (pt)
+  const A4_LANDSCAPE_WIDTH_PT = 842;
+  const A4_LANDSCAPE_HEIGHT_PT = 595;
+  // Margin in points (0.5 inch * 72 pt/inch)
+  const MARGIN_PT = 36;
+  const GAP_PX = 20;
+
+  // The printable area is the page size minus margins. This is our target container size.
+  // We'll calculate it in pixels, assuming 96 DPI (1pt = 4/3px or 1.333px)
+  const PRINTABLE_WIDTH_PX = Math.floor((A4_LANDSCAPE_WIDTH_PT - MARGIN_PT * 2) * (4/3)); // ~1026px
+  const PRINTABLE_HEIGHT_PX = Math.floor((A4_LANDSCAPE_HEIGHT_PT - MARGIN_PT * 2) * (4/3)); // ~697px
 
   return (
     // Add base font-family to help html2pdf render text correctly if Tailwind fails to load in its context
     <div style={outputFormat === 'html' ? { backgroundColor: '#e5e7eb' } : {}}>
       {pageLayout.map((pageNodes, index) => {
-        const totalContentWidth = pageNodes.reduce((acc, node) => acc + parseFloat(String(node.style?.width ?? '0')), 0) + (pageNodes.length > 1 ? GAP * (pageNodes.length - 1) : 0);
+        const totalContentWidth = pageNodes.reduce((acc, node) => acc + parseFloat(String(node.style?.width ?? '0')), 0) + (pageNodes.length > 1 ? GAP_PX * (pageNodes.length - 1) : 0);
         const maxContentHeight = Math.max(0, ...pageNodes.map(node => parseFloat(String(node.style?.height ?? '0'))));
 
         if (totalContentWidth === 0 || maxContentHeight === 0) {
-            return <div key={index} style={{ width: `${A4_LANDSCAPE_WIDTH_PX}px`, height: `${A4_LANDSCAPE_HEIGHT_PX}px`, backgroundColor: '#fff', pageBreakAfter: 'always' }} />;
+            return <div key={index} style={{ width: `${PRINTABLE_WIDTH_PX}px`, height: `${PRINTABLE_HEIGHT_PX}px`, pageBreakAfter: 'always' }} />;
         }
 
-        const printableWidth = A4_LANDSCAPE_WIDTH_PX - (PAGE_MARGIN_PX * 2);
-        const printableHeight = A4_LANDSCAPE_HEIGHT_PX - (PAGE_MARGIN_PX * 2);
-
-        const scaleX = totalContentWidth > printableWidth ? printableWidth / totalContentWidth : 1;
-        const scaleY = maxContentHeight > printableHeight ? printableHeight / maxContentHeight : 1;
+        // Scale the content to fit within the printable area.
+        const scaleX = totalContentWidth > PRINTABLE_WIDTH_PX ? PRINTABLE_WIDTH_PX / totalContentWidth : 1;
+        const scaleY = maxContentHeight > PRINTABLE_HEIGHT_PX ? PRINTABLE_HEIGHT_PX / maxContentHeight : 1;
         const scale = Math.min(scaleX, scaleY);
         
         const pageStyle: React.CSSProperties = {
-            width: `${A4_LANDSCAPE_WIDTH_PX}px`,
-            height: `${A4_LANDSCAPE_HEIGHT_PX}px`,
+            width: `${PRINTABLE_WIDTH_PX}px`,
+            height: `${PRINTABLE_HEIGHT_PX}px`,
             backgroundColor: '#ffffff',
             display: 'flex',
             justifyContent: 'center',
@@ -87,7 +92,8 @@ const PrintableDocument: FC<{
         };
 
         if (outputFormat === 'html') {
-            pageStyle.margin = '0 auto 20px auto';
+            // For HTML output, simulate the full page with margins
+            pageStyle.margin = `${MARGIN_PT * (4/3)}px auto`;
             pageStyle.boxShadow = '0 0 10px rgba(0,0,0,0.1)';
         }
 
@@ -98,7 +104,7 @@ const PrintableDocument: FC<{
                 height: maxContentHeight,
                 display: 'flex',
                 alignItems: 'center',
-                gap: `${GAP}px`,
+                gap: `${GAP_PX}px`,
                 transform: `scale(${scale})`,
                 transformOrigin: 'center center',
             }}>
@@ -122,6 +128,7 @@ const PrintableDocument: FC<{
                         elements: printElements,
                         isReadOnly: true,
                         onFocus: (targetId) => alert(t('pdf.linkAlert', { page: nodeToPageMap.get(targetId) || '?' })),
+                        printOptions: { fixedDiagramWidth: nodeWidth - 32 }, // p-4 = 1rem = 16px padding on each side
                     },
                     selected: false, type: 'viewNode', xPos: 0, yPos: 0, zIndex: 1, dragging: false, isConnectable: false,
                 };
@@ -144,6 +151,13 @@ const PrintableDocument: FC<{
   );
 };
 
+const findTopLeftNode = (nodeArray: Node<ViewNodeData>[]) => {
+    if (!nodeArray || nodeArray.length === 0) return null;
+    return [...nodeArray].sort((a, b) => {
+        if (a.position.y !== b.position.y) return a.position.y - b.position.y;
+        return a.position.x - b.position.x;
+    })[0];
+};
 
 const App: FC = () => {
   const { t, locale } = useTranslation();
@@ -208,6 +222,20 @@ const App: FC = () => {
         fitView({ nodes: [{ id }], duration: 800, padding: 0.1 });
     }, 0);
   }, [fitView, setNodes]);
+
+  // Effect for initial load focus
+  useEffect(() => {
+    const topLeftNode = findTopLeftNode(nodes);
+    if (topLeftNode) {
+        // Delay to allow React Flow's initial fitView to complete before we override it.
+        const timer = setTimeout(() => {
+            onFocus(topLeftNode.id);
+        }, 100); 
+        return () => clearTimeout(timer);
+    }
+    // We only want this to run once on mount. `onFocus` is memoized and stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleNodeDataChange = useCallback((nodeId: string, newData: Partial<ViewNodeData>) => {
     setNodes((nds) =>
@@ -332,23 +360,48 @@ const App: FC = () => {
     const root = ReactDOM.createRoot(container);
 
     try {
-      const imageUrls = nodes.flatMap(node =>
-        node.data.elements
-          .filter((el): el is ImageElement => el.type === 'image')
-          .map(el => el.src)
-      );
-      const preloadPromises = imageUrls.map(src =>
-        new Promise<void>((resolve, reject) => {
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          img.onload = () => resolve();
-          img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
-          img.src = src;
-        })
-      );
-      await Promise.all(preloadPromises);
+      // Create a map to store original src -> data URL
+      const imageDataUrlMap = new Map<string, string>();
 
-      const sortedNodes = [...nodes].sort((a, b) => {
+      // Collect all unique external image URLs
+      const imageUrls = [...new Set(nodes.flatMap(node =>
+        node.data.elements
+          .filter((el): el is ImageElement => el.type === 'image' && !el.src.startsWith('data:'))
+          .map(el => el.src)
+      ))];
+      
+      // Convert images to data URLs to bypass CORS issues in html2canvas
+      const conversionPromises = imageUrls.map(async (src) => {
+        try {
+          const response = await fetch(src);
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          const blob = await response.blob();
+          const reader = new FileReader();
+          const dataUrl = await new Promise<string>((resolve, reject) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          imageDataUrlMap.set(src, dataUrl);
+        } catch (error) {
+          console.error(`Failed to load and convert image to data URL: ${src}`, error);
+          imageDataUrlMap.set(src, 'CONVERSION_FAILED');
+        }
+      });
+
+      await Promise.all(conversionPromises);
+
+      const printableNodes = nodes.map(node => {
+          const newElements = node.data.elements.map(el => {
+              if (el.type === 'image' && imageDataUrlMap.has(el.src)) {
+                  return { ...el, src: imageDataUrlMap.get(el.src)! };
+              }
+              return el;
+          });
+          return { ...node, data: { ...node.data, elements: newElements } };
+      });
+
+      const sortedNodes = [...printableNodes].sort((a, b) => {
         if (a.position.y !== b.position.y) return a.position.y - b.position.y;
         return a.position.x - b.position.x;
       });
@@ -409,12 +462,12 @@ const App: FC = () => {
 
       if (format === 'pdf') {
         const opt = {
-          margin: 0,
+          margin: 36, // 0.5 inch margin in points
           filename: t('app.defaultPdfFilename'),
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true, letterRendering: true },
           jsPDF: { unit: 'pt', format: 'a4', orientation: 'landscape' },
-          pagebreak: { mode: ['css'] }
+          pagebreak: { mode: 'css' }
         };
         await html2pdf().from(fullHtmlSource).set(opt).save();
       } else { // html
@@ -462,7 +515,11 @@ const App: FC = () => {
                 // Deselect all nodes upon loading a new presentation
                 const nodesToLoad = presentation.nodes.map(n => ({...n, selected: false}));
                 setNodes(nodesToLoad);
-                setTimeout(() => fitView({ duration: 500 }), 100);
+                
+                const topLeftNode = findTopLeftNode(nodesToLoad);
+                if (topLeftNode) {
+                    onFocus(topLeftNode.id);
+                }
               } else {
                 alert(t('errors.invalidFileFormat'));
               }

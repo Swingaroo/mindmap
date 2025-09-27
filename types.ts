@@ -81,6 +81,9 @@ export interface ViewNodeData {
   onNodeDataChange?: (nodeId: string, newData: Partial<ViewNodeData>) => void;
   isHighlighterActive?: boolean;
   onHighlightElement?: (element: HTMLElement | SVGElement) => void;
+  printOptions?: {
+    fixedDiagramWidth?: number;
+  };
 }
 
 export interface Presentation {
