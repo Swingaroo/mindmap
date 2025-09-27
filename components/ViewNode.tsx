@@ -11,12 +11,12 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
 
   return (
     <div className={`
-      bg-white rounded-lg shadow-lg border-2 h-full w-full
-      ${selected ? 'border-indigo-600' : 'border-gray-300'} 
+      bg-white shadow-md border h-full w-full
+      ${selected ? 'border-blue-500' : 'border-gray-300'} 
       transition-colors duration-150 ease-in-out flex flex-col
     `}>
-      <div className="bg-gray-100 p-2 rounded-t-md border-b cursor-move">
-        <h3 className="text-center font-semibold text-gray-800 break-words">{title}</h3>
+      <div className="px-4 pt-3 pb-2 border-b border-gray-200 cursor-move">
+        <h3 className="font-semibold text-gray-800 break-words">{title}</h3>
       </div>
       
       <div className="p-4 space-y-2 flex-grow overflow-y-auto">
