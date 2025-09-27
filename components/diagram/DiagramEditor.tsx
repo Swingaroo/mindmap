@@ -332,21 +332,48 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                 onClick={(e) => { e.stopPropagation(); setSelectedElement({type: 'arrow', id: arrow.id}); }}
                 onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(arrow.id, 'arrow'); }}
               />
-              {!isEditing && (
-                <text
-                  x={midX}
-                  y={midY + 15}
-                  textAnchor="middle"
-                  fontSize="12"
-                  className="select-none fill-current cursor-pointer"
-                  onClick={(e) => { e.stopPropagation(); setSelectedElement({type: 'arrow', id: arrow.id}); }}
-                  onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(arrow.id, 'arrow'); }}
-                >
-                  {arrow.label.split('\n').map((line, i) => (
-                      <tspan x={midX} dy={i === 0 ? 0 : '1.2em'} key={i}>{line}</tspan>
-                  ))}
-                </text>
-              )}
+              {!isEditing && arrow.label && (() => {
+                  const lines = arrow.label.split('\n');
+                  const longestLine = lines.reduce((a, b) => (a.length > b.length ? a : b), '');
+                  const charWidth = 7.5; // Heuristic avg char width
+                  const lineHeight = 14.4; // 1.2em for 12px font
+                  const padding = 4;
+
+                  const boxWidth = longestLine.length * charWidth + padding * 2;
+                  const boxHeight = lines.length * lineHeight + padding * 2;
+                  const boxX = midX - boxWidth / 2;
+                  // Position box vertically; text 'y' is baseline of first line, so move up by font size
+                  const boxY = (midY + 15) - 12 - padding;
+
+                  return (
+                    <g
+                      className="cursor-pointer"
+                      onClick={(e) => { e.stopPropagation(); setSelectedElement({ type: 'arrow', id: arrow.id }); }}
+                      onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(arrow.id, 'arrow'); }}
+                    >
+                      <rect
+                        x={boxX}
+                        y={boxY}
+                        width={boxWidth}
+                        height={boxHeight}
+                        fill="white"
+                        fillOpacity="0.8"
+                        rx="3"
+                      />
+                      <text
+                        x={midX}
+                        y={midY + 15}
+                        textAnchor="middle"
+                        fontSize="12"
+                        className="select-none fill-current"
+                      >
+                        {lines.map((line, i) => (
+                          <tspan x={midX} dy={i === 0 ? 0 : '1.2em'} key={i}>{line}</tspan>
+                        ))}
+                      </text>
+                    </g>
+                  );
+              })()}
             </g>
           );
         })}
