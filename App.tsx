@@ -254,7 +254,7 @@ const App: FC = () => {
               snapToGrid={true}
               snapGrid={snapGrid}
             >
-              <Controls />
+              <Controls showInteractive={false} />
               {isMiniMapVisible && (
                 <MiniMap 
                   pannable 

@@ -217,10 +217,11 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
     >
       {!isReadOnly && (
         <div className="absolute top-0 left-0 right-0 z-10 p-2 bg-white/90 backdrop-blur-sm border-b rounded-t-md flex flex-wrap gap-2 items-center">
-            <Button onClick={() => addFigure(DiagramFigureType.Rectangle)} variant="outline" size="sm">Rect</Button>
+            <Button onClick={() => addFigure(DiagramFigureType.Actor)} variant="outline" size="sm">Actor</Button>            
             <Button onClick={() => addFigure(DiagramFigureType.Circle)} variant="outline" size="sm">Circle</Button>
+            <Button onClick={() => addFigure(DiagramFigureType.Rectangle)} variant="outline" size="sm">Rect</Button>
             <Button onClick={() => addFigure(DiagramFigureType.Cloud)} variant="outline" size="sm">Cloud</Button>
-            <Button onClick={() => addFigure(DiagramFigureType.Actor)} variant="outline" size="sm">Actor</Button>
+            
             <div className="w-px h-6 bg-gray-300 mx-1"></div>
             <Button onClick={() => setConnecting({ sourceId: selectedElement?.id! })} disabled={!selectedElement || selectedElement.type !== 'figure'} variant={connecting ? 'secondary' : 'outline'} size="sm">
                 {connecting ? 'Select Target' : 'Connect'}
