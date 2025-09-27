@@ -85,11 +85,11 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
                 return (
                     <div key={element.id} className="py-2">
                         <div className="relative">
-                            {!isReadOnly && (
+                            {!isReadOnly && !isEditingThisDiagram && (
                                 <div className="absolute top-2 right-2 z-10">
-                                    <Button onClick={() => handleToggleDiagramEdit(element.id)} variant={isEditingThisDiagram ? "secondary" : "outline"} size="sm">
-                                        {isEditingThisDiagram ? <CheckIcon className="w-4 h-4 mr-1" /> : <EditIcon className="w-4 h-4 mr-1" />}
-                                        {isEditingThisDiagram ? 'Done' : 'Edit'}
+                                    <Button onClick={() => handleToggleDiagramEdit(element.id)} variant="outline" size="sm">
+                                        <EditIcon className="w-4 h-4 mr-1" />
+                                        Edit
                                     </Button>
                                 </div>
                             )}
@@ -97,6 +97,7 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
                                 diagramState={element.diagramState}
                                 isReadOnly={isReadOnly || !isEditingThisDiagram}
                                 onChange={(newState) => handleDiagramChange(element.id, newState)}
+                                onDoneEditing={() => handleToggleDiagramEdit(element.id)}
                             />
                         </div>
                         {element.caption && (

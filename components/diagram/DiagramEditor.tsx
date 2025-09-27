@@ -1,4 +1,4 @@
-import React, { FC, useState, useRef, MouseEvent } from 'react';
+import React, { FC, useState, useRef, MouseEvent, SVGProps } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { DiagramState, DiagramFigure, DiagramArrow, DiagramFigureType } from '../../types';
 import { FigureComponents } from './figures';
@@ -8,6 +8,7 @@ interface DiagramEditorProps {
   diagramState: DiagramState;
   isReadOnly?: boolean;
   onChange: (newState: DiagramState) => void;
+  onDoneEditing?: () => void;
 }
 
 const figureRadii: Record<DiagramFigureType, number> = {
@@ -17,7 +18,7 @@ const figureRadii: Record<DiagramFigureType, number> = {
   [DiagramFigureType.Actor]: 41,
 };
 
-const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = false, onChange }) => {
+const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = false, onChange, onDoneEditing }) => {
   const [selectedElement, setSelectedElement] = useState<{ type: 'figure' | 'arrow'; id: string } | null>(null);
   const [connecting, setConnecting] = useState<{ sourceId: string } | null>(null);
   const [dragging, setDragging] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
@@ -207,6 +208,11 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                 {connecting ? 'Select Target' : 'Connect'}
             </Button>
             <Button onClick={deleteSelected} disabled={!selectedElement} variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-50">Delete</Button>
+            <div className="flex-grow" />
+            <Button onClick={onDoneEditing} variant="secondary" size="sm">
+                <CheckIcon className="w-4 h-4 mr-1" />
+                Done
+            </Button>
         </div>
       )}
       <svg
@@ -315,5 +321,11 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
     </div>
   );
 };
+
+const CheckIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+    </svg>
+);
 
 export default DiagramEditor;
