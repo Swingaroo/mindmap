@@ -51,13 +51,23 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
     }
   };
 
+  const handleHeaderDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onFocus && nodeId) {
+      onFocus(nodeId);
+    }
+  };
+
   return (
     <div className={`
       bg-white shadow-md border h-full w-full
       ${selected ? 'border-blue-500' : 'border-gray-300'} 
       transition-colors duration-150 ease-in-out flex flex-col
     `}>
-      <div className="px-4 pt-3 pb-2 border-b border-gray-200 cursor-move">
+      <div 
+        className={`px-4 pt-3 pb-2 border-b border-gray-200 ${isReadOnly ? 'cursor-pointer' : 'cursor-move'}`}
+        onDoubleClickCapture={handleHeaderDoubleClick}
+      >
         <h3 className="font-semibold text-gray-800 break-words">{title}</h3>
       </div>
       
