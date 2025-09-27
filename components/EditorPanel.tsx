@@ -8,11 +8,13 @@ import Button from './ui/Button';
 interface EditorPanelProps {
   node: Node<ViewNodeData>;
   onNodeDataChange: (nodeId: string, newData: Partial<ViewNodeData>) => void;
+  onNodeSizeChange: (nodeId: string, width: number, height: number) => void;
   onClose: () => void;
   allNodes: Node<ViewNodeData>[];
+  sizeOptions: { label: string; width: number; height: number }[];
 }
 
-const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onClose, allNodes }) => {
+const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeChange, onClose, allNodes, sizeOptions }) => {
   const [title, setTitle] = useState(node.data.title);
   const imageInputRef = useRef<HTMLInputElement>(null);
   
@@ -93,6 +95,27 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onClose, al
                     onBlur={handleTitleBlur}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />
+            </div>
+            
+            <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">View Size (4:3)</label>
+                <div className="flex items-center gap-2">
+                    {sizeOptions.map(option => (
+                        <Button
+                            key={option.label}
+                            onClick={() => onNodeSizeChange(node.id, option.width, option.height)}
+                            variant={
+                                node.style?.width === `${option.width}px` &&
+                                node.style?.height === `${option.height}px`
+                                ? 'primary'
+                                : 'outline'
+                            }
+                            className="flex-1"
+                        >
+                            {option.label}
+                        </Button>
+                    ))}
+                </div>
             </div>
 
             <div className="mb-4 border-t pt-4">

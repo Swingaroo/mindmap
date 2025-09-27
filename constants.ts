@@ -5,11 +5,17 @@ import { ViewNodeData, TextStyle } from './types';
 const node1Id = '1';
 const node2Id = '2';
 
+export const viewSizeOptions = [
+  { label: 'S', width: 512, height: 768 },
+  { label: 'M', width: 1024, height: 768 }
+];
+
 export const initialNodes: Node<ViewNodeData>[] = [
   {
     id: node1Id,
     type: 'viewNode',
     position: { x: 250, y: 5 },
+    style: { width: `${viewSizeOptions[1].width}px`, height: `${viewSizeOptions[1].height}px` },
     data: {
       title: 'Welcome to MindMap Presenter!',
       elements: [
@@ -24,6 +30,7 @@ export const initialNodes: Node<ViewNodeData>[] = [
     id: node2Id,
     type: 'viewNode',
     position: { x: 100, y: 400 },
+    style: { width: `${viewSizeOptions[1].width}px`, height: `${viewSizeOptions[1].height}px` },
     data: {
       title: 'How it Works',
       elements: [

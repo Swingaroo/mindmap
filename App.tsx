@@ -14,7 +14,7 @@ import ReactFlow, {
 } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 
-import { initialNodes } from './constants';
+import { initialNodes, viewSizeOptions } from './constants';
 import { Presentation, TextStyle, ViewNodeData } from './types';
 import ViewNode from './components/ViewNode';
 import Toolbar from './components/Toolbar';
@@ -75,6 +75,7 @@ const App: FC = () => {
       id: newNodeId,
       type: 'viewNode',
       position: { x: Math.round((Math.random() * 200 + 50) / 16) * 16, y: Math.round(Math.random() * 200 / 16) * 16 },
+      style: { width: `${viewSizeOptions[1].width}px`, height: `${viewSizeOptions[1].height}px` },
       data: {
         title: 'New View',
         elements: [
@@ -93,6 +94,16 @@ const App: FC = () => {
       )
     );
   }, [selectedNode]);
+
+  const handleNodeSizeChange = useCallback((nodeId: string, width: number, height: number) => {
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId
+          ? { ...node, style: { ...node.style, width: `${width}px`, height: `${height}px` } }
+          : node
+      )
+    );
+  }, []);
 
   const handleSave = useCallback(() => {
     const presentation: Presentation = { nodes };
@@ -188,8 +199,10 @@ const App: FC = () => {
               key={selectedNode.id}
               node={selectedNode} 
               onNodeDataChange={handleNodeDataChange}
+              onNodeSizeChange={handleNodeSizeChange}
               onClose={() => handlePaneClick()} // Re-use handlePaneClick to deselect
               allNodes={nodes}
+              sizeOptions={viewSizeOptions}
             />
           </div>
         )}

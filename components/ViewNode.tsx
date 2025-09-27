@@ -1,5 +1,5 @@
 import React, { FC, memo } from 'react';
-import { NodeProps, NodeResizer } from 'reactflow';
+import { NodeProps } from 'reactflow';
 import showdown from 'showdown';
 import { ViewNodeData, TextStyle } from '../types';
 
@@ -15,13 +15,6 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
       ${selected ? 'border-indigo-600' : 'border-gray-300'} 
       transition-colors duration-150 ease-in-out flex flex-col
     `}>
-      <NodeResizer 
-        minWidth={200}
-        minHeight={100}
-        isVisible={selected && !isReadOnly}
-        lineClassName="border-indigo-600"
-        handleClassName="h-4 w-4 rounded bg-white border-2 border-indigo-600 shadow-lg"
-      />
       <div className="bg-gray-100 p-2 rounded-t-md border-b cursor-move">
         <h3 className="text-center font-semibold text-gray-800 break-words">{title}</h3>
       </div>
