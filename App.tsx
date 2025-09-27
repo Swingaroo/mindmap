@@ -1,231 +1,209 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+
+import React, { FC, useCallback, useState } from 'react';
 import ReactFlow, {
-  ReactFlowProvider,
-  useNodesState,
-  useEdgesState,
-  addEdge,
-  useReactFlow,
-  Node,
-  Edge,
-  Connection,
-  Background,
   Controls,
-  MiniMap,
+  Background,
   applyNodeChanges,
   applyEdgeChanges,
+  addEdge,
+  Node,
+  Edge,
+  OnNodesChange,
+  OnEdgesChange,
+  OnConnect,
   NodeChange,
   EdgeChange,
+  Connection,
+  useReactFlow,
+  ReactFlowProvider,
 } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Presentation, ViewNodeData, TextElement, ImageElement, LinkElement } from './types';
+import { initialNodes, initialEdges } from './constants';
+import { ViewNodeData, Presentation, TextStyle, ViewElement } from './types';
 import ViewNode from './components/ViewNode';
 import Toolbar from './components/Toolbar';
 import EditorPanel from './components/EditorPanel';
-import { initialNodes, initialEdges } from './constants';
 
-const nodeTypes = {
-  viewNode: ViewNode,
-};
+const nodeTypes = { viewNode: ViewNode };
 
-function Flow() {
-  const [nodes, setNodes] = useState<Node<ViewNodeData>[]>(initialNodes);
+const App: FC = () => {
+  const { getNodes, fitView } = useReactFlow();
+  
+  const onFocus = useCallback((id: string) => {
+    const allNodes = getNodes();
+    const targetNode = allNodes.find((n): n is Node<ViewNodeData> => n.id === id);
+    if (targetNode) {
+      fitView({ nodes: [targetNode], duration: 800, padding: 0.2 });
+      // This will be handled by onNodeClick to open the editor
+    }
+  }, [getNodes, fitView]);
+
+  const addOnFocusToNode = useCallback((node: Node<ViewNodeData>): Node<ViewNodeData> => {
+    return { ...node, data: { ...node.data, onFocus } };
+  }, [onFocus]);
+  
+  const [nodes, setNodes] = useState<Node<ViewNodeData>[]>(() => initialNodes.map(addOnFocusToNode));
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedNode, setSelectedNode] = useState<Node<ViewNodeData> | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
-  const { setViewport } = useReactFlow();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    [setNodes]
+  const onNodesChange: OnNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      if (isReadOnly) return;
+      setNodes((nds) => applyNodeChanges(changes, nds));
+    },
+    [isReadOnly]
   );
-  const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    [setEdges]
+
+  const onEdgesChange: OnEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      if (isReadOnly) return;
+      setEdges((eds) => applyEdgeChanges(changes, eds));
+    },
+    [isReadOnly]
   );
-  const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: '#4f46e5' } }, eds)),
-    [setEdges]
+
+  const onConnect: OnConnect = useCallback(
+    (connection: Connection) => {
+      if (isReadOnly) return;
+      setEdges((eds) => addEdge({ ...connection, animated: true, style: { stroke: '#4f46e5' } }, eds));
+    },
+    [isReadOnly]
   );
+  
+  const handleNodeClick = useCallback((event: React.MouseEvent, node: Node<ViewNodeData>) => {
+    setSelectedNode(node);
+  }, []);
+
+  const handlePaneClick = useCallback(() => {
+    setSelectedNode(null);
+  }, []);
 
   const handleAddView = useCallback(() => {
     const newNodeId = uuidv4();
     const newNode: Node<ViewNodeData> = {
       id: newNodeId,
       type: 'viewNode',
-      position: { x: Math.random() * 400, y: Math.random() * 400 },
+      position: { x: Math.random() * 200 + 50, y: Math.random() * 200 },
       data: {
         title: 'New View',
-        elements: [],
-        onFocus: (id) => focusOnNode(id)
+        elements: [
+          { id: uuidv4(), type: 'text', content: 'Start adding content', style: TextStyle.Body }
+        ],
+        onFocus: onFocus,
       },
     };
     setNodes((nds) => nds.concat(newNode));
-  }, [setNodes]);
+  }, [onFocus]);
 
-  const handleNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
-    if (!isReadOnly) {
-        setSelectedNodeId(node.id);
-    }
-  }, [isReadOnly]);
-
-  const clearSelection = useCallback(() => {
-    setSelectedNodeId(null);
-  }, []);
-  
-  const selectedNode = useMemo(
-    () => nodes.find((node) => node.id === selectedNodeId),
-    [nodes, selectedNodeId]
-  );
-
-  const updateNodeData = useCallback((nodeId: string, newData: Partial<ViewNodeData>) => {
+  const handleNodeDataChange = useCallback((nodeId: string, newData: Partial<ViewNodeData>) => {
+    const updatedNode = { ...selectedNode!.data, ...newData };
     setNodes((nds) =>
-      nds.map((node) => {
-        if (node.id === nodeId) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              ...newData,
-            },
-          };
-        }
-        return node;
-      })
+      nds.map((node) => 
+        node.id === nodeId ? { ...node, data: updatedNode } : node
+      )
     );
-  }, [setNodes]);
-  
+    setSelectedNode(prev => (prev && prev.id === nodeId ? { ...prev, data: updatedNode } : prev));
+  }, [selectedNode]);
+
   const handleSave = useCallback(() => {
     const presentation: Presentation = { nodes, edges };
     const dataStr = JSON.stringify(presentation, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'presentation.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    const exportFileDefaultName = 'presentation.json';
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
   }, [nodes, edges]);
 
-  const handleLoad = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
-
-  const onFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const content = e.target?.result as string;
-          const presentation: Presentation = JSON.parse(content);
-          if (presentation.nodes && presentation.edges) {
-            // Re-assign onFocus function
-            const nodesWithFocus = presentation.nodes.map(node => ({
-              ...node,
-              data: {
-                ...node.data,
-                onFocus: (id: string) => focusOnNode(id)
+  const handleLoad = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    input.onchange = (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const result = e.target?.result;
+            if (typeof result === 'string') {
+              const presentation: Presentation = JSON.parse(result);
+              if (presentation.nodes && presentation.edges) {
+                const nodesWithFocus = presentation.nodes.map(addOnFocusToNode);
+                setNodes(nodesWithFocus);
+                setEdges(presentation.edges);
+                setSelectedNode(null);
+                setTimeout(() => fitView({ duration: 500 }), 100);
+              } else {
+                alert('Invalid file format.');
               }
-            }));
-            setNodes(nodesWithFocus);
-            setEdges(presentation.edges);
-            setSelectedNodeId(null);
-          } else {
-            alert('Invalid presentation file format.');
-          }
-        } catch (error) {
-          console.error('Failed to load presentation:', error);
-          alert('Failed to read or parse the presentation file.');
-        }
-      };
-      reader.readAsText(file);
-    }
-     // Reset file input value to allow loading the same file again
-     if(event.target) event.target.value = '';
-  }, [setNodes, setEdges]);
-  
-  const focusOnNode = useCallback((nodeId: string) => {
-        const node = nodes.find(n => n.id === nodeId);
-        if(node && node.position) {
-            const x = node.position.x + (node.width ? node.width / 2 : 150);
-            const y = node.position.y + (node.height ? node.height / 2 : 75);
-            setViewport({ x, y, zoom: 1.5 }, { duration: 800 });
-            if (!isReadOnly) {
-                setSelectedNodeId(nodeId);
             }
-        }
-  }, [nodes, setViewport, isReadOnly]);
-
-  const toggleReadOnlyMode = useCallback(() => {
-    setIsReadOnly(prev => !prev);
-    setSelectedNodeId(null);
-  }, []);
+          } catch (error) {
+            alert('Error loading file.');
+            console.error(error);
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+    input.click();
+  };
 
   return (
-    <div className="w-screen h-screen flex flex-col font-sans bg-gray-50">
-      <Toolbar 
-        onAddView={handleAddView} 
-        onSave={handleSave} 
-        onLoad={handleLoad} 
+    <div className="w-screen h-screen flex flex-col font-sans">
+      <Toolbar
+        onAddView={handleAddView}
+        onSave={handleSave}
+        onLoad={handleLoad}
         isReadOnly={isReadOnly}
-        onToggleReadOnly={toggleReadOnlyMode}
+        onToggleReadOnly={() => {
+            setIsReadOnly(prev => !prev);
+            setSelectedNode(null);
+        }}
       />
       <div className="flex-grow flex relative">
-        <div className="flex-grow h-full">
-           {isReadOnly && (
-            <div className="absolute top-4 right-4 bg-yellow-200 text-yellow-800 text-xs font-bold px-3 py-1 rounded-full z-20 shadow">
-                READ-ONLY MODE
-            </div>
-           )}
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            nodeTypes={nodeTypes}
-            onNodeClick={handleNodeClick}
-            onPaneClick={clearSelection}
-            fitView
-            className="bg-gray-100"
-            nodesDraggable={!isReadOnly}
-            nodesConnectable={!isReadOnly}
-            elementsSelectable={!isReadOnly}
-          >
-            <Background color="#aaa" gap={16} />
-            <Controls />
-            <MiniMap />
-          </ReactFlow>
-        </div>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onNodeClick={handleNodeClick}
+          onPaneClick={handlePaneClick}
+          nodeTypes={nodeTypes}
+          fitView
+          className="bg-gray-50"
+          proOptions={{ hideAttribution: true }}
+          nodesDraggable={!isReadOnly}
+          nodesConnectable={!isReadOnly}
+          elementsSelectable={!isReadOnly}
+        >
+          <Controls />
+          <Background />
+        </ReactFlow>
         {selectedNode && !isReadOnly && (
-          <EditorPanel
-            key={selectedNode.id}
-            node={selectedNode}
-            onNodeDataChange={updateNodeData}
-            onClose={clearSelection}
-            allNodes={nodes}
-          />
+          <div className="absolute right-0 top-0 h-full">
+            <EditorPanel 
+              key={selectedNode.id}
+              node={selectedNode} 
+              onNodeDataChange={handleNodeDataChange}
+              onClose={() => setSelectedNode(null)}
+              allNodes={nodes}
+            />
+          </div>
         )}
       </div>
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={onFileChange}
-        accept="application/json"
-        className="hidden"
-      />
     </div>
   );
-}
+};
 
-export default function App() {
-  return (
-    <ReactFlowProvider>
-      <Flow />
-    </ReactFlowProvider>
-  );
-}
+const AppWrapper: FC = () => (
+  <ReactFlowProvider>
+    <App />
+  </ReactFlowProvider>
+);
+
+export default AppWrapper;

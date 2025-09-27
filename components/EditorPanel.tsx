@@ -1,8 +1,8 @@
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { FC, useState, useRef, useCallback } from 'react';
 import { Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
-import { ViewNodeData, ViewElement, TextStyle } from '../types';
+import { ViewNodeData, ViewElement, TextStyle, ImageElement, LinkElement, TextElement } from '../types';
 import Button from './ui/Button';
 
 interface EditorPanelProps {
@@ -12,7 +12,7 @@ interface EditorPanelProps {
   allNodes: Node<ViewNodeData>[];
 }
 
-const EditorPanel: React.FC<EditorPanelProps> = ({ node, onNodeDataChange, onClose, allNodes }) => {
+const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onClose, allNodes }) => {
   const [title, setTitle] = useState(node.data.title);
   const imageInputRef = useRef<HTMLInputElement>(null);
   
@@ -28,17 +28,16 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ node, onNodeDataChange, onClo
     onNodeDataChange(node.id, { elements: newElements });
   }, [node.id, onNodeDataChange]);
 
-  // FIX: Refactored addElement to be more type-safe and distinguish between Title and Body text.
   const addElement = (type: 'text' | 'image' | 'link', style: TextStyle = TextStyle.Body) => {
     if (type === 'text') {
-      const newElement: ViewElement = { id: uuidv4(), type: 'text', content: 'New Text', style };
+      const newElement: TextElement = { id: uuidv4(), type: 'text', content: 'New Text', style };
       updateElements([...node.data.elements, newElement]);
     } else if (type === 'image') {
       imageInputRef.current?.click();
     } else if (type === 'link') {
         const otherNodes = allNodes.filter(n => n.id !== node.id);
         if (otherNodes.length > 0) {
-            const newElement: ViewElement = { id: uuidv4(), type: 'link', content: 'Link to another view', targetViewId: otherNodes[0].id };
+            const newElement: LinkElement = { id: uuidv4(), type: 'link', content: 'Link to another view', targetViewId: otherNodes[0].id };
             updateElements([...node.data.elements, newElement]);
         } else {
             alert("No other views to link to. Please create another view first.");
@@ -51,7 +50,7 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ node, onNodeDataChange, onClo
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        const newElement: ViewElement = { id: uuidv4(), type: 'image', src: reader.result as string };
+        const newElement: ImageElement = { id: uuidv4(), type: 'image', src: reader.result as string };
         updateElements([...node.data.elements, newElement]);
       };
       reader.readAsDataURL(file);
@@ -59,10 +58,14 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ node, onNodeDataChange, onClo
   };
   
   const handleElementChange = (id: string, newContent: Partial<ViewElement>) => {
-    const newElements = node.data.elements.map((el) => 
+    const newElements = node.data.elements.map((el) =>
       el.id === id ? { ...el, ...newContent } : el
     );
-    updateElements(newElements);
+    // FIX: Add type assertion. The spread operator with a partial of a union type (`Partial<ViewElement>`)
+    // causes TypeScript to infer a wider, incorrect type for the new array (`newElements`).
+    // The application logic in ElementEditor ensures that only valid properties are passed for each element type,
+    // so this assertion is safe.
+    updateElements(newElements as ViewElement[]);
   };
   
   const deleteElement = (id: string) => {
@@ -127,7 +130,6 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ node, onNodeDataChange, onClo
   );
 };
 
-// FIX: Explicitly type ElementEditor props to resolve component type inference issue.
 interface ElementEditorProps {
     element: ViewElement;
     onChange: (id: string, content: Partial<ViewElement>) => void;
@@ -136,7 +138,7 @@ interface ElementEditorProps {
     currentNodeId: string;
 }
 
-const ElementEditor: React.FC<ElementEditorProps> = ({ element, onChange, onDelete, allNodes, currentNodeId }) => {
+const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, allNodes, currentNodeId }) => {
     return (
         <div className="p-3 bg-gray-50 rounded-md border border-gray-200 relative group">
             <button onClick={() => onDelete(element.id)} className="absolute top-1 right-1 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -188,13 +190,13 @@ const ElementEditor: React.FC<ElementEditorProps> = ({ element, onChange, onDele
 };
 
 
-const CloseIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+const CloseIcon: FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
     </svg>
 );
 
-const TrashIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+const TrashIcon: FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.124-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.077-2.09.921-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
     </svg>

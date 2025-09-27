@@ -1,9 +1,9 @@
 
-import React, { memo } from 'react';
+import React, { FC, memo } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
 import { ViewNodeData, TextStyle } from '../types';
 
-const ViewNode: React.FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
+const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
   const { title, elements, onFocus } = data;
 
   return (
