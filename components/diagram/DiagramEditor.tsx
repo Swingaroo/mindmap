@@ -265,6 +265,9 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
           const isSelected = selectedElement?.type === 'arrow' && selectedElement.id === arrow.id;
           const isEditing = editingLabel?.type === 'arrow' && editingLabel.id === arrow.id;
           const strokeClass = isSelected ? 'stroke-indigo-600' : 'stroke-gray-600';
+          
+          const midX = (startX + endX) / 2;
+          const midY = (startY + endY) / 2;
 
           return (
             <g key={arrow.id}>
@@ -279,15 +282,17 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
               />
               {!isEditing && (
                 <text
-                  x={(source.position.x + target.position.x) / 2}
-                  y={(source.position.y + target.position.y) / 2 + 15}
+                  x={midX}
+                  y={midY + 15}
                   textAnchor="middle"
                   fontSize="12"
                   className="select-none fill-current cursor-pointer"
                   onClick={(e) => { e.stopPropagation(); setSelectedElement({type: 'arrow', id: arrow.id}); }}
                   onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(arrow.id, 'arrow'); }}
                 >
-                  {arrow.label}
+                  {arrow.label.split('\n').map((line, i) => (
+                      <tspan x={midX} dy={i === 0 ? 0 : '1.2em'} key={i}>{line}</tspan>
+                  ))}
                 </text>
               )}
             </g>

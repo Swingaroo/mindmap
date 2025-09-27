@@ -18,7 +18,13 @@ const Rectangle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, ...pro
       className={`fill-white ${isSelected ? selectedStroke : commonStroke}`}
       strokeWidth="2"
     />
-    {!isEditing && <text y="40" textAnchor="middle" fontSize="12" className="select-none fill-current">{label}</text>}
+    {!isEditing && (
+      <text y="40" textAnchor="middle" fontSize="12" className="select-none fill-current">
+        {label.split('\n').map((line, i) => (
+            <tspan x="0" dy={i === 0 ? 0 : '1.2em'} key={i}>{line}</tspan>
+        ))}
+      </text>
+    )}
   </g>
 );
 
@@ -29,7 +35,13 @@ const Circle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, ...props 
       className={`fill-white ${isSelected ? selectedStroke : commonStroke}`}
       strokeWidth="2"
     />
-    {!isEditing && <text y="50" textAnchor="middle" fontSize="12" className="select-none fill-current">{label}</text>}
+    {!isEditing && (
+        <text y="50" textAnchor="middle" fontSize="12" className="select-none fill-current">
+            {label.split('\n').map((line, i) => (
+                <tspan x="0" dy={i === 0 ? 0 : '1.2em'} key={i}>{line}</tspan>
+            ))}
+        </text>
+    )}
   </g>
 );
 
@@ -40,7 +52,13 @@ const Cloud: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, ...props }
       className={`fill-white ${isSelected ? selectedStroke : commonStroke}`}
       strokeWidth="2"
     />
-    {!isEditing && <text y="50" textAnchor="middle" fontSize="12" className="select-none fill-current">{label}</text>}
+    {!isEditing && (
+        <text y="50" textAnchor="middle" fontSize="12" className="select-none fill-current">
+            {label.split('\n').map((line, i) => (
+                <tspan x="0" dy={i === 0 ? 0 : '1.2em'} key={i}>{line}</tspan>
+            ))}
+        </text>
+    )}
   </g>
 );
 
@@ -53,7 +71,13 @@ const Actor: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, ...props }
       <line x1="0" y1="10" x2="-15" y2="25" />
       <line x1="0" y1="10" x2="15" y2="25" />
     </g>
-    {!isEditing && <text y="40" textAnchor="middle" fontSize="12" className="select-none fill-current">{label}</text>}
+    {!isEditing && (
+        <text y="40" textAnchor="middle" fontSize="12" className="select-none fill-current">
+            {label.split('\n').map((line, i) => (
+                <tspan x="0" dy={i === 0 ? 0 : '1.2em'} key={i}>{line}</tspan>
+            ))}
+        </text>
+    )}
   </g>
 );
 
