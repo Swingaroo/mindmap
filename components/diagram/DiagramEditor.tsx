@@ -215,7 +215,6 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
   return (
     <div 
         className={`relative border border-gray-200 rounded-md ${!isReadOnly ? 'nodrag' : ''}`}
-        style={{ height: `${height || 400}px` }}
     >
       {!isReadOnly && (
         <div className="absolute top-0 left-0 right-0 z-10 p-2 bg-white/90 backdrop-blur-sm border-b rounded-t-md flex flex-wrap gap-2 items-center">
@@ -263,7 +262,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
       <svg
         ref={svgRef}
         width="100%"
-        height="100%"
+        height={height || 400}
         viewBox={viewBox ? viewBox.join(' ') : '0 0 800 400'}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}

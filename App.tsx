@@ -31,26 +31,18 @@ declare const html2pdf: any;
 const PrintableDocument: FC<{
   pageLayout: Node<ViewNodeData>[][],
   onRendered: () => void,
-}> = ({ pageLayout, onRendered }) => {
-  const { t } = useTranslation();
+  outputFormat: 'pdf' | 'html',
+  t: TFunction,
+}> = ({ pageLayout, onRendered, outputFormat, t }) => {
 
   useEffect(() => {
-    // With images preloaded, we only need a very short delay to ensure the DOM is painted.
+    // Increased delay to ensure all content, especially images and SVGs, are painted.
     const timer = setTimeout(() => {
         onRendered();
-    }, 100);
+    }, 250);
     return () => clearTimeout(timer);
   }, [onRendered]);
 
-  const A4_LANDSCAPE_WIDTH_PX = 1122;
-  const A4_LANDSCAPE_HEIGHT_PX = 794;
-  const PADDING = 40;
-  const GAP = 20;
-
-  const printableWidth = A4_LANDSCAPE_WIDTH_PX - PADDING * 2;
-  const printableHeight = A4_LANDSCAPE_HEIGHT_PX - PADDING * 2;
-
-  // Re-create the node map logic here as it's self-contained for printing
   const nodeToPageMap = useMemo(() => {
       const map = new Map<string, number>();
       pageLayout.forEach((pageNodes, index) => {
@@ -58,61 +50,62 @@ const PrintableDocument: FC<{
       });
       return map;
   }, [pageLayout]);
+  
+  const A4_LANDSCAPE_WIDTH_PX = 1122;
+  const A4_LANDSCAPE_HEIGHT_PX = 794;
+  const PAGE_MARGIN_PX = 40;
+  const GAP = 20;
 
   return (
-    <div>
+    // Add base font-family to help html2pdf render text correctly if Tailwind fails to load in its context
+    <div style={outputFormat === 'html' ? { backgroundColor: '#e5e7eb' } : {}}>
       {pageLayout.map((pageNodes, index) => {
-        // FIX: Cast node.style.width to string before parseFloat to handle `string | number` type.
         const totalContentWidth = pageNodes.reduce((acc, node) => acc + parseFloat(String(node.style?.width ?? '0')), 0) + (pageNodes.length > 1 ? GAP * (pageNodes.length - 1) : 0);
-        // FIX: Cast node.style.height to string before parseFloat to handle `string | number` type.
         const maxContentHeight = Math.max(0, ...pageNodes.map(node => parseFloat(String(node.style?.height ?? '0'))));
-        
+
         if (totalContentWidth === 0 || maxContentHeight === 0) {
-            return (
-                 <div key={index} style={{
-                    width: `${A4_LANDSCAPE_WIDTH_PX}px`,
-                    height: `${A4_LANDSCAPE_HEIGHT_PX}px`,
-                    backgroundColor: '#ffffff',
-                    pageBreakAfter: index < pageLayout.length - 1 ? 'always' : 'auto',
-                }}></div>
-            );
+            return <div key={index} style={{ width: `${A4_LANDSCAPE_WIDTH_PX}px`, height: `${A4_LANDSCAPE_HEIGHT_PX}px`, backgroundColor: '#fff', pageBreakAfter: 'always' }} />;
         }
+
+        const printableWidth = A4_LANDSCAPE_WIDTH_PX - (PAGE_MARGIN_PX * 2);
+        const printableHeight = A4_LANDSCAPE_HEIGHT_PX - (PAGE_MARGIN_PX * 2);
 
         const scaleX = totalContentWidth > printableWidth ? printableWidth / totalContentWidth : 1;
         const scaleY = maxContentHeight > printableHeight ? printableHeight / maxContentHeight : 1;
         const scale = Math.min(scaleX, scaleY);
-
-        const containerWidth = totalContentWidth * scale;
-        const containerHeight = maxContentHeight * scale;
-
-        return (
-          <div key={index} style={{
+        
+        const pageStyle: React.CSSProperties = {
             width: `${A4_LANDSCAPE_WIDTH_PX}px`,
             height: `${A4_LANDSCAPE_HEIGHT_PX}px`,
+            backgroundColor: '#ffffff',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            padding: `${PADDING}px`,
+            overflow: 'hidden',
             boxSizing: 'border-box',
-            backgroundColor: '#ffffff',
-            pageBreakAfter: index < pageLayout.length - 1 ? 'always' : 'auto',
-          }}>
+            pageBreakAfter: 'always',
+        };
+
+        if (outputFormat === 'html') {
+            pageStyle.margin = '0 auto 20px auto';
+            pageStyle.boxShadow = '0 0 10px rgba(0,0,0,0.1)';
+        }
+
+        return (
+          <div key={index} style={pageStyle}>
             <div style={{
+                width: totalContentWidth,
+                height: maxContentHeight,
                 display: 'flex',
-                gap: `${GAP * scale}px`,
-                width: `${containerWidth}px`,
-                height: `${containerHeight}px`,
                 alignItems: 'center',
+                gap: `${GAP}px`,
+                transform: `scale(${scale})`,
+                transformOrigin: 'center center',
             }}>
               {pageNodes.map(node => {
-                // FIX: Cast node.style.width to string before parseFloat to handle `string | number` type.
                 const nodeWidth = parseFloat(String(node.style?.width ?? '0'));
-                // FIX: Cast node.style.height to string before parseFloat to handle `string | number` type.
                 const nodeHeight = parseFloat(String(node.style?.height ?? '0'));
                 
-                const scaledNodeWidth = nodeWidth * scale;
-                const scaledNodeHeight = nodeHeight * scale;
-
                 const printElements = node.data.elements.map(el => {
                     if (el.type === 'link') {
                         const pageNum = nodeToPageMap.get(el.targetViewId);
@@ -130,19 +123,14 @@ const PrintableDocument: FC<{
                         isReadOnly: true,
                         onFocus: (targetId) => alert(t('pdf.linkAlert', { page: nodeToPageMap.get(targetId) || '?' })),
                     },
-                    selected: false,
-                    type: 'viewNode',
-                    xPos: 0,
-                    yPos: 0,
-                    zIndex: 1,
-                    dragging: false,
-                    isConnectable: false,
+                    selected: false, type: 'viewNode', xPos: 0, yPos: 0, zIndex: 1, dragging: false, isConnectable: false,
                 };
 
                 return (
                     <div key={node.id} style={{
-                        width: `${scaledNodeWidth}px`,
-                        height: `${scaledNodeHeight}px`,
+                        width: `${nodeWidth}px`,
+                        height: `${nodeHeight}px`,
+                        flexShrink: 0,
                     }}>
                         <ViewNode {...viewNodeProps} />
                     </div>
@@ -155,6 +143,7 @@ const PrintableDocument: FC<{
     </div>
   );
 };
+
 
 const App: FC = () => {
   const { t, locale } = useTranslation();
@@ -388,39 +377,48 @@ const App: FC = () => {
             <PrintableDocument
               pageLayout={pageLayout}
               onRendered={resolve}
+              outputFormat={format}
+              t={t}
             />
           </I18nProvider>
         );
       });
       
+      const printableHtml = container.innerHTML;
+
+      const fullHtmlSource = `
+        <!DOCTYPE html>
+        <html lang="${locale}">
+        <head>
+            <meta charset="UTF-8">
+            <title>${t(`app.default${format === 'pdf' ? 'Pdf' : 'Html'}Filename`).replace(`.${format}`, '')}</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <link href="https://cdn.jsdelivr.net/npm/reactflow@11.11.4/dist/style.css" rel="stylesheet">
+            <style>
+                body {
+                    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+                }
+                ${format === 'html' ? 'body { background-color: #e5e7eb; }' : ''}
+            </style>
+        </head>
+        <body>
+          ${printableHtml}
+        </body>
+        </html>
+      `;
+
       if (format === 'pdf') {
         const opt = {
           margin: 0,
           filename: t('app.defaultPdfFilename'),
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-          jsPDF: { unit: 'px', format: 'a4', orientation: 'landscape' },
+          jsPDF: { unit: 'pt', format: 'a4', orientation: 'landscape' },
           pagebreak: { mode: ['css'] }
         };
-        await html2pdf().from(container).set(opt).save();
+        await html2pdf().from(fullHtmlSource).set(opt).save();
       } else { // html
-        const htmlContent = container.innerHTML;
-        const fullHtml = `
-          <!DOCTYPE html>
-          <html lang="${locale}">
-          <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>${t('app.defaultPdfFilename').replace('.pdf', '')}</title>
-              <script src="https://cdn.tailwindcss.com"></script>
-              <link href="https://cdn.jsdelivr.net/npm/reactflow@11.11.4/dist/style.css" rel="stylesheet">
-          </head>
-          <body class="bg-gray-200 p-8 font-sans">
-              ${htmlContent}
-          </body>
-          </html>
-        `;
-        const blob = new Blob([fullHtml], { type: 'text/html' });
+        const blob = new Blob([fullHtmlSource], { type: 'text/html' });
         const dataUri = URL.createObjectURL(blob);
         const linkElement = document.createElement('a');
         linkElement.setAttribute('href', dataUri);
