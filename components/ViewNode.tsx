@@ -1,5 +1,5 @@
 import React, { FC, memo } from 'react';
-import { NodeProps } from 'reactflow';
+import { NodeProps, NodeResizer } from 'reactflow';
 import showdown from 'showdown';
 import { ViewNodeData, TextStyle } from '../types';
 
@@ -11,15 +11,22 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
 
   return (
     <div className={`
-      bg-white rounded-lg shadow-lg border-2 
+      bg-white rounded-lg shadow-lg border-2 h-full w-full
       ${selected ? 'border-indigo-600' : 'border-gray-300'} 
-      w-80 transition-all duration-150 ease-in-out
+      transition-colors duration-150 ease-in-out flex flex-col
     `}>
-      <div className="bg-gray-100 p-2 rounded-t-md border-b">
+      <NodeResizer 
+        minWidth={200}
+        minHeight={100}
+        isVisible={selected}
+        lineClassName="border-indigo-600"
+        handleClassName="bg-indigo-600 h-3 w-3 rounded-full border-2 border-white"
+      />
+      <div className="bg-gray-100 p-2 rounded-t-md border-b cursor-move">
         <h3 className="text-center font-semibold text-gray-800 break-words">{title}</h3>
       </div>
       
-      <div className="p-4 space-y-2 min-h-[50px]">
+      <div className="p-4 space-y-2 flex-grow overflow-y-auto">
         {elements.map(element => {
           switch (element.type) {
             case 'text':
