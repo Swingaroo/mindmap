@@ -1,5 +1,4 @@
-
-import { Node, Edge } from 'reactflow';
+import { Node } from 'reactflow';
 
 export enum TextStyle {
   Title = 'title',
@@ -37,5 +36,4 @@ export interface ViewNodeData {
 
 export interface Presentation {
   nodes: Node<ViewNodeData>[];
-  edges: Edge[];
 }

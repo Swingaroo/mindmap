@@ -30,13 +30,11 @@ export const initialNodes: Node<ViewNodeData>[] = [
     data: {
       title: 'How it Works',
       elements: [
-        { id: uuidv4(), type: 'text', content: '* Add views with the button in the toolbar.\n* Click on a view to select and edit it.\n* Drag from the handles to connect views.\n* Save and load your work.', style: TextStyle.Body },
+        { id: uuidv4(), type: 'text', content: '* Add views with the button in the toolbar.\n* Click on a view to select and edit it.\n* Use links to navigate between views.\n* Save and load your work.', style: TextStyle.Body },
       ],
       onFocus: focusFunc,
     },
   },
 ];
 
-export const initialEdges: Edge[] = [
-    { id: 'e1-2', source: '1', target: '2', animated: true, style: { stroke: '#4f46e5' } }
-];
+export const initialEdges: Edge[] = [];

@@ -1,6 +1,5 @@
-
 import React, { FC, memo } from 'react';
-import { Handle, Position, NodeProps } from 'reactflow';
+import { NodeProps } from 'reactflow';
 import showdown from 'showdown';
 import { ViewNodeData, TextStyle } from '../types';
 
@@ -16,9 +15,6 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
       ${selected ? 'border-indigo-600' : 'border-gray-300'} 
       w-80 transition-all duration-150 ease-in-out
     `}>
-      <Handle type="target" position={Position.Top} className="!bg-indigo-500" />
-      <Handle type="target" position={Position.Left} className="!bg-indigo-500" />
-      
       <div className="bg-gray-100 p-2 rounded-t-md border-b">
         <h3 className="text-center font-semibold text-gray-800 break-words">{title}</h3>
       </div>
@@ -74,9 +70,6 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
           }
         })}
       </div>
-      
-      <Handle type="source" position={Position.Bottom} className="!bg-indigo-500" />
-      <Handle type="source" position={Position.Right} className="!bg-indigo-500" />
     </div>
   );
 };

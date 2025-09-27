@@ -1,27 +1,19 @@
-
-
 import React, { FC, useCallback, useState } from 'react';
 import ReactFlow, {
   Controls,
   Background,
   applyNodeChanges,
-  applyEdgeChanges,
-  addEdge,
   Node,
   Edge,
   OnNodesChange,
-  OnEdgesChange,
-  OnConnect,
   NodeChange,
-  EdgeChange,
-  Connection,
   useReactFlow,
   ReactFlowProvider,
   MiniMap,
 } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 
-import { initialNodes, initialEdges } from './constants';
+import { initialNodes } from './constants';
 import { ViewNodeData, Presentation, TextStyle, ViewElement } from './types';
 import ViewNode from './components/ViewNode';
 import Toolbar from './components/Toolbar';
@@ -46,7 +38,6 @@ const App: FC = () => {
   }, [onFocus]);
   
   const [nodes, setNodes] = useState<Node<ViewNodeData>[]>(() => initialNodes.map(addOnFocusToNode));
-  const [edges, setEdges] = useState<Edge[]>(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node<ViewNodeData> | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
 
@@ -54,22 +45,6 @@ const App: FC = () => {
     (changes: NodeChange[]) => {
       if (isReadOnly) return;
       setNodes((nds) => applyNodeChanges(changes, nds));
-    },
-    [isReadOnly]
-  );
-
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes: EdgeChange[]) => {
-      if (isReadOnly) return;
-      setEdges((eds) => applyEdgeChanges(changes, eds));
-    },
-    [isReadOnly]
-  );
-
-  const onConnect: OnConnect = useCallback(
-    (connection: Connection) => {
-      if (isReadOnly) return;
-      setEdges((eds) => addEdge({ ...connection, animated: true, style: { stroke: '#4f46e5' } }, eds));
     },
     [isReadOnly]
   );
@@ -110,7 +85,7 @@ const App: FC = () => {
   }, [selectedNode]);
 
   const handleSave = useCallback(() => {
-    const presentation: Presentation = { nodes, edges };
+    const presentation: Presentation = { nodes };
     const dataStr = JSON.stringify(presentation, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     const exportFileDefaultName = 'presentation.json';
@@ -118,7 +93,7 @@ const App: FC = () => {
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
-  }, [nodes, edges]);
+  }, [nodes]);
 
   const handleLoad = () => {
     const input = document.createElement('input');
@@ -133,10 +108,9 @@ const App: FC = () => {
             const result = e.target?.result;
             if (typeof result === 'string') {
               const presentation: Presentation = JSON.parse(result);
-              if (presentation.nodes && presentation.edges) {
+              if (presentation.nodes) {
                 const nodesWithFocus = presentation.nodes.map(addOnFocusToNode);
                 setNodes(nodesWithFocus);
-                setEdges(presentation.edges);
                 setSelectedNode(null);
                 setTimeout(() => fitView({ duration: 500 }), 100);
               } else {
@@ -169,10 +143,7 @@ const App: FC = () => {
       <div className="flex-grow flex relative">
         <ReactFlow
           nodes={nodes}
-          edges={edges}
           onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
           onNodeClick={handleNodeClick}
           onPaneClick={handlePaneClick}
           nodeTypes={nodeTypes}
@@ -180,7 +151,7 @@ const App: FC = () => {
           className="bg-gray-50"
           proOptions={{ hideAttribution: true }}
           nodesDraggable={!isReadOnly}
-          nodesConnectable={!isReadOnly}
+          nodesConnectable={false}
           elementsSelectable={!isReadOnly}
         >
           <Controls />
