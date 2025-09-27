@@ -10,6 +10,13 @@ interface DiagramEditorProps {
   onChange: (newState: DiagramState) => void;
 }
 
+const figureRadii: Record<DiagramFigureType, number> = {
+  [DiagramFigureType.Rectangle]: 56,
+  [DiagramFigureType.Circle]: 35,
+  [DiagramFigureType.Cloud]: 75,
+  [DiagramFigureType.Actor]: 41,
+};
+
 const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = false, onChange }) => {
   const [selectedElement, setSelectedElement] = useState<{ type: 'figure' | 'arrow'; id: string } | null>(null);
   const [connecting, setConnecting] = useState<{ sourceId: string } | null>(null);
@@ -225,6 +232,30 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
           const target = figureMap.get(arrow.targetId);
           if (!source || !target) return null;
           
+          const sx = source.position.x;
+          const sy = source.position.y;
+          const tx = target.position.x;
+          const ty = target.position.y;
+
+          const dx = tx - sx;
+          const dy = ty - sy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist === 0) return null;
+
+          const sourceRadius = figureRadii[source.figureType];
+          const targetRadius = figureRadii[target.figureType];
+
+          // Don't render arrow if figures are overlapping
+          if (dist <= sourceRadius + targetRadius) {
+            return null;
+          }
+
+          const startX = sx + (dx * sourceRadius) / dist;
+          const startY = sy + (dy * sourceRadius) / dist;
+          const endX = tx - (dx * targetRadius) / dist;
+          const endY = ty - (dy * targetRadius) / dist;
+
           const isSelected = selectedElement?.type === 'arrow' && selectedElement.id === arrow.id;
           const isEditing = editingLabel?.type === 'arrow' && editingLabel.id === arrow.id;
           const strokeClass = isSelected ? 'stroke-indigo-600' : 'stroke-gray-600';
@@ -232,8 +263,8 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
           return (
             <g key={arrow.id}>
               <line
-                x1={source.position.x} y1={source.position.y}
-                x2={target.position.x} y2={target.position.y}
+                x1={startX} y1={startY}
+                x2={endX} y2={endY}
                 className={strokeClass}
                 strokeWidth="2"
                 markerEnd="url(#arrowhead)"
