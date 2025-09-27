@@ -14,6 +14,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
   const [selectedElement, setSelectedElement] = useState<{ type: 'figure' | 'arrow'; id: string } | null>(null);
   const [connecting, setConnecting] = useState<{ sourceId: string } | null>(null);
   const [dragging, setDragging] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
+  const [editingLabel, setEditingLabel] = useState<{ id: string; type: 'figure' | 'arrow' } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
   const updateState = (updates: Partial<DiagramState>) => {
@@ -43,25 +44,13 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
     setSelectedElement(null);
   };
 
-  const handleLabelChange = (id: string, type: 'figure' | 'arrow') => {
-    const currentLabel = type === 'figure'
-      ? diagramState.figures.find(f => f.id === id)?.label
-      : diagramState.arrows.find(a => a.id === id)?.label;
-    
-    const newLabel = prompt('Enter new label:', currentLabel);
-    if (newLabel === null) return;
-
-    if (type === 'figure') {
-      const newFigures = diagramState.figures.map(f => f.id === id ? { ...f, label: newLabel } : f);
-      updateState({ figures: newFigures });
-    } else {
-      const newArrows = diagramState.arrows.map(a => a.id === id ? { ...a, label: newLabel } : a);
-      updateState({ arrows: newArrows });
-    }
+  const handleDoubleClick = (id: string, type: 'figure' | 'arrow') => {
+    if (isReadOnly) return;
+    setEditingLabel({ id, type });
   };
 
   const handleMouseDown = (e: MouseEvent<SVGGElement>, figure: DiagramFigure) => {
-    if (isReadOnly) return;
+    if (isReadOnly || editingLabel) return;
     e.stopPropagation();
 
     if (connecting) {
@@ -118,6 +107,82 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
   
   const figureMap = new Map(diagramState.figures.map(f => [f.id, f]));
 
+  const renderLabelEditor = () => {
+    if (!editingLabel) return null;
+
+    const handleUpdate = (newValue: string) => {
+        if (editingLabel.type === 'figure') {
+            const newFigures = diagramState.figures.map(f => f.id === editingLabel.id ? { ...f, label: newValue } : f);
+            updateState({ figures: newFigures });
+        } else {
+            const newArrows = diagramState.arrows.map(a => a.id === editingLabel.id ? { ...a, label: newValue } : a);
+            updateState({ arrows: newArrows });
+        }
+        setEditingLabel(null);
+    };
+
+    const handleLiveUpdate = (newValue: string) => {
+         if (editingLabel.type === 'figure') {
+            const newFigures = diagramState.figures.map(f => (f.id === editingLabel.id ? { ...f, label: newValue } : f));
+            updateState({ figures: newFigures });
+        } else {
+            const newArrows = diagramState.arrows.map(a => (a.id === editingLabel.id ? { ...a, label: newValue } : a));
+            updateState({ arrows: newArrows });
+        }
+    };
+
+    let position: { x: number, y: number } | null = null;
+    let initialValue = '';
+    
+    if (editingLabel.type === 'figure') {
+        const figure = figureMap.get(editingLabel.id);
+        if (!figure) return null;
+        initialValue = figure.label;
+        let yOffset = 0;
+        switch(figure.figureType) {
+            case DiagramFigureType.Rectangle: yOffset = 25; break;
+            case DiagramFigureType.Circle:    yOffset = 35; break;
+            case DiagramFigureType.Cloud:     yOffset = 10; break;
+        }
+        position = { x: figure.position.x - 60, y: figure.position.y + yOffset };
+    } else { // arrow
+        const arrow = diagramState.arrows.find(a => a.id === editingLabel.id);
+        if (!arrow) return null;
+        const source = figureMap.get(arrow.sourceId);
+        const target = figureMap.get(arrow.targetId);
+        if (!source || !target) return null;
+        initialValue = arrow.label;
+        position = {
+            x: (source.position.x + target.position.x) / 2 - 60,
+            y: (source.position.y + target.position.y) / 2,
+        };
+    }
+    
+    return (
+        <foreignObject x={position.x} y={position.y} width="120" height="40">
+            <textarea
+                value={initialValue}
+                onChange={(e) => handleLiveUpdate(e.target.value)}
+                onBlur={(e) => handleUpdate(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleUpdate((e.target as HTMLTextAreaElement).value);
+                    }
+                    if (e.key === 'Escape') {
+                        e.preventDefault();
+                        (e.target as HTMLTextAreaElement).blur();
+                    }
+                }}
+                className="w-full h-full p-1 text-center text-sm border border-indigo-500 rounded-md resize-none bg-white"
+                autoFocus
+                onFocus={(e) => e.target.select()}
+            />
+        </foreignObject>
+    );
+  };
+
+
   return (
     <div 
         className={`relative border border-gray-200 rounded-md ${!isReadOnly ? 'nodrag' : ''}`}
@@ -159,6 +224,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
           if (!source || !target) return null;
           
           const isSelected = selectedElement?.type === 'arrow' && selectedElement.id === arrow.id;
+          const isEditing = editingLabel?.type === 'arrow' && editingLabel.id === arrow.id;
           const strokeClass = isSelected ? 'stroke-indigo-600' : 'stroke-gray-600';
 
           return (
@@ -170,17 +236,20 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                 strokeWidth="2"
                 markerEnd="url(#arrowhead)"
                 onClick={(e) => { e.stopPropagation(); setSelectedElement({type: 'arrow', id: arrow.id}); }}
-                onDoubleClick={(e) => { e.stopPropagation(); handleLabelChange(arrow.id, 'arrow'); }}
+                onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(arrow.id, 'arrow'); }}
               />
-              <text
-                x={(source.position.x + target.position.x) / 2}
-                y={(source.position.y + target.position.y) / 2 + 15}
-                textAnchor="middle"
-                fontSize="12"
-                className="select-none pointer-events-none fill-current"
-              >
-                {arrow.label}
-              </text>
+              {!isEditing && (
+                <text
+                  x={(source.position.x + target.position.x) / 2}
+                  y={(source.position.y + target.position.y) / 2 + 15}
+                  textAnchor="middle"
+                  fontSize="12"
+                  className="select-none fill-current cursor-pointer"
+                  onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(arrow.id, 'arrow'); }}
+                >
+                  {arrow.label}
+                </text>
+              )}
             </g>
           );
         })}
@@ -189,6 +258,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
         {diagramState.figures.map(figure => {
           const FigureComponent = FigureComponents[figure.figureType];
           const isSelected = selectedElement?.type === 'figure' && selectedElement.id === figure.id;
+          const isEditing = editingLabel?.type === 'figure' && editingLabel.id === figure.id;
           return (
             <FigureComponent
               key={figure.id}
@@ -196,12 +266,16 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
               y={figure.position.y}
               label={figure.label}
               isSelected={isSelected}
+              isEditing={isEditing}
               onMouseDown={(e) => handleMouseDown(e, figure)}
-              onDoubleClick={(e) => { e.stopPropagation(); handleLabelChange(figure.id, 'figure'); }}
+              onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(figure.id, 'figure'); }}
               className={`cursor-pointer ${connecting ? 'cursor-crosshair' : ''}`}
             />
           );
         })}
+
+        {/* Render Label Editor on top */}
+        {renderLabelEditor()}
       </svg>
     </div>
   );
