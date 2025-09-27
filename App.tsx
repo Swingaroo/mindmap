@@ -180,7 +180,6 @@ const App: FC = () => {
           snapGrid={snapGrid}
         >
           <Controls />
-          <Background variant={BackgroundVariant.Lines} gap={snapGrid[0]} color="#e5e7eb" />
           <MiniMap 
             pannable 
             zoomable
