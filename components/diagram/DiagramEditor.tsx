@@ -308,7 +308,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
           const endX = tx - (dx * targetRadius) / dist;
           const endY = ty - (dy * targetRadius) / dist;
 
-          const isSelected = selectedElement?.type === 'arrow' && selectedElement.id === arrow.id;
+          const isSelected = !isReadOnly && selectedElement?.type === 'arrow' && selectedElement.id === arrow.id;
           const isEditing = editingLabel?.type === 'arrow' && editingLabel.id === arrow.id;
           const strokeClass = isSelected ? 'stroke-indigo-600' : 'stroke-gray-600';
           
@@ -324,16 +324,35 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
               markerProps.markerStart = "url(#arrowhead-start)";
           }
 
+          const handleArrowClick = (e: React.MouseEvent<SVGGElement>) => {
+              e.stopPropagation();
+              if (isHighlighterActive && onHighlightElement) {
+                  onHighlightElement(e.currentTarget);
+              } else if (!isReadOnly) {
+                  setSelectedElement({ type: 'arrow', id: arrow.id });
+              }
+          };
+
           return (
-            <g key={arrow.id}>
+            <g
+              key={arrow.id}
+              className="cursor-pointer"
+              onClick={handleArrowClick}
+              onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(arrow.id, 'arrow'); }}
+            >
+              {/* A wider, transparent line for easier clicking */}
+              <line
+                x1={startX} y1={startY}
+                x2={endX} y2={endY}
+                stroke="transparent"
+                strokeWidth="12"
+              />
               <line
                 x1={startX} y1={startY}
                 x2={endX} y2={endY}
                 className={strokeClass}
                 strokeWidth="2"
                 {...markerProps}
-                onClick={(e) => { e.stopPropagation(); if(!isHighlighterActive) setSelectedElement({type: 'arrow', id: arrow.id}); }}
-                onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(arrow.id, 'arrow'); }}
               />
               {!isEditing && arrow.label && (() => {
                   const lines = arrow.label.split('\n');
@@ -349,11 +368,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                   const boxY = (midY + 15) - 12 - padding;
 
                   return (
-                    <g
-                      className="cursor-pointer"
-                      onClick={(e) => { e.stopPropagation(); if(!isHighlighterActive) setSelectedElement({ type: 'arrow', id: arrow.id }); }}
-                      onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(arrow.id, 'arrow'); }}
-                    >
+                    <g>
                       <rect
                         x={boxX}
                         y={boxY}
