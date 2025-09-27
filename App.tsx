@@ -94,8 +94,6 @@ const PdfPage: FC<PdfPageProps> = ({ pageNodes, nodeToPageMap, onRender }) => {
     justifyContent: 'center',
     alignItems: 'flex-start',
     gap: '16px',
-    padding: '16px',
-    backgroundColor: '#f9fafb', // bg-gray-50
   };
 
   return (
