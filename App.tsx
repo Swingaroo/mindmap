@@ -1,4 +1,5 @@
 
+
 import React, { FC, useCallback, useState } from 'react';
 import ReactFlow, {
   Controls,
@@ -16,6 +17,7 @@ import ReactFlow, {
   Connection,
   useReactFlow,
   ReactFlowProvider,
+  MiniMap,
 } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -183,6 +185,17 @@ const App: FC = () => {
         >
           <Controls />
           <Background />
+          <MiniMap 
+            pannable 
+            zoomable
+            style={{
+              backgroundColor: '#f9fafb',
+              border: '1px solid #e5e7eb',
+            }}
+            nodeColor={(node) => node.selected ? '#4f46e5' : '#c7d2fe'}
+            nodeStrokeColor="#4f46e5"
+            nodeBorderRadius={2}
+          />
         </ReactFlow>
         {selectedNode && !isReadOnly && (
           <div className="absolute right-0 top-0 h-full">
