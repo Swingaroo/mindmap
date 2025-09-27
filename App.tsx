@@ -250,23 +250,21 @@ const App: FC = () => {
   }, []);
 
   const handleSave = useCallback(() => {
-    // Create a deep copy to clean up data before saving
-    const nodesToSave = JSON.parse(JSON.stringify(nodes));
-    nodesToSave.forEach((node: Node<ViewNodeData>) => {
-        delete node.data.id;
-        delete node.data.onFocus;
-        delete node.data.isReadOnly;
-        delete node.data.onNodeDataChange;
-    });
-
-    const presentation: Presentation = { nodes: nodesToSave };
+    // The `nodes` state is already clean. The functions and extra properties are only
+    // added in the `nodesForFlow` memo, so no cleanup is needed here.
+    const presentation: Presentation = { nodes };
     const dataStr = JSON.stringify(presentation, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     const exportFileDefaultName = t('app.defaultJsonFilename');
+
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
+
+    // Append to the DOM, click, and then remove for better browser compatibility.
+    document.body.appendChild(linkElement);
     linkElement.click();
+    document.body.removeChild(linkElement);
   }, [nodes, t]);
 
   const handleSaveToPdf = useCallback(async () => {

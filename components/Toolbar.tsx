@@ -31,7 +31,7 @@ const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onSaveToPdf, onLoad, isR
   }, []);
 
   return (
-    <div className="w-full bg-white shadow-md p-2 flex items-center justify-between z-10">
+    <div className="w-full bg-white shadow-md p-2 flex items-center justify-between z-30">
       <h1 className="text-xl font-bold text-gray-800">{t('appName')}</h1>
       <div className="flex items-center gap-2">
          <Button onClick={onToggleReadOnly} variant="secondary">
