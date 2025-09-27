@@ -26,7 +26,38 @@ export interface LinkElement extends BaseElement {
     targetViewId: string;
 }
 
-export type ViewElement = TextElement | ImageElement | LinkElement;
+// New types for DiagramElement
+export enum DiagramFigureType {
+  Rectangle = 'rectangle',
+  Circle = 'circle',
+  Cloud = 'cloud',
+}
+
+export interface DiagramFigure extends BaseElement {
+  figureType: DiagramFigureType;
+  position: { x: number; y: number };
+  label: string;
+}
+
+export interface DiagramArrow extends BaseElement {
+  type: 'arrow';
+  sourceId: string;
+  targetId: string;
+  label: string;
+}
+
+export interface DiagramState {
+  figures: DiagramFigure[];
+  arrows: DiagramArrow[];
+}
+
+export interface DiagramElement extends BaseElement {
+  type: 'diagram';
+  diagramState: DiagramState;
+}
+
+
+export type ViewElement = TextElement | ImageElement | LinkElement | DiagramElement;
 
 export interface ViewNodeData {
   title: string;

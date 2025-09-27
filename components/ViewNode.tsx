@@ -2,6 +2,7 @@ import React, { FC, memo } from 'react';
 import { NodeProps } from 'reactflow';
 import showdown from 'showdown';
 import { ViewNodeData, TextStyle } from '../types';
+import DiagramEditor from './diagram/DiagramEditor';
 
 const converter = new showdown.Converter();
 converter.setOption('simpleLineBreaks', true);
@@ -65,6 +66,15 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
                     &rarr; {element.content}
                  </button>
               );
+            case 'diagram':
+                return (
+                    <DiagramEditor
+                        key={element.id}
+                        diagramState={element.diagramState}
+                        isReadOnly={isReadOnly}
+                        onChange={() => {}} // No-op in read-only view
+                    />
+                );
             default:
               return null;
           }

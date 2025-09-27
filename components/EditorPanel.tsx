@@ -1,9 +1,11 @@
 
-import React, { FC, useState, useRef, useCallback } from 'react';
+
+import React, { FC, useState, useRef, useCallback, SVGProps } from 'react';
 import { Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
-import { ViewNodeData, ViewElement, TextStyle, ImageElement, LinkElement, TextElement } from '../types';
+import { ViewNodeData, ViewElement, TextStyle, ImageElement, LinkElement, TextElement, DiagramElement } from '../types';
 import Button from './ui/Button';
+import DiagramEditor from './diagram/DiagramEditor';
 
 interface EditorPanelProps {
   node: Node<ViewNodeData>;
@@ -30,7 +32,7 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
     onNodeDataChange(node.id, { elements: newElements });
   }, [node.id, onNodeDataChange]);
 
-  const addElement = (type: 'text' | 'image' | 'link', style: TextStyle = TextStyle.Body) => {
+  const addElement = (type: 'text' | 'image' | 'link' | 'diagram', style: TextStyle = TextStyle.Body) => {
     if (type === 'text') {
       const newElement: TextElement = { id: uuidv4(), type: 'text', content: 'New Text', style };
       updateElements([...node.data.elements, newElement]);
@@ -44,6 +46,13 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
         } else {
             alert("No other views to link to. Please create another view first.");
         }
+    } else if (type === 'diagram') {
+        const newElement: DiagramElement = { 
+            id: uuidv4(), 
+            type: 'diagram', 
+            diagramState: { figures: [], arrows: [] }
+        };
+        updateElements([...node.data.elements, newElement]);
     }
   };
 
@@ -120,11 +129,14 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
 
             <div className="mb-4 border-t pt-4">
                 <h3 className="text-md font-semibold text-gray-700 mb-2">Add Content</h3>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                     <Button onClick={() => addElement('text', TextStyle.Title)} variant="outline">Title Text</Button>
                     <Button onClick={() => addElement('text', TextStyle.Body)} variant="outline">Body Text</Button>
                     <Button onClick={() => addElement('image')} variant="outline">Image</Button>
                     <Button onClick={() => addElement('link')} variant="outline">Link</Button>
+                    <Button onClick={() => addElement('diagram')} variant="outline" className="col-span-2">
+                      <DiagramIcon className="w-4 h-4 mr-2" /> Diagram
+                    </Button>
                 </div>
                  <input
                     type="file"
@@ -218,6 +230,13 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                     </select>
                  </div>
             )}
+            {element.type === 'diagram' && (
+                <DiagramEditor
+                    diagramState={element.diagramState}
+                    isReadOnly={false}
+                    onChange={(newDiagramState) => onChange(element.id, { diagramState: newDiagramState })}
+                />
+            )}
         </div>
     );
 };
@@ -233,6 +252,14 @@ const TrashIcon: FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.124-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.077-2.09.921-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
     </svg>
+);
+
+const DiagramIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 3.75A2.25 2.25 0 018.25 6h7.5a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5A2.25 2.25 0 016 15.75v-7.5A2.25 2.25 0 016 6V3.75z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v7.5" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 12h-7.5" />
+  </svg>
 );
 
 
