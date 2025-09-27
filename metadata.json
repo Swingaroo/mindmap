@@ -1,0 +1,5 @@
+{
+  "name": "MindMap Presenter",
+  "description": "A presentation tool that combines a slide editor with a mind map, allowing users to create, link, and organize presentation views on a 2D canvas. Users can add text and images, create semantic links, and save/load their work.",
+  "requestFramePermissions": []
+}
