@@ -1,6 +1,6 @@
 import { Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
-import { ViewNodeData, TextStyle, DiagramFigureType } from './types';
+import { ViewNodeData, TextStyle, DiagramFigureType, ArrowType } from './types';
 
 const node1Id = '1';
 const node2Id = '2';
@@ -35,7 +35,7 @@ export const initialNodes: Node<ViewNodeData>[] = [
               { id: fig2Id, figureType: DiagramFigureType.Circle, position: { x: 400, y: 250 }, label: 'Go Next' },
             ],
             arrows: [
-              { id: uuidv4(), type: 'arrow', sourceId: fig1Id, targetId: fig2Id, label: 'Connector' }
+              { id: uuidv4(), type: 'arrow', sourceId: fig1Id, targetId: fig2Id, label: 'Connector', arrowType: ArrowType.OneEnd }
             ]
           }
         },

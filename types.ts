@@ -40,11 +40,19 @@ export interface DiagramFigure extends BaseElement {
   label: string;
 }
 
+export enum ArrowType {
+  None = 'none',
+  OneEnd = 'one-end', // Arrow at target
+  OtherEnd = 'other-end', // Arrow at source
+  BothEnds = 'both-ends',
+}
+
 export interface DiagramArrow extends BaseElement {
   type: 'arrow';
   sourceId: string;
   targetId: string;
   label: string;
+  arrowType?: ArrowType;
 }
 
 export interface DiagramState {

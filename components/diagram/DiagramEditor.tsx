@@ -1,6 +1,6 @@
 import React, { FC, useState, useRef, MouseEvent, SVGProps } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { DiagramState, DiagramFigure, DiagramArrow, DiagramFigureType } from '../../types';
+import { DiagramState, DiagramFigure, DiagramArrow, DiagramFigureType, ArrowType } from '../../types';
 import { FigureComponents } from './figures';
 import Button from '../ui/Button';
 
@@ -71,6 +71,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
           sourceId: connecting.sourceId,
           targetId: figure.id,
           label: 'Connection',
+          arrowType: ArrowType.OneEnd,
         };
         updateState({ arrows: [...diagramState.arrows, newArrow] });
       }
@@ -116,6 +117,18 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
   };
   
   const figureMap = new Map(diagramState.figures.map(f => [f.id, f]));
+  
+  const selectedArrow = selectedElement?.type === 'arrow'
+    ? diagramState.arrows.find(a => a.id === selectedElement.id)
+    : null;
+
+  const handleArrowTypeChange = (type: ArrowType) => {
+    if (!selectedArrow) return;
+    const newArrows = diagramState.arrows.map(a =>
+      a.id === selectedArrow.id ? { ...a, arrowType: type } : a
+    );
+    updateState({ arrows: newArrows });
+  };
 
   const renderLabelEditor = () => {
     if (!editingLabel) return null;
@@ -210,6 +223,30 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                 {connecting ? 'Select Target' : 'Connect'}
             </Button>
             <Button onClick={deleteSelected} disabled={!selectedElement} variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-50">Delete</Button>
+            
+            {selectedArrow && (() => {
+                const activeType = selectedArrow.arrowType || ArrowType.OneEnd;
+                return (
+                    <>
+                        <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                        <div className="flex items-center gap-1 rounded-md border border-gray-300 p-0.5">
+                            <button title="No arrowheads" onClick={() => handleArrowTypeChange(ArrowType.None)} className={`p-1 rounded-sm ${activeType === ArrowType.None ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}>
+                                <ArrowNoneIcon className="w-5 h-5" />
+                            </button>
+                            <button title="Arrowhead at end" onClick={() => handleArrowTypeChange(ArrowType.OneEnd)} className={`p-1 rounded-sm ${activeType === ArrowType.OneEnd ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}>
+                                <ArrowEndIcon className="w-5 h-5" />
+                            </button>
+                            <button title="Arrowhead at start" onClick={() => handleArrowTypeChange(ArrowType.OtherEnd)} className={`p-1 rounded-sm ${activeType === ArrowType.OtherEnd ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}>
+                                <ArrowStartIcon className="w-5 h-5" />
+                            </button>
+                            <button title="Arrowheads at both ends" onClick={() => handleArrowTypeChange(ArrowType.BothEnds)} className={`p-1 rounded-sm ${activeType === ArrowType.BothEnds ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}>
+                                <ArrowBothIcon className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </>
+                );
+            })()}
+
             <div className="flex-grow" />
             <Button onClick={onDoneEditing} variant="secondary" size="sm">
                 <CheckIcon className="w-4 h-4 mr-1" />
@@ -230,8 +267,11 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
         preserveAspectRatio="xMidYMin meet"
       >
         <defs>
-          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9.5" refY="3.5" orient="auto">
+          <marker id="arrowhead-end" markerWidth="10" markerHeight="7" refX="9.5" refY="3.5" orient="auto">
             <polygon points="0 0, 10 3.5, 0 7" className="fill-current text-gray-600" />
+          </marker>
+          <marker id="arrowhead-start" markerWidth="10" markerHeight="7" refX="0.5" refY="3.5" orient="auto">
+            <polygon points="10 0, 0 3.5, 10 7" className="fill-current text-gray-600" />
           </marker>
         </defs>
         
@@ -271,6 +311,15 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
           
           const midX = (startX + endX) / 2;
           const midY = (startY + endY) / 2;
+          
+          const arrowType = arrow.arrowType || ArrowType.OneEnd;
+          const markerProps: { markerStart?: string, markerEnd?: string } = {};
+          if (arrowType === ArrowType.OneEnd || arrowType === ArrowType.BothEnds) {
+              markerProps.markerEnd = "url(#arrowhead-end)";
+          }
+          if (arrowType === ArrowType.OtherEnd || arrowType === ArrowType.BothEnds) {
+              markerProps.markerStart = "url(#arrowhead-start)";
+          }
 
           return (
             <g key={arrow.id}>
@@ -279,7 +328,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                 x2={endX} y2={endY}
                 className={strokeClass}
                 strokeWidth="2"
-                markerEnd="url(#arrowhead)"
+                {...markerProps}
                 onClick={(e) => { e.stopPropagation(); setSelectedElement({type: 'arrow', id: arrow.id}); }}
                 onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(arrow.id, 'arrow'); }}
               />
@@ -333,6 +382,34 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
 const CheckIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+    </svg>
+);
+
+const ArrowNoneIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+);
+
+const ArrowEndIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+    </svg>
+);
+
+const ArrowStartIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
+);
+
+const ArrowBothIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+        <polyline points="12 19 5 12 12 5"></polyline>
     </svg>
 );
 
