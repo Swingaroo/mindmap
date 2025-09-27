@@ -2,6 +2,7 @@
   "name": "mindmap-presenter",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://Swingaroo.github.io/mindmap",
   "type": "module",
   "scripts": {
     "dev": "vite",
