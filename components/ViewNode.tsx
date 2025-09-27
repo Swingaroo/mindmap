@@ -43,7 +43,7 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
                 return (
                   <div
                     key={element.id}
-                    className="text-sm text-gray-700 break-words 
+                    className="nodrag text-sm text-gray-700 break-words 
                                [&_ul]:list-disc [&_ul]:pl-5
                                [&_ol]:list-decimal [&_ol]:pl-5
                                [&_strong]:font-bold [&_b]:font-bold
