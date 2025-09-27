@@ -18,7 +18,11 @@
     },
     "load": "Load",
     "hideMinimap": "Hide Minimap",
-    "showMinimap": "Show Minimap"
+    "showMinimap": "Show Minimap",
+    "languages": {
+      "en": "English",
+      "ru": "Russian"
+    }
   },
   "editorPanel": {
     "title": "Edit View",

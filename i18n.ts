@@ -15,15 +15,28 @@ export type TFunction = (key: string, options?: { [key: string]: string | number
 
 interface I18nContextType {
   t: TFunction;
+  setLocale: (locale: string) => void;
+  locale: string;
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
+// Supported languages
+export const supportedLocales = ['en', 'ru'];
+export const defaultLocale = 'en';
+
+// Helper to get the best match for browser language
+const getInitialLocale = (): string => {
+  const browserLang = navigator.language.split('-')[0];
+  return supportedLocales.includes(browserLang) ? browserLang : defaultLocale;
+};
+
 export const I18nProvider: FC<{ children: ReactNode }> = ({ children }) => {
+  const [locale, setLocale] = useState<string>(getInitialLocale);
   const [translations, setTranslations] = useState<any | null>(null);
 
   useEffect(() => {
-    fetch('/locales/en.json')
+    fetch(`/locales/${locale}.json`)
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -34,10 +47,15 @@ export const I18nProvider: FC<{ children: ReactNode }> = ({ children }) => {
         setTranslations(data);
       })
       .catch(error => {
-        console.error("Error fetching translations:", error);
-        setTranslations({}); // Set to empty object to prevent infinite loading state
+        console.error(`Error fetching translations for ${locale}:`, error);
+        // Fallback to default locale if the fetch for the current one fails
+        if (locale !== defaultLocale) {
+            setLocale(defaultLocale);
+        } else {
+            setTranslations({}); // Set to empty object to prevent infinite loading state
+        }
       });
-  }, []);
+  }, [locale]);
 
   const t: TFunction = useCallback((key, options) => {
     if (!translations) {
@@ -56,13 +74,12 @@ export const I18nProvider: FC<{ children: ReactNode }> = ({ children }) => {
     return text;
   }, [translations]);
   
-  const value = useMemo(() => ({ t }), [t]);
+  const value = useMemo(() => ({ t, setLocale, locale }), [t, locale]);
 
   if (!translations) {
     return null; // Don't render children until translations are loaded
   }
 
-  // The file is a .ts file, which does not allow JSX syntax. Replaced the JSX with React.createElement to resolve parsing errors.
   return React.createElement(I18nContext.Provider, { value: value }, children);
 };
 

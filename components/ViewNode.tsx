@@ -150,6 +150,7 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
                                 viewBox={element.viewBox}
                                 isHighlighterActive={isHighlighterActive}
                                 onHighlightElement={onHighlightElement}
+                                t={t}
                             />
                         </div>
                         {element.caption && (

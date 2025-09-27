@@ -70,7 +70,7 @@ const PdfViewNode: FC<PdfViewNodeProps> = ({ node, nodeToPageMap, t }) => {
                         case 'diagram':
                             return (
                                 <div key={element.id} className="py-2">
-                                    <DiagramEditor diagramState={element.diagramState} isReadOnly={true} onChange={() => {}} height={element.height} viewBox={element.viewBox} />
+                                    <DiagramEditor diagramState={element.diagramState} isReadOnly={true} onChange={() => {}} height={element.height} viewBox={element.viewBox} t={t} />
                                     {element.caption && <p className="text-xs text-gray-600 mt-2 text-center italic">{element.caption}</p>}
                                 </div>
                             );

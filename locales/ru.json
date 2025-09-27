@@ -1,0 +1,138 @@
+{
+  "appName": "MindMap Presenter",
+  "app": {
+    "defaultJsonFilename": "презентация.json",
+    "defaultPdfFilename": "презентация.pdf"
+  },
+  "toolbar": {
+    "editMode": "Редактировать",
+    "previewMode": "Просмотр",
+    "highlighter": "Выделитель",
+    "toggleHighlighter": "Включить/выключить выделитель",
+    "addView": "Добавить слайд",
+    "save": {
+      "button": "Сохранить",
+      "asJson": "Сохранить в файл (.json)",
+      "asPdf": "Сохранить как PDF"
+    },
+    "load": "Загрузить",
+    "hideMinimap": "Скрыть миникарту",
+    "showMinimap": "Показать миникарту",
+    "languages": {
+      "en": "Английский",
+      "ru": "Русский"
+    }
+  },
+  "editorPanel": {
+    "title": "Редактировать слайд",
+    "viewTitleLabel": "Заголовок слайда",
+    "viewSizeLabel": "Размер слайда (4:3)",
+    "addContent": {
+      "title": "Добавить контент",
+      "titleText": "Заголовок",
+      "bodyText": "Текст",
+      "image": "Изображение",
+      "link": "Ссылка",
+      "diagram": "Диаграмма"
+    },
+    "contentElementsTitle": "Элементы контента",
+    "textElement": {
+      "styleTitle": "Заголовок",
+      "styleBody": "Текст (Markdown)",
+      "bodyPlaceholder": "Введите контент, используя Markdown..."
+    },
+    "imageElement": {
+      "alt": "пользовательский контент",
+      "captionLabel": "Подпись",
+      "captionPlaceholder": "Введите подпись для изображения..."
+    },
+    "linkElement": {
+      "placeholder": "Текст ссылки",
+      "viewOptionPrefix": "Слайд"
+    },
+    "diagramElement": {
+      "editHint": "Нажмите кнопку \"Редактировать\" на главном виде, чтобы изменить содержимое и макет диаграммы.",
+      "captionLabel": "Подпись",
+      "captionPlaceholder": "Введите подпись для диаграммы...",
+      "heightLabel": "Высота диаграммы",
+      "decreaseHeight": "Уменьшить высоту",
+      "fitToContentHeight": "Подогнать по содержимому",
+      "increaseHeight": "Увеличить высоту",
+      "viewLabel": "Вид диаграммы",
+      "zoomIn": "Увеличить",
+      "zoomOut": "Уменьшить",
+      "fitToContentView": "Подогнать вид",
+      "resetView": "Сбросить вид"
+    },
+    "deleteView": {
+      "button": "Удалить слайд",
+      "confirmTitle": "Подтвердите удаление",
+      "confirm": "Вы уверены, что хотите удалить этот слайд? Это действие нельзя отменить.",
+      "confirmButton": "Удалить",
+      "cancel": "Отмена"
+    }
+  },
+  "viewNode": {
+    "altContentImage": "контент слайда",
+    "editDiagram": "Редакт."
+  },
+  "diagramEditor": {
+    "newFigure": "Новая фигура",
+    "newConnection": "Соединение",
+    "selectTarget": "Выберите цель",
+    "connect": "Соединить",
+    "delete": "Удалить",
+    "done": "Готово",
+    "figures": {
+      "actor": "Актор",
+      "circle": "Круг",
+      "rectangle": "Прямоуг.",
+      "cloud": "Облако"
+    },
+    "arrowTypes": {
+      "none": "Без стрелок",
+      "oneEnd": "Стрелка в конце",
+      "otherEnd": "Стрелка в начале",
+      "bothEnds": "Стрелки с обеих сторон"
+    }
+  },
+  "pdf": {
+    "generating": "Создание PDF...",
+    "altContentImage": "контент слайда",
+    "pageOf": "Стр. {{currentPage}} из {{totalPages}}"
+  },
+  "errors": {
+    "pdfGenerationFailed": "Произошла ошибка при создании PDF. Проверьте консоль для получения подробной информации.",
+    "invalidFileFormat": "Неверный формат файла.",
+    "fileLoadFailed": "Ошибка загрузки файла.",
+    "noOtherViewsToLink": "Нет других слайдов для ссылки. Сначала создайте другой слайд."
+  },
+  "defaults": {
+    "newNodeTitle": "Новый слайд",
+    "newNodeContent": "Начните добавлять контент",
+    "newTextElementContent": "Новый текст",
+    "newLinkElementContent": "Ссылка на другой слайд",
+    "newDiagramElementCaption": "Новая диаграмма"
+  },
+  "initialNodes": {
+    "welcome": {
+      "title": "Добро пожаловать в MindMap Presenter!",
+      "element1_content": "Это заголовок",
+      "element2_content": "Это **основной текст**. Вы можете добавить больше контента в *панели редактора* справа, когда слайд выбран.",
+      "element4_caption": "Это пример диаграммы. Отредактируйте ее подпись в боковой панели.",
+      "diagramFig1_label": "Блок\r\nдиаграммы",
+      "diagramFig2_label": "Кружок",
+      "diagramArrow1_label": "Стрелочка",
+      "element5_content": "Перейти к следующему слайду"
+    },
+    "howItWorks": {
+      "title": "Руководство по типографике Markdown",
+      "element1_content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com)."
+    },
+    "sampleImage": {
+      "title": "Пример слайда с изображением",
+      "imageSrc": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1002.jpg",
+      "imageCaption": "Это пример изображения с подписью."
+    }
+  }
+}

@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DiagramState, DiagramFigure, DiagramArrow, DiagramFigureType, ArrowType } from '../../types';
 import { FigureComponents } from './figures';
 import Button from '../ui/Button';
-import { useTranslation } from '../../i18n';
+import { TFunction } from '../../i18n';
 
 interface DiagramEditorProps {
   diagramState: DiagramState;
@@ -14,6 +14,7 @@ interface DiagramEditorProps {
   viewBox?: [number, number, number, number];
   isHighlighterActive?: boolean;
   onHighlightElement?: (element: HTMLElement | SVGElement) => void;
+  t: TFunction;
 }
 
 const figureRadii: Record<DiagramFigureType, number> = {
@@ -23,8 +24,7 @@ const figureRadii: Record<DiagramFigureType, number> = {
   [DiagramFigureType.Actor]: 41,
 };
 
-const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = false, onChange, onDoneEditing, height, viewBox, isHighlighterActive, onHighlightElement }) => {
-  const { t } = useTranslation();
+const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = false, onChange, onDoneEditing, height, viewBox, isHighlighterActive, onHighlightElement, t }) => {
   const [selectedElement, setSelectedElement] = useState<{ type: 'figure' | 'arrow'; id: string } | null>(null);
   const [connecting, setConnecting] = useState<{ sourceId: string } | null>(null);
   const [dragging, setDragging] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
