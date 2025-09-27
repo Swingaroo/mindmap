@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useState } from 'react';
+import React, { FC, useCallback, useState, useMemo, useEffect } from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -10,11 +10,12 @@ import ReactFlow, {
   useReactFlow,
   ReactFlowProvider,
   MiniMap,
+  BackgroundVariant,
 } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 
 import { initialNodes } from './constants';
-import { ViewNodeData, Presentation, TextStyle, ViewElement } from './types';
+import { Presentation, TextStyle, ViewNodeData } from './types';
 import ViewNode from './components/ViewNode';
 import Toolbar from './components/Toolbar';
 import EditorPanel from './components/EditorPanel';
@@ -22,66 +23,75 @@ import EditorPanel from './components/EditorPanel';
 const nodeTypes = { viewNode: ViewNode };
 
 const App: FC = () => {
-  const { getNodes, fitView } = useReactFlow();
+  const { fitView } = useReactFlow();
   
-  const onFocus = useCallback((id: string) => {
-    const allNodes = getNodes();
-    const targetNode = allNodes.find((n): n is Node<ViewNodeData> => n.id === id);
-    if (targetNode) {
-      fitView({ nodes: [targetNode], duration: 800, padding: 0.2 });
-      // This will be handled by onNodeClick to open the editor
-    }
-  }, [getNodes, fitView]);
-
-  const addOnFocusToNode = useCallback((node: Node<ViewNodeData>): Node<ViewNodeData> => {
-    return { ...node, data: { ...node.data, onFocus } };
-  }, [onFocus]);
-  
-  const [nodes, setNodes] = useState<Node<ViewNodeData>[]>(() => initialNodes.map(addOnFocusToNode));
+  const [nodes, setNodes] = useState<Node<ViewNodeData>[]>(initialNodes);
   const [selectedNode, setSelectedNode] = useState<Node<ViewNodeData> | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
 
+  useEffect(() => {
+    const currentlySelected = nodes.find(n => n.selected);
+    setSelectedNode(currentlySelected || null);
+  }, [nodes]);
+  
+  const onFocus = useCallback((id: string) => {
+    fitView({ nodes: [{ id }], duration: 800, padding: 0.2 });
+    setNodes(nds => nds.map(n => ({ ...n, selected: n.id === id })));
+  }, [fitView, setNodes]);
+
+  const nodesForFlow = useMemo(() => (
+    nodes.map(node => ({
+        ...node,
+        data: {
+            ...node.data,
+            isReadOnly,
+            onFocus,
+        }
+    }))
+  ), [nodes, isReadOnly, onFocus]);
+
   const onNodesChange: OnNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      if (isReadOnly) return;
+      if (isReadOnly && changes.some(c => c.type !== 'select')) {
+        return;
+      }
       setNodes((nds) => applyNodeChanges(changes, nds));
     },
     [isReadOnly]
   );
   
   const handleNodeClick = useCallback((event: React.MouseEvent, node: Node<ViewNodeData>) => {
-    setSelectedNode(node);
+    // Selection is now handled by onNodesChange and the useEffect hook.
+    // This handler can be used for other click-specific logic if needed.
   }, []);
 
   const handlePaneClick = useCallback(() => {
-    setSelectedNode(null);
-  }, []);
+    setNodes(nds => nds.map(n => ({ ...n, selected: false })));
+  }, [setNodes]);
 
   const handleAddView = useCallback(() => {
     const newNodeId = uuidv4();
     const newNode: Node<ViewNodeData> = {
       id: newNodeId,
       type: 'viewNode',
-      position: { x: Math.random() * 200 + 50, y: Math.random() * 200 },
+      position: { x: Math.round((Math.random() * 200 + 50) / 16) * 16, y: Math.round(Math.random() * 200 / 16) * 16 },
       data: {
         title: 'New View',
         elements: [
           { id: uuidv4(), type: 'text', content: 'Start adding content', style: TextStyle.Body }
         ],
-        onFocus: onFocus,
       },
     };
     setNodes((nds) => nds.concat(newNode));
-  }, [onFocus]);
+  }, []);
 
   const handleNodeDataChange = useCallback((nodeId: string, newData: Partial<ViewNodeData>) => {
-    const updatedNode = { ...selectedNode!.data, ...newData };
+    const updatedNodeData = { ...selectedNode!.data, ...newData };
     setNodes((nds) =>
       nds.map((node) => 
-        node.id === nodeId ? { ...node, data: updatedNode } : node
+        node.id === nodeId ? { ...node, data: updatedNodeData } : node
       )
     );
-    setSelectedNode(prev => (prev && prev.id === nodeId ? { ...prev, data: updatedNode } : prev));
   }, [selectedNode]);
 
   const handleSave = useCallback(() => {
@@ -109,9 +119,9 @@ const App: FC = () => {
             if (typeof result === 'string') {
               const presentation: Presentation = JSON.parse(result);
               if (presentation.nodes) {
-                const nodesWithFocus = presentation.nodes.map(addOnFocusToNode);
-                setNodes(nodesWithFocus);
-                setSelectedNode(null);
+                // Deselect all nodes upon loading a new presentation
+                const nodesToLoad = presentation.nodes.map(n => ({...n, selected: false}));
+                setNodes(nodesToLoad);
                 setTimeout(() => fitView({ duration: 500 }), 100);
               } else {
                 alert('Invalid file format.');
@@ -128,6 +138,8 @@ const App: FC = () => {
     input.click();
   };
 
+  const snapGrid: [number, number] = [16, 16];
+
   return (
     <div className="w-screen h-screen flex flex-col font-sans">
       <Toolbar
@@ -137,12 +149,12 @@ const App: FC = () => {
         isReadOnly={isReadOnly}
         onToggleReadOnly={() => {
             setIsReadOnly(prev => !prev);
-            setSelectedNode(null);
+            setNodes(nds => nds.map(n => ({...n, selected: false})));
         }}
       />
       <div className="flex-grow flex relative">
         <ReactFlow
-          nodes={nodes}
+          nodes={nodesForFlow}
           onNodesChange={onNodesChange}
           onNodeClick={handleNodeClick}
           onPaneClick={handlePaneClick}
@@ -152,10 +164,12 @@ const App: FC = () => {
           proOptions={{ hideAttribution: true }}
           nodesDraggable={!isReadOnly}
           nodesConnectable={false}
-          elementsSelectable={!isReadOnly}
+          elementsSelectable={true}
+          snapToGrid={true}
+          snapGrid={snapGrid}
         >
           <Controls />
-          <Background />
+          <Background variant={BackgroundVariant.Lines} gap={snapGrid[0]} color="#e5e7eb" />
           <MiniMap 
             pannable 
             zoomable
@@ -174,7 +188,7 @@ const App: FC = () => {
               key={selectedNode.id}
               node={selectedNode} 
               onNodeDataChange={handleNodeDataChange}
-              onClose={() => setSelectedNode(null)}
+              onClose={() => handlePaneClick()} // Re-use handlePaneClick to deselect
               allNodes={nodes}
             />
           </div>

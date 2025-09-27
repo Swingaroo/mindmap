@@ -1,8 +1,6 @@
-import { Node, Edge } from 'reactflow';
+import { Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 import { ViewNodeData, TextStyle } from './types';
-
-const focusFunc = (id: string) => console.log(`Focus on ${id}`);
 
 const node1Id = '1';
 const node2Id = '2';
@@ -20,7 +18,6 @@ export const initialNodes: Node<ViewNodeData>[] = [
         { id: uuidv4(), type: 'image', src: 'https://picsum.photos/200/100' },
         { id: uuidv4(), type: 'link', content: 'Go to the next view', targetViewId: node2Id },
       ],
-      onFocus: focusFunc,
     },
   },
   {
@@ -32,9 +29,6 @@ export const initialNodes: Node<ViewNodeData>[] = [
       elements: [
         { id: uuidv4(), type: 'text', content: '* Add views with the button in the toolbar.\n* Click on a view to select and edit it.\n* Use links to navigate between views.\n* Save and load your work.', style: TextStyle.Body },
       ],
-      onFocus: focusFunc,
     },
   },
 ];
-
-export const initialEdges: Edge[] = [];

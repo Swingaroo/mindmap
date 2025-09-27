@@ -31,7 +31,8 @@ export type ViewElement = TextElement | ImageElement | LinkElement;
 export interface ViewNodeData {
   title: string;
   elements: ViewElement[];
-  onFocus: (id: string) => void;
+  onFocus?: (id: string) => void;
+  isReadOnly?: boolean;
 }
 
 export interface Presentation {

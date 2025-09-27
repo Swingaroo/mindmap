@@ -7,7 +7,7 @@ const converter = new showdown.Converter();
 converter.setOption('simpleLineBreaks', true);
 
 const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
-  const { title, elements, onFocus } = data;
+  const { title, elements, onFocus, isReadOnly } = data;
 
   return (
     <div className={`
@@ -18,9 +18,9 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
       <NodeResizer 
         minWidth={200}
         minHeight={100}
-        isVisible={selected}
+        isVisible={selected && !isReadOnly}
         lineClassName="border-indigo-600"
-        handleClassName="bg-indigo-600 h-3 w-3 rounded-full border-2 border-white"
+        handleClassName="h-4 w-4 rounded bg-white border-2 border-indigo-600 shadow-lg"
       />
       <div className="bg-gray-100 p-2 rounded-t-md border-b cursor-move">
         <h3 className="text-center font-semibold text-gray-800 break-words">{title}</h3>
@@ -66,8 +66,8 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
               return (
                  <button
                     key={element.id}
-                    onClick={() => onFocus(element.targetViewId)}
-                    className="w-full text-left text-sm text-indigo-600 hover:text-indigo-800 hover:underline bg-indigo-50 p-2 rounded transition-colors"
+                    onClick={() => onFocus?.(element.targetViewId)}
+                    className="w-full text-left text-sm text-indigo-600 hover:text-indigo-800 hover:underline p-1 rounded transition-colors"
                  >
                     &rarr; {element.content}
                  </button>
