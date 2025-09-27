@@ -28,6 +28,7 @@ export const initialNodes: Node<ViewNodeData>[] = [
         { 
           id: uuidv4(), 
           type: 'diagram', 
+          caption: 'This is an example diagram. Edit its caption in the side panel.',
           diagramState: {
             figures: [
               { id: fig1Id, figureType: DiagramFigureType.Rectangle, position: { x: 150, y: 100 }, label: 'Start Here' },

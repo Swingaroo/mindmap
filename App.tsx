@@ -39,16 +39,30 @@ const App: FC = () => {
     setNodes(nds => nds.map(n => ({ ...n, selected: n.id === id })));
   }, [fitView, setNodes]);
 
+  const handleNodeDataChange = useCallback((nodeId: string, newData: Partial<ViewNodeData>) => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === nodeId) {
+          const updatedNodeData = { ...node.data, ...newData };
+          return { ...node, data: updatedNodeData };
+        }
+        return node;
+      })
+    );
+  }, []);
+
   const nodesForFlow = useMemo(() => (
     nodes.map(node => ({
         ...node,
         data: {
             ...node.data,
+            id: node.id,
             isReadOnly,
             onFocus,
+            onNodeDataChange: handleNodeDataChange,
         }
     }))
-  ), [nodes, isReadOnly, onFocus]);
+  ), [nodes, isReadOnly, onFocus, handleNodeDataChange]);
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -86,15 +100,6 @@ const App: FC = () => {
     setNodes((nds) => nds.concat(newNode));
   }, []);
 
-  const handleNodeDataChange = useCallback((nodeId: string, newData: Partial<ViewNodeData>) => {
-    const updatedNodeData = { ...selectedNode!.data, ...newData };
-    setNodes((nds) =>
-      nds.map((node) => 
-        node.id === nodeId ? { ...node, data: updatedNodeData } : node
-      )
-    );
-  }, [selectedNode]);
-
   const handleNodeSizeChange = useCallback((nodeId: string, width: number, height: number) => {
     setNodes((nds) =>
       nds.map((node) =>
@@ -106,7 +111,16 @@ const App: FC = () => {
   }, []);
 
   const handleSave = useCallback(() => {
-    const presentation: Presentation = { nodes };
+    // Create a deep copy to clean up data before saving
+    const nodesToSave = JSON.parse(JSON.stringify(nodes));
+    nodesToSave.forEach((node: Node<ViewNodeData>) => {
+        delete node.data.id;
+        delete node.data.onFocus;
+        delete node.data.isReadOnly;
+        delete node.data.onNodeDataChange;
+    });
+
+    const presentation: Presentation = { nodes: nodesToSave };
     const dataStr = JSON.stringify(presentation, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     const exportFileDefaultName = 'presentation.json';

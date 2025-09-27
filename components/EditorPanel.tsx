@@ -1,5 +1,6 @@
 
 
+
 import React, { FC, useState, useRef, useCallback, SVGProps } from 'react';
 import { Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
@@ -49,7 +50,8 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
     } else if (type === 'diagram') {
         const newElement: DiagramElement = { 
             id: uuidv4(), 
-            type: 'diagram', 
+            type: 'diagram',
+            caption: 'A new diagram',
             diagramState: { figures: [], arrows: [] }
         };
         updateElements([...node.data.elements, newElement]);
@@ -231,11 +233,19 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                  </div>
             )}
             {element.type === 'diagram' && (
-                <DiagramEditor
-                    diagramState={element.diagramState}
-                    isReadOnly={false}
-                    onChange={(newDiagramState) => onChange(element.id, { diagramState: newDiagramState })}
-                />
+                 <div>
+                    <p className="text-sm text-gray-600 mb-2 p-2 bg-indigo-50 rounded-md border border-indigo-200">
+                        Click the "Edit" button on the main view to modify the diagram's content and layout.
+                    </p>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Caption</label>
+                    <textarea
+                        value={element.caption}
+                        onChange={(e) => onChange(element.id, { caption: e.target.value })}
+                        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                        rows={2}
+                        placeholder="Enter a caption for the diagram..."
+                    />
+                </div>
             )}
         </div>
     );

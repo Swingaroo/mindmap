@@ -54,16 +54,19 @@ export interface DiagramState {
 export interface DiagramElement extends BaseElement {
   type: 'diagram';
   diagramState: DiagramState;
+  caption: string;
 }
 
 
 export type ViewElement = TextElement | ImageElement | LinkElement | DiagramElement;
 
 export interface ViewNodeData {
+  id?: string;
   title: string;
   elements: ViewElement[];
   onFocus?: (id: string) => void;
   isReadOnly?: boolean;
+  onNodeDataChange?: (nodeId: string, newData: Partial<ViewNodeData>) => void;
 }
 
 export interface Presentation {

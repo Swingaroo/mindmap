@@ -119,9 +119,12 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
   const figureMap = new Map(diagramState.figures.map(f => [f.id, f]));
 
   return (
-    <div className="border border-gray-200 rounded-md">
+    <div 
+        className={`relative border border-gray-200 rounded-md ${!isReadOnly ? 'nodrag' : ''}`}
+        style={{ height: '400px' }}
+    >
       {!isReadOnly && (
-        <div className="p-2 bg-gray-50 border-b flex flex-wrap gap-2 items-center">
+        <div className="absolute top-0 left-0 right-0 z-10 p-2 bg-white/90 backdrop-blur-sm border-b rounded-t-md flex flex-wrap gap-2 items-center">
             <Button onClick={() => addFigure(DiagramFigureType.Rectangle)} variant="outline" size="sm">Rect</Button>
             <Button onClick={() => addFigure(DiagramFigureType.Circle)} variant="outline" size="sm">Circle</Button>
             <Button onClick={() => addFigure(DiagramFigureType.Cloud)} variant="outline" size="sm">Cloud</Button>
@@ -135,7 +138,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
       <svg
         ref={svgRef}
         width="100%"
-        height={isReadOnly ? 'auto' : '400'}
+        height="100%"
         viewBox="0 0 800 400"
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -203,14 +206,5 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
     </div>
   );
 };
-
-// Augment Button component to accept size prop
-// FIX: Corrected module path to match the import statement.
-declare module '../ui/Button' {
-    interface ButtonProps {
-        size?: 'sm';
-    }
-}
-
 
 export default DiagramEditor;

@@ -1,14 +1,28 @@
-import React, { FC, memo } from 'react';
+import React, { FC, memo, useState, SVGProps } from 'react';
 import { NodeProps } from 'reactflow';
 import showdown from 'showdown';
-import { ViewNodeData, TextStyle } from '../types';
+import { ViewNodeData, TextStyle, DiagramState, ViewElement } from '../types';
 import DiagramEditor from './diagram/DiagramEditor';
+import Button from './ui/Button';
 
 const converter = new showdown.Converter();
 converter.setOption('simpleLineBreaks', true);
 
 const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
-  const { title, elements, onFocus, isReadOnly } = data;
+  const { id: nodeId, title, elements, onFocus, isReadOnly, onNodeDataChange } = data;
+  const [editingDiagramId, setEditingDiagramId] = useState<string | null>(null);
+
+  const handleDiagramChange = (diagramId: string, newDiagramState: DiagramState) => {
+    if (!nodeId || !onNodeDataChange) return;
+    const newElements = elements.map(el =>
+      el.id === diagramId && el.type === 'diagram' ? { ...el, diagramState: newDiagramState } : el
+    );
+    onNodeDataChange(nodeId, { elements: newElements as ViewElement[] });
+  };
+  
+  const handleToggleDiagramEdit = (diagramId: string) => {
+    setEditingDiagramId(prevId => (prevId === diagramId ? null : diagramId));
+  };
 
   return (
     <div className={`
@@ -66,15 +80,31 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
                     &rarr; {element.content}
                  </button>
               );
-            case 'diagram':
+            case 'diagram': {
+                const isEditingThisDiagram = editingDiagramId === element.id;
                 return (
-                    <DiagramEditor
-                        key={element.id}
-                        diagramState={element.diagramState}
-                        isReadOnly={isReadOnly}
-                        onChange={() => {}} // No-op in read-only view
-                    />
+                    <div key={element.id} className="py-2">
+                        <div className="relative">
+                            {!isReadOnly && (
+                                <div className="absolute top-2 right-2 z-10">
+                                    <Button onClick={() => handleToggleDiagramEdit(element.id)} variant={isEditingThisDiagram ? "secondary" : "outline"} size="sm">
+                                        {isEditingThisDiagram ? <CheckIcon className="w-4 h-4 mr-1" /> : <EditIcon className="w-4 h-4 mr-1" />}
+                                        {isEditingThisDiagram ? 'Done' : 'Edit'}
+                                    </Button>
+                                </div>
+                            )}
+                            <DiagramEditor
+                                diagramState={element.diagramState}
+                                isReadOnly={isReadOnly || !isEditingThisDiagram}
+                                onChange={(newState) => handleDiagramChange(element.id, newState)}
+                            />
+                        </div>
+                        {element.caption && (
+                            <p className="text-xs text-gray-600 mt-2 text-center italic">{element.caption}</p>
+                        )}
+                    </div>
                 );
+            }
             default:
               return null;
           }
@@ -83,5 +113,18 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
     </div>
   );
 };
+
+const EditIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+    </svg>
+);
+
+const CheckIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+    </svg>
+);
+
 
 export default memo(ViewNode);
