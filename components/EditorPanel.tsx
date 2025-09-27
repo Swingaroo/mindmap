@@ -141,7 +141,7 @@ interface ElementEditorProps {
 const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, allNodes, currentNodeId }) => {
     return (
         <div className="p-3 bg-gray-50 rounded-md border border-gray-200 relative group">
-            <button onClick={() => onDelete(element.id)} className="absolute top-1 right-1 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={() => onDelete(element.id)} className="absolute top-1 right-1 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                 <TrashIcon className="w-4 h-4" />
             </button>
             {element.type === 'text' && (
@@ -152,14 +152,24 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                         className="w-full mb-2 p-1 border border-gray-300 rounded-md text-sm"
                     >
                         <option value={TextStyle.Title}>Title</option>
-                        <option value={TextStyle.Body}>Body</option>
+                        <option value={TextStyle.Body}>Body (Markdown)</option>
                     </select>
-                    <textarea
-                        value={element.content}
-                        onChange={(e) => onChange(element.id, { content: e.target.value })}
-                        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                        rows={element.style === TextStyle.Title ? 1 : 3}
-                    />
+                    {element.style === TextStyle.Title ? (
+                        <textarea
+                            value={element.content}
+                            onChange={(e) => onChange(element.id, { content: e.target.value })}
+                            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            rows={1}
+                        />
+                    ) : (
+                         <textarea
+                            value={element.content}
+                            onChange={(e) => onChange(element.id, { content: e.target.value })}
+                            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm"
+                            rows={8}
+                            placeholder="Enter content using Markdown..."
+                         />
+                    )}
                 </div>
             )}
             {element.type === 'image' && (

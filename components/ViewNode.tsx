@@ -1,7 +1,11 @@
 
 import React, { FC, memo } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
+import showdown from 'showdown';
 import { ViewNodeData, TextStyle } from '../types';
+
+const converter = new showdown.Converter();
+converter.setOption('simpleLineBreaks', true);
 
 const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
   const { title, elements, onFocus } = data;
@@ -23,13 +27,25 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
         {elements.map(element => {
           switch (element.type) {
             case 'text':
+              if (element.style === TextStyle.Body) {
+                const htmlContent = converter.makeHtml(element.content);
+                return (
+                  <div
+                    key={element.id}
+                    className="text-sm text-gray-700 break-words 
+                               [&_ul]:list-disc [&_ul]:pl-5
+                               [&_ol]:list-decimal [&_ol]:pl-5
+                               [&_strong]:font-bold [&_b]:font-bold
+                               [&_em]:italic [&_i]:italic
+                               [&_p]:m-0"
+                    dangerouslySetInnerHTML={{ __html: htmlContent }}
+                  />
+                );
+              }
               return (
                 <p 
                   key={element.id} 
-                  className={`
-                    break-words whitespace-pre-wrap
-                    ${element.style === TextStyle.Title ? 'text-xl font-bold text-gray-900' : 'text-sm text-gray-700'}
-                  `}
+                  className="text-xl font-bold text-gray-900 break-words"
                 >
                   {element.content}
                 </p>

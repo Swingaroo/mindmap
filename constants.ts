@@ -16,7 +16,7 @@ export const initialNodes: Node<ViewNodeData>[] = [
       title: 'Welcome to MindMap Presenter!',
       elements: [
         { id: uuidv4(), type: 'text', content: 'This is a Title', style: TextStyle.Title },
-        { id: uuidv4(), type: 'text', content: 'This is a body text. You can add more content in the editor panel on the right when a view is selected.', style: TextStyle.Body },
+        { id: uuidv4(), type: 'text', content: 'This is a **body text**. You can add more content in the *editor panel* on the right when a view is selected.', style: TextStyle.Body },
         { id: uuidv4(), type: 'image', src: 'https://picsum.photos/200/100' },
         { id: uuidv4(), type: 'link', content: 'Go to the next view', targetViewId: node2Id },
       ],
@@ -30,10 +30,7 @@ export const initialNodes: Node<ViewNodeData>[] = [
     data: {
       title: 'How it Works',
       elements: [
-        { id: uuidv4(), type: 'text', content: '1. Add views with the button in the toolbar.', style: TextStyle.Body },
-        { id: uuidv4(), type: 'text', content: '2. Click on a view to select and edit it.', style: TextStyle.Body },
-        { id: uuidv4(), type: 'text', content: '3. Drag from the handles to connect views.', style: TextStyle.Body },
-        { id: uuidv4(), type: 'text', content: '4. Save and load your work.', style: TextStyle.Body },
+        { id: uuidv4(), type: 'text', content: '* Add views with the button in the toolbar.\n* Click on a view to select and edit it.\n* Drag from the handles to connect views.\n* Save and load your work.', style: TextStyle.Body },
       ],
       onFocus: focusFunc,
     },
