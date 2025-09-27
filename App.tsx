@@ -30,6 +30,7 @@ const App: FC = () => {
   const [isReadOnly, setIsReadOnly] = useState(true);
   const [isHighlighterActive, setIsHighlighterActive] = useState(false);
   const highlightedElementRef = useRef<HTMLElement | SVGElement | null>(null);
+  const [isMiniMapVisible, setIsMiniMapVisible] = useState(true);
 
   useEffect(() => {
     const currentlySelected = nodes.find(n => n.selected);
@@ -209,6 +210,8 @@ const App: FC = () => {
     };
     input.click();
   };
+  
+  const handleToggleMiniMap = () => setIsMiniMapVisible(prev => !prev);
 
   const snapGrid: [number, number] = [16, 16];
 
@@ -231,6 +234,8 @@ const App: FC = () => {
         }}
         isHighlighterActive={isHighlighterActive}
         onToggleHighlighter={handleToggleHighlighter}
+        isMiniMapVisible={isMiniMapVisible}
+        onToggleMiniMap={handleToggleMiniMap}
       />
       <div className={`flex-grow flex min-h-0 ${isHighlighterActive ? 'highlighter-cursor' : ''}`}>
         <div className="flex-grow h-full relative">
@@ -250,17 +255,19 @@ const App: FC = () => {
               snapGrid={snapGrid}
             >
               <Controls />
-              <MiniMap 
-                pannable 
-                zoomable
-                style={{
-                  backgroundColor: '#f9fafb',
-                  border: '1px solid #e5e7eb',
-                }}
-                nodeColor={(node) => node.selected ? '#4f46e5' : '#c7d2fe'}
-                nodeStrokeColor="#4f46e5"
-                nodeBorderRadius={2}
-              />
+              {isMiniMapVisible && (
+                <MiniMap 
+                  pannable 
+                  zoomable
+                  style={{
+                    backgroundColor: '#f9fafb',
+                    border: '1px solid #e5e7eb',
+                  }}
+                  nodeColor={(node) => node.selected ? '#4f46e5' : '#c7d2fe'}
+                  nodeStrokeColor="#4f46e5"
+                  nodeBorderRadius={2}
+                />
+              )}
             </ReactFlow>
         </div>
         {selectedNode && !isReadOnly && (

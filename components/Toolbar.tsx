@@ -9,9 +9,11 @@ interface ToolbarProps {
   onToggleReadOnly: () => void;
   isHighlighterActive?: boolean;
   onToggleHighlighter?: () => void;
+  isMiniMapVisible: boolean;
+  onToggleMiniMap: () => void;
 }
 
-const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onLoad, isReadOnly, onToggleReadOnly, isHighlighterActive, onToggleHighlighter }) => {
+const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onLoad, isReadOnly, onToggleReadOnly, isHighlighterActive, onToggleHighlighter, isMiniMapVisible, onToggleMiniMap }) => {
   return (
     <div className="w-full bg-white shadow-md p-2 flex items-center justify-between z-10">
       <h1 className="text-xl font-bold text-gray-800">MindMap Presenter</h1>
@@ -29,7 +31,6 @@ const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onLoad, isReadOnly, onTo
                 </>
             )}
         </Button>
-        <div className="w-px bg-gray-300 h-8 mx-2"></div>
         {isReadOnly ? (
             <Button onClick={onToggleHighlighter} variant={isHighlighterActive ? 'secondary' : 'outline'} title="Toggle highlighter tool">
                 <HighlighterIcon className="w-5 h-5 mr-1" />
@@ -47,9 +48,17 @@ const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onLoad, isReadOnly, onTo
                 </Button>
             </>
         )}
+        <div className="w-px bg-gray-300 h-8 mx-2"></div>
         <Button onClick={onLoad} variant="secondary">
             <LoadIcon className="w-5 h-5 mr-1" />
             Load
+        </Button>
+        <Button 
+            onClick={onToggleMiniMap} 
+            variant={isMiniMapVisible ? 'secondary' : 'outline'}
+            title={isMiniMapVisible ? 'Hide Minimap' : 'Show Minimap'}
+        >
+            <MiniMapIcon className="w-5 h-5" />
         </Button>
       </div>
     </div>
@@ -91,6 +100,13 @@ const EditIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
 const HighlighterIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.998 15.998 0 011.622-3.385m5.043.025a15.998 15.998 0 001.622-3.385m3.388 1.62a15.998 15.998 0 00-1.622-3.385m0 0a3 3 0 10-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 00-3.388-1.62m5.043.025a15.998 15.998 0 01-1.622-3.385" />
+  </svg>
+);
+
+const MiniMapIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h12A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M14.25 15.75h3.75v-3.75h-3.75v3.75z" />
   </svg>
 );
 
