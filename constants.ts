@@ -1,6 +1,7 @@
 import { Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 import { ViewNodeData, TextStyle, DiagramFigureType, ArrowType } from './types';
+import { TFunction } from './i18n';
 
 const node1Id = '1';
 const node2Id = '2';
@@ -12,34 +13,33 @@ export const viewSizeOptions = [
   { label: 'M', width: 1024, height: 768 }
 ];
 
-export const initialNodes: Node<ViewNodeData>[] = [
+export const getInitialNodes = (t: TFunction): Node<ViewNodeData>[] => [
   {
     id: node1Id,
     type: 'viewNode',
     position: { x: 250, y: 5 },
-    // FIX: Corrected typo from `viewSizptions` to `viewSizeOptions`.
     style: { width: `${viewSizeOptions[1].width}px`, height: `${viewSizeOptions[1].height}px` },
     data: {
-      title: 'Welcome to MindMap Presenter!',
+      title: t('initialNodes.welcome.title'),
       elements: [
-        { id: uuidv4(), type: 'text', content: 'This is a Title', style: TextStyle.Title },
-        { id: uuidv4(), type: 'text', content: 'This is a **body text**. You can add more content in the *editor panel* on the right when a view is selected.', style: TextStyle.Body },
+        { id: uuidv4(), type: 'text', content: t('initialNodes.welcome.element1_content'), style: TextStyle.Title },
+        { id: uuidv4(), type: 'text', content: t('initialNodes.welcome.element2_content'), style: TextStyle.Body },
         { id: uuidv4(), type: 'image', src: 'https://picsum.photos/200/100' },
         { 
           id: uuidv4(), 
           type: 'diagram', 
-          caption: 'This is an example diagram. Edit its caption in the side panel.',
+          caption: t('initialNodes.welcome.element4_caption'),
           diagramState: {
             figures: [
-              { id: fig1Id, figureType: DiagramFigureType.Rectangle, position: { x: 150, y: 100 }, label: 'Start Here' },
-              { id: fig2Id, figureType: DiagramFigureType.Circle, position: { x: 400, y: 250 }, label: 'Go Next' },
+              { id: fig1Id, figureType: DiagramFigureType.Rectangle, position: { x: 150, y: 100 }, label: t('initialNodes.welcome.diagramFig1_label') },
+              { id: fig2Id, figureType: DiagramFigureType.Circle, position: { x: 400, y: 250 }, label: t('initialNodes.welcome.diagramFig2_label') },
             ],
             arrows: [
-              { id: uuidv4(), type: 'arrow', sourceId: fig1Id, targetId: fig2Id, label: 'Connector', arrowType: ArrowType.OneEnd }
+              { id: uuidv4(), type: 'arrow', sourceId: fig1Id, targetId: fig2Id, label: t('initialNodes.welcome.diagramArrow1_label'), arrowType: ArrowType.OneEnd }
             ]
           }
         },
-        { id: uuidv4(), type: 'link', content: 'Go to the next view', targetViewId: node2Id },
+        { id: uuidv4(), type: 'link', content: t('initialNodes.welcome.element5_content'), targetViewId: node2Id },
       ],
     },
   },
@@ -49,9 +49,9 @@ export const initialNodes: Node<ViewNodeData>[] = [
     position: { x: 100, y: 400 },
     style: { width: `${viewSizeOptions[1].width}px`, height: `${viewSizeOptions[1].height}px` },
     data: {
-      title: 'How it Works',
+      title: t('initialNodes.howItWorks.title'),
       elements: [
-        { id: uuidv4(), type: 'text', content: '* Add views with the button in the toolbar.\n* Click on a view to select and edit it.\n* Use links to navigate between views.\n* Save and load your work.', style: TextStyle.Body },
+        { id: uuidv4(), type: 'text', content: t('initialNodes.howItWorks.element1_content'), style: TextStyle.Body },
       ],
     },
   },

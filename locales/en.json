@@ -1,0 +1,120 @@
+{
+  "appName": "MindMap Presenter",
+  "app": {
+    "defaultJsonFilename": "presentation.json",
+    "defaultPdfFilename": "presentation.pdf"
+  },
+  "toolbar": {
+    "editMode": "Edit Mode",
+    "previewMode": "Preview Mode",
+    "highlighter": "Highlighter",
+    "toggleHighlighter": "Toggle highlighter tool",
+    "addView": "Add View",
+    "save": {
+      "button": "Save",
+      "asJson": "Save to file (.json)",
+      "asPdf": "Save as PDF"
+    },
+    "load": "Load",
+    "hideMinimap": "Hide Minimap",
+    "showMinimap": "Show Minimap"
+  },
+  "editorPanel": {
+    "title": "Edit View",
+    "viewTitleLabel": "View Title",
+    "viewSizeLabel": "View Size (4:3)",
+    "addContent": {
+      "title": "Add Content",
+      "titleText": "Title Text",
+      "bodyText": "Body Text",
+      "image": "Image",
+      "link": "Link",
+      "diagram": "Diagram"
+    },
+    "contentElementsTitle": "Content Elements",
+    "textElement": {
+      "styleTitle": "Title",
+      "styleBody": "Body (Markdown)",
+      "bodyPlaceholder": "Enter content using Markdown..."
+    },
+    "imageElement": {
+      "alt": "user content"
+    },
+    "linkElement": {
+      "placeholder": "Link text",
+      "viewOptionPrefix": "View"
+    },
+    "diagramElement": {
+      "editHint": "Click the \"Edit\" button on the main view to modify the diagram's content and layout.",
+      "captionLabel": "Caption",
+      "captionPlaceholder": "Enter a caption for the diagram...",
+      "heightLabel": "Diagram Height",
+      "decreaseHeight": "Decrease Height",
+      "fitToContentHeight": "Fit to Content",
+      "increaseHeight": "Increase Height",
+      "viewLabel": "Diagram View",
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "fitToContentView": "Fit to Content",
+      "resetView": "Reset View"
+    }
+  },
+  "viewNode": {
+    "altContentImage": "view content",
+    "editDiagram": "Edit"
+  },
+  "diagramEditor": {
+    "newFigure": "New Figure",
+    "newConnection": "Connection",
+    "selectTarget": "Select Target",
+    "connect": "Connect",
+    "delete": "Delete",
+    "done": "Done",
+    "figures": {
+      "actor": "Actor",
+      "circle": "Circle",
+      "rectangle": "Rect",
+      "cloud": "Cloud"
+    },
+    "arrowTypes": {
+      "none": "No arrowheads",
+      "oneEnd": "Arrowhead at end",
+      "otherEnd": "Arrowhead at start",
+      "bothEnds": "Arrowheads at both ends"
+    }
+  },
+  "pdf": {
+    "generating": "Generating PDF...",
+    "altContentImage": "view content",
+    "pageOf": "Page {{currentPage}} of {{totalPages}}"
+  },
+  "errors": {
+    "pdfGenerationFailed": "An error occurred while generating the PDF. Please check the console for details.",
+    "invalidFileFormat": "Invalid file format.",
+    "fileLoadFailed": "Error loading file.",
+    "noOtherViewsToLink": "No other views to link to. Please create another view first."
+  },
+  "defaults": {
+    "newNodeTitle": "New View",
+    "newNodeContent": "Start adding content",
+    "newTextElementContent": "New Text",
+    "newLinkElementContent": "Link to another view",
+    "newDiagramElementCaption": "A new diagram"
+  },
+  "initialNodes": {
+    "welcome": {
+      "title": "Welcome to MindMap Presenter!",
+      "element1_content": "This is a Title",
+      "element2_content": "This is a **body text**. You can add more content in the *editor panel* on the right when a view is selected.",
+      "element4_caption": "This is an example diagram. Edit its caption in the side panel.",
+      "diagramFig1_label": "Start Here",
+      "diagramFig2_label": "Go Next",
+      "diagramArrow1_label": "Connector",
+      "element5_content": "Go to the next view"
+    },
+    "howItWorks": {
+      "title": "How it Works",
+      "element1_content": "* Add views with the button in the toolbar.\n* Click on a view to select and edit it.\n* Use links to navigate between views.\n* Save and load your work."
+    }
+  }
+}

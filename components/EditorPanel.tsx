@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ViewNodeData, ViewElement, TextStyle, ImageElement, LinkElement, TextElement, DiagramElement, DiagramFigure, DiagramFigureType } from '../types';
 import Button from './ui/Button';
 import DiagramEditor from './diagram/DiagramEditor';
+import { useTranslation } from '../i18n';
 
 interface EditorPanelProps {
   node: Node<ViewNodeData>;
@@ -15,6 +16,7 @@ interface EditorPanelProps {
 }
 
 const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeChange, onClose, allNodes, sizeOptions }) => {
+  const { t } = useTranslation();
   const [title, setTitle] = useState(node.data.title);
   const imageInputRef = useRef<HTMLInputElement>(null);
   
@@ -32,23 +34,23 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
 
   const addElement = (type: 'text' | 'image' | 'link' | 'diagram', style: TextStyle = TextStyle.Body) => {
     if (type === 'text') {
-      const newElement: TextElement = { id: uuidv4(), type: 'text', content: 'New Text', style };
+      const newElement: TextElement = { id: uuidv4(), type: 'text', content: t('defaults.newTextElementContent'), style };
       updateElements([...node.data.elements, newElement]);
     } else if (type === 'image') {
       imageInputRef.current?.click();
     } else if (type === 'link') {
         const otherNodes = allNodes.filter(n => n.id !== node.id);
         if (otherNodes.length > 0) {
-            const newElement: LinkElement = { id: uuidv4(), type: 'link', content: 'Link to another view', targetViewId: otherNodes[0].id };
+            const newElement: LinkElement = { id: uuidv4(), type: 'link', content: t('defaults.newLinkElementContent'), targetViewId: otherNodes[0].id };
             updateElements([...node.data.elements, newElement]);
         } else {
-            alert("No other views to link to. Please create another view first.");
+            alert(t('errors.noOtherViewsToLink'));
         }
     } else if (type === 'diagram') {
         const newElement: DiagramElement = { 
             id: uuidv4(), 
             type: 'diagram',
-            caption: 'A new diagram',
+            caption: t('defaults.newDiagramElementCaption'),
             diagramState: { figures: [], arrows: [] },
             height: 400,
         };
@@ -88,7 +90,7 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
   return (
     <div className="w-96 bg-white shadow-lg flex flex-col z-10 border-l border-gray-200 h-full">
         <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-800">Edit View</h2>
+            <h2 className="text-lg font-semibold text-gray-800">{t('editorPanel.title')}</h2>
             <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
                 <CloseIcon className="w-6 h-6" />
             </button>
@@ -96,7 +98,7 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
 
         <div className="p-4 flex-grow overflow-y-auto">
             <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">View Title</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('editorPanel.viewTitleLabel')}</label>
                 <input
                     type="text"
                     value={title}
@@ -107,7 +109,7 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
             </div>
             
             <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">View Size (4:3)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('editorPanel.viewSizeLabel')}</label>
                 <div className="flex items-center gap-2">
                     {sizeOptions.map(option => (
                         <Button
@@ -128,14 +130,14 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
             </div>
 
             <div className="mb-4 border-t pt-4">
-                <h3 className="text-md font-semibold text-gray-700 mb-2">Add Content</h3>
+                <h3 className="text-md font-semibold text-gray-700 mb-2">{t('editorPanel.addContent.title')}</h3>
                 <div className="grid grid-cols-2 gap-2">
-                    <Button onClick={() => addElement('text', TextStyle.Title)} variant="outline">Title Text</Button>
-                    <Button onClick={() => addElement('text', TextStyle.Body)} variant="outline">Body Text</Button>
-                    <Button onClick={() => addElement('image')} variant="outline">Image</Button>
-                    <Button onClick={() => addElement('link')} variant="outline">Link</Button>
+                    <Button onClick={() => addElement('text', TextStyle.Title)} variant="outline">{t('editorPanel.addContent.titleText')}</Button>
+                    <Button onClick={() => addElement('text', TextStyle.Body)} variant="outline">{t('editorPanel.addContent.bodyText')}</Button>
+                    <Button onClick={() => addElement('image')} variant="outline">{t('editorPanel.addContent.image')}</Button>
+                    <Button onClick={() => addElement('link')} variant="outline">{t('editorPanel.addContent.link')}</Button>
                     <Button onClick={() => addElement('diagram')} variant="outline" className="col-span-2">
-                      <DiagramIcon className="w-4 h-4 mr-2" /> Diagram
+                      <DiagramIcon className="w-4 h-4 mr-2" /> {t('editorPanel.addContent.diagram')}
                     </Button>
                 </div>
                  <input
@@ -148,7 +150,7 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
             </div>
             
             <div className="space-y-4 border-t pt-4">
-                <h3 className="text-md font-semibold text-gray-700 mb-2">Content Elements</h3>
+                <h3 className="text-md font-semibold text-gray-700 mb-2">{t('editorPanel.contentElementsTitle')}</h3>
                 {node.data.elements.map((el) => (
                     <ElementEditor 
                         key={el.id} 
@@ -174,6 +176,7 @@ interface ElementEditorProps {
 }
 
 const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, allNodes, currentNodeId }) => {
+    const { t } = useTranslation();
     
     const calculateFitHeight = (figures: DiagramFigure[]): number => {
         if (figures.length === 0) {
@@ -291,8 +294,8 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                         onChange={(e) => onChange(element.id, { style: e.target.value as TextStyle })}
                         className="w-full mb-2 p-1 border border-gray-300 rounded-md text-sm"
                     >
-                        <option value={TextStyle.Title}>Title</option>
-                        <option value={TextStyle.Body}>Body (Markdown)</option>
+                        <option value={TextStyle.Title}>{t('editorPanel.textElement.styleTitle')}</option>
+                        <option value={TextStyle.Body}>{t('editorPanel.textElement.styleBody')}</option>
                     </select>
                     {element.style === TextStyle.Title ? (
                         <textarea
@@ -307,13 +310,13 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                             onChange={(e) => onChange(element.id, { content: e.target.value })}
                             className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm"
                             rows={8}
-                            placeholder="Enter content using Markdown..."
+                            placeholder={t('editorPanel.textElement.bodyPlaceholder')}
                          />
                     )}
                 </div>
             )}
             {element.type === 'image' && (
-                <img src={element.src} alt="user content" className="max-w-full h-auto rounded-md" />
+                <img src={element.src} alt={t('editorPanel.imageElement.alt')} className="max-w-full h-auto rounded-md" />
             )}
             {element.type === 'link' && (
                  <div>
@@ -322,7 +325,7 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                         value={element.content}
                         onChange={(e) => onChange(element.id, { content: e.target.value })}
                         className="w-full mb-2 p-2 border border-gray-300 rounded-md shadow-sm"
-                        placeholder="Link text"
+                        placeholder={t('editorPanel.linkElement.placeholder')}
                     />
                     <select
                         value={element.targetViewId}
@@ -330,7 +333,7 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                         className="w-full p-2 border border-gray-300 rounded-md text-sm"
                     >
                         {allNodes.filter(n => n.id !== currentNodeId).map(n => (
-                            <option key={n.id} value={n.id}>{n.data.title || `View ${n.id}`}</option>
+                            <option key={n.id} value={n.id}>{n.data.title || `${t('editorPanel.linkElement.viewOptionPrefix')} ${n.id}`}</option>
                         ))}
                     </select>
                  </div>
@@ -338,34 +341,34 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
             {element.type === 'diagram' && (
                  <div>
                     <p className="text-sm text-gray-600 mb-2 p-2 bg-indigo-50 rounded-md border border-indigo-200">
-                        Click the "Edit" button on the main view to modify the diagram's content and layout.
+                        {t('editorPanel.diagramElement.editHint')}
                     </p>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Caption</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">{t('editorPanel.diagramElement.captionLabel')}</label>
                     <textarea
                         value={element.caption}
                         onChange={(e) => onChange(element.id, { caption: e.target.value })}
                         className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                         rows={2}
-                        placeholder="Enter a caption for the diagram..."
+                        placeholder={t('editorPanel.diagramElement.captionPlaceholder')}
                     />
                     <div className="mt-2 pt-2 border-t border-gray-200">
-                        <label className="block text-xs font-medium text-gray-500 mb-2">Diagram Height</label>
+                        <label className="block text-xs font-medium text-gray-500 mb-2">{t('editorPanel.diagramElement.heightLabel')}</label>
                         <div className="grid grid-cols-3 gap-2">
                             <Button
                                 onClick={() => onChange(element.id, { height: Math.max(200, (element.height || 400) - 50) })}
-                                variant="outline" size="sm" title="Decrease Height"
+                                variant="outline" size="sm" title={t('editorPanel.diagramElement.decreaseHeight')}
                             >
                                 <ArrowUpIcon className="w-4 h-4 m-auto" />
                             </Button>
                             <Button
                                 onClick={() => onChange(element.id, { height: calculateFitHeight(element.diagramState.figures) })}
-                                variant="outline" size="sm" title="Fit to Content"
+                                variant="outline" size="sm" title={t('editorPanel.diagramElement.fitToContentHeight')}
                             >
                                <ArrowsUpDownIcon className="w-4 h-4 m-auto" />
                             </Button>
                             <Button
                                 onClick={() => onChange(element.id, { height: (element.height || 400) + 50 })}
-                                variant="outline" size="sm" title="Increase Height"
+                                variant="outline" size="sm" title={t('editorPanel.diagramElement.increaseHeight')}
                             >
                                 
                                 <ArrowDownIcon className="w-4 h-4 m-auto" />
@@ -373,18 +376,18 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                         </div>
                     </div>
                      <div className="mt-2 pt-2 border-t border-gray-200">
-                        <label className="block text-xs font-medium text-gray-500 mb-2">Diagram View</label>
+                        <label className="block text-xs font-medium text-gray-500 mb-2">{t('editorPanel.diagramElement.viewLabel')}</label>
                         <div className="grid grid-cols-4 gap-2">
-                            <Button onClick={() => handleDiagramZoom(1 / 1.25)} variant="outline" size="sm" title="Zoom In">
+                            <Button onClick={() => handleDiagramZoom(1 / 1.25)} variant="outline" size="sm" title={t('editorPanel.diagramElement.zoomIn')}>
                                 <ZoomInIcon className="w-4 h-4 m-auto" />
                             </Button>
-                             <Button onClick={() => handleDiagramZoom(1.25)} variant="outline" size="sm" title="Zoom Out">
+                             <Button onClick={() => handleDiagramZoom(1.25)} variant="outline" size="sm" title={t('editorPanel.diagramElement.zoomOut')}>
                                 <ZoomOutIcon className="w-4 h-4 m-auto" />
                             </Button>
-                            <Button onClick={() => onChange(element.id, { viewBox: calculateFitViewBox(element.diagramState.figures) })} variant="outline" size="sm" title="Fit to Content">
+                            <Button onClick={() => onChange(element.id, { viewBox: calculateFitViewBox(element.diagramState.figures) })} variant="outline" size="sm" title={t('editorPanel.diagramElement.fitToContentView')}>
                                 <FitIcon className="w-4 h-4 m-auto" />
                             </Button>
-                             <Button onClick={() => onChange(element.id, { viewBox: [0, 0, 800, 400] })} variant="outline" size="sm" title="Reset View">
+                             <Button onClick={() => onChange(element.id, { viewBox: [0, 0, 800, 400] })} variant="outline" size="sm" title={t('editorPanel.diagramElement.resetView')}>
                                 <ResetIcon className="w-4 h-4 m-auto" />
                             </Button>
                         </div>

@@ -4,6 +4,7 @@ import showdown from 'showdown';
 import { ViewNodeData, TextStyle, DiagramState, ViewElement } from '../types';
 import DiagramEditor from './diagram/DiagramEditor';
 import Button from './ui/Button';
+import { useTranslation } from '../i18n';
 
 const converter = new showdown.Converter();
 converter.setOption('simpleLineBreaks', true);
@@ -12,6 +13,7 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
   const { id: nodeId, title, elements, onFocus, isReadOnly, onNodeDataChange, isHighlighterActive, onHighlightElement } = data;
   const [editingDiagramId, setEditingDiagramId] = useState<string | null>(null);
   const contentContainerRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   const handleDiagramChange = (diagramId: string, newDiagramState: DiagramState) => {
     if (!nodeId || !onNodeDataChange) return;
@@ -107,7 +109,7 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
                 <img 
                   key={element.id} 
                   src={element.src} 
-                  alt="view content" 
+                  alt={t('viewNode.altContentImage')}
                   className="max-w-full h-auto rounded"
                 />
               );
@@ -130,7 +132,7 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
                                 <div className="absolute top-2 right-2 z-10">
                                     <Button onClick={() => handleToggleDiagramEdit(element.id)} variant="outline" size="sm">
                                         <EditIcon className="w-4 h-4 mr-1" />
-                                        Edit
+                                        {t('viewNode.editDiagram')}
                                     </Button>
                                 </div>
                             )}

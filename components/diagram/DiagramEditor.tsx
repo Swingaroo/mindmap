@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DiagramState, DiagramFigure, DiagramArrow, DiagramFigureType, ArrowType } from '../../types';
 import { FigureComponents } from './figures';
 import Button from '../ui/Button';
+import { useTranslation } from '../../i18n';
 
 interface DiagramEditorProps {
   diagramState: DiagramState;
@@ -23,6 +24,7 @@ const figureRadii: Record<DiagramFigureType, number> = {
 };
 
 const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = false, onChange, onDoneEditing, height, viewBox, isHighlighterActive, onHighlightElement }) => {
+  const { t } = useTranslation();
   const [selectedElement, setSelectedElement] = useState<{ type: 'figure' | 'arrow'; id: string } | null>(null);
   const [connecting, setConnecting] = useState<{ sourceId: string } | null>(null);
   const [dragging, setDragging] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
@@ -38,7 +40,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
       id: uuidv4(),
       figureType,
       position: { x: 100, y: 100 },
-      label: 'New Figure',
+      label: t('diagramEditor.newFigure'),
     };
     updateState({ figures: [...diagramState.figures, newFigure] });
   };
@@ -72,7 +74,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
           type: 'arrow',
           sourceId: connecting.sourceId,
           targetId: figure.id,
-          label: 'Connection',
+          label: t('diagramEditor.newConnection'),
           arrowType: ArrowType.OneEnd,
         };
         updateState({ arrows: [...diagramState.arrows, newArrow] });
@@ -217,16 +219,16 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
     >
       {!isReadOnly && (
         <div className="absolute top-0 left-0 right-0 z-10 p-2 bg-white/90 backdrop-blur-sm border-b rounded-t-md flex flex-wrap gap-2 items-center">
-            <Button onClick={() => addFigure(DiagramFigureType.Actor)} variant="outline" size="sm">Actor</Button>            
-            <Button onClick={() => addFigure(DiagramFigureType.Circle)} variant="outline" size="sm">Circle</Button>
-            <Button onClick={() => addFigure(DiagramFigureType.Rectangle)} variant="outline" size="sm">Rect</Button>
-            <Button onClick={() => addFigure(DiagramFigureType.Cloud)} variant="outline" size="sm">Cloud</Button>
+            <Button onClick={() => addFigure(DiagramFigureType.Actor)} variant="outline" size="sm">{t('diagramEditor.figures.actor')}</Button>            
+            <Button onClick={() => addFigure(DiagramFigureType.Circle)} variant="outline" size="sm">{t('diagramEditor.figures.circle')}</Button>
+            <Button onClick={() => addFigure(DiagramFigureType.Rectangle)} variant="outline" size="sm">{t('diagramEditor.figures.rectangle')}</Button>
+            <Button onClick={() => addFigure(DiagramFigureType.Cloud)} variant="outline" size="sm">{t('diagramEditor.figures.cloud')}</Button>
             
             <div className="w-px h-6 bg-gray-300 mx-1"></div>
             <Button onClick={() => setConnecting({ sourceId: selectedElement?.id! })} disabled={!selectedElement || selectedElement.type !== 'figure'} variant={connecting ? 'secondary' : 'outline'} size="sm">
-                {connecting ? 'Select Target' : 'Connect'}
+                {connecting ? t('diagramEditor.selectTarget') : t('diagramEditor.connect')}
             </Button>
-            <Button onClick={deleteSelected} disabled={!selectedElement} variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-50">Delete</Button>
+            <Button onClick={deleteSelected} disabled={!selectedElement} variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-50">{t('diagramEditor.delete')}</Button>
             
             {selectedArrow && (() => {
                 const activeType = selectedArrow.arrowType || ArrowType.OneEnd;
@@ -234,16 +236,16 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                     <>
                         <div className="w-px h-6 bg-gray-300 mx-1"></div>
                         <div className="flex items-center gap-1 rounded-md border border-gray-300 p-0.5">
-                            <button title="No arrowheads" onClick={() => handleArrowTypeChange(ArrowType.None)} className={`p-1 rounded-sm ${activeType === ArrowType.None ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}>
+                            <button title={t('diagramEditor.arrowTypes.none')} onClick={() => handleArrowTypeChange(ArrowType.None)} className={`p-1 rounded-sm ${activeType === ArrowType.None ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}>
                                 <ArrowNoneIcon className="w-5 h-5" />
                             </button>
-                            <button title="Arrowhead at end" onClick={() => handleArrowTypeChange(ArrowType.OneEnd)} className={`p-1 rounded-sm ${activeType === ArrowType.OneEnd ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}>
+                            <button title={t('diagramEditor.arrowTypes.oneEnd')} onClick={() => handleArrowTypeChange(ArrowType.OneEnd)} className={`p-1 rounded-sm ${activeType === ArrowType.OneEnd ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}>
                                 <ArrowEndIcon className="w-5 h-5" />
                             </button>
-                            <button title="Arrowhead at start" onClick={() => handleArrowTypeChange(ArrowType.OtherEnd)} className={`p-1 rounded-sm ${activeType === ArrowType.OtherEnd ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}>
+                            <button title={t('diagramEditor.arrowTypes.otherEnd')} onClick={() => handleArrowTypeChange(ArrowType.OtherEnd)} className={`p-1 rounded-sm ${activeType === ArrowType.OtherEnd ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}>
                                 <ArrowStartIcon className="w-5 h-5" />
                             </button>
-                            <button title="Arrowheads at both ends" onClick={() => handleArrowTypeChange(ArrowType.BothEnds)} className={`p-1 rounded-sm ${activeType === ArrowType.BothEnds ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}>
+                            <button title={t('diagramEditor.arrowTypes.bothEnds')} onClick={() => handleArrowTypeChange(ArrowType.BothEnds)} className={`p-1 rounded-sm ${activeType === ArrowType.BothEnds ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:bg-gray-100'}`}>
                                 <ArrowBothIcon className="w-5 h-5" />
                             </button>
                         </div>
@@ -254,7 +256,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
             <div className="flex-grow" />
             <Button onClick={onDoneEditing} variant="secondary" size="sm">
                 <CheckIcon className="w-4 h-4 mr-1" />
-                Done
+                {t('diagramEditor.done')}
             </Button>
         </div>
       )}

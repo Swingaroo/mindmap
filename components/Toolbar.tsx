@@ -1,5 +1,6 @@
 import React, { FC, SVGProps, useState, useRef, useEffect } from 'react';
 import Button from './ui/Button';
+import { useTranslation } from '../i18n';
 
 interface ToolbarProps {
   onAddView: () => void;
@@ -15,6 +16,7 @@ interface ToolbarProps {
 }
 
 const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onSaveToPdf, onLoad, isReadOnly, onToggleReadOnly, isHighlighterActive, onToggleHighlighter, isMiniMapVisible, onToggleMiniMap }) => {
+  const { t } = useTranslation();
   const [isSaveMenuOpen, setIsSaveMenuOpen] = useState(false);
   const saveMenuRef = useRef<HTMLDivElement>(null);
 
@@ -30,36 +32,36 @@ const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onSaveToPdf, onLoad, isR
 
   return (
     <div className="w-full bg-white shadow-md p-2 flex items-center justify-between z-10">
-      <h1 className="text-xl font-bold text-gray-800">MindMap Presenter</h1>
+      <h1 className="text-xl font-bold text-gray-800">{t('appName')}</h1>
       <div className="flex items-center gap-2">
          <Button onClick={onToggleReadOnly} variant="secondary">
             {isReadOnly ? (
                 <>
                     <EditIcon className="w-5 h-5 mr-1" />
-                    Edit Mode
+                    {t('toolbar.editMode')}
                 </>
             ) : (
                 <>
                     <PreviewIcon className="w-5 h-5 mr-1" />
-                    Preview Mode
+                    {t('toolbar.previewMode')}
                 </>
             )}
         </Button>
         {isReadOnly ? (
-            <Button onClick={onToggleHighlighter} variant={isHighlighterActive ? 'secondary' : 'outline'} title="Toggle highlighter tool">
+            <Button onClick={onToggleHighlighter} variant={isHighlighterActive ? 'secondary' : 'outline'} title={t('toolbar.toggleHighlighter')}>
                 <HighlighterIcon className="w-5 h-5 mr-1" />
-                Highlighter
+                {t('toolbar.highlighter')}
             </Button>
         ) : (
             <>
                 <Button onClick={onAddView}>
                     <PlusIcon className="w-5 h-5 mr-1" />
-                    Add View
+                    {t('toolbar.addView')}
                 </Button>
                 <div className="relative" ref={saveMenuRef}>
                     <Button onClick={() => setIsSaveMenuOpen(prev => !prev)} variant="secondary">
                         <SaveIcon className="w-5 h-5 mr-1" />
-                        Save
+                        {t('toolbar.save.button')}
                         <ChevronDownIcon className="w-4 h-4 ml-1" />
                     </Button>
                     {isSaveMenuOpen && (
@@ -71,7 +73,7 @@ const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onSaveToPdf, onLoad, isR
                                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                                     >
                                         <FileJsonIcon className="w-4 h-4 mr-2" />
-                                        Save to file (.json)
+                                        {t('toolbar.save.asJson')}
                                     </button>
                                 </li>
                                 <li>
@@ -80,7 +82,7 @@ const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onSaveToPdf, onLoad, isR
                                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                                     >
                                         <FilePdfIcon className="w-4 h-4 mr-2" />
-                                        Save as PDF
+                                        {t('toolbar.save.asPdf')}
                                     </button>
                                 </li>
                             </ul>
@@ -92,12 +94,12 @@ const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onSaveToPdf, onLoad, isR
         <div className="w-px bg-gray-300 h-8 mx-2"></div>
         <Button onClick={onLoad} variant="secondary">
             <LoadIcon className="w-5 h-5 mr-1" />
-            Load
+            {t('toolbar.load')}
         </Button>
         <Button 
             onClick={onToggleMiniMap} 
             variant={isMiniMapVisible ? 'secondary' : 'outline'}
-            title={isMiniMapVisible ? 'Hide Minimap' : 'Show Minimap'}
+            title={isMiniMapVisible ? t('toolbar.hideMinimap') : t('toolbar.showMinimap')}
         >
             <MiniMapIcon className="w-5 h-5" />
         </Button>

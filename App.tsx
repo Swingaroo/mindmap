@@ -18,12 +18,13 @@ import showdown from 'showdown';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
-import { initialNodes, viewSizeOptions } from './constants';
+import { getInitialNodes, viewSizeOptions } from './constants';
 import { Presentation, TextStyle, ViewNodeData, ViewElement } from './types';
 import ViewNode from './components/ViewNode';
 import Toolbar from './components/Toolbar';
 import EditorPanel from './components/EditorPanel';
 import DiagramEditor from './components/diagram/DiagramEditor';
+import { useTranslation, TFunction } from './i18n';
 
 const nodeTypes = { viewNode: ViewNode };
 
@@ -34,9 +35,10 @@ pdfConverter.setOption('simpleLineBreaks', true);
 interface PdfViewNodeProps {
   node: Node<ViewNodeData>;
   nodeToPageMap: Map<string, number>;
+  t: TFunction;
 }
 
-const PdfViewNode: FC<PdfViewNodeProps> = ({ node, nodeToPageMap }) => {
+const PdfViewNode: FC<PdfViewNodeProps> = ({ node, nodeToPageMap, t }) => {
     const { title, elements } = node.data;
     return (
         <div className="bg-white border border-gray-300 h-full w-full flex flex-col font-sans">
@@ -53,7 +55,7 @@ const PdfViewNode: FC<PdfViewNodeProps> = ({ node, nodeToPageMap }) => {
                             }
                             return <p key={element.id} className="text-xl font-bold text-gray-900 break-words">{element.content}</p>;
                         case 'image':
-                            return <img key={element.id} src={element.src} alt="view content" className="max-w-full h-auto rounded" />;
+                            return <img key={element.id} src={element.src} alt={t('pdf.altContentImage')} className="max-w-full h-auto rounded" />;
                         case 'link': {
                             const pageNum = nodeToPageMap.get(element.targetViewId);
                             const linkText = `${element.content}${pageNum ? ` (p. ${pageNum})` : ''}`;
@@ -78,9 +80,10 @@ interface PdfPageProps {
   pageNodes: Node<ViewNodeData>[];
   nodeToPageMap: Map<string, number>;
   onRender: () => void;
+  t: TFunction;
 }
 
-const PdfPage: FC<PdfPageProps> = ({ pageNodes, nodeToPageMap, onRender }) => {
+const PdfPage: FC<PdfPageProps> = ({ pageNodes, nodeToPageMap, onRender, t }) => {
   useEffect(() => {
     // Let the event loop tick once to ensure DOM is painted, especially for images
     const timer = setTimeout(() => {
@@ -100,7 +103,7 @@ const PdfPage: FC<PdfPageProps> = ({ pageNodes, nodeToPageMap, onRender }) => {
     <div style={containerStyle}>
       {pageNodes.map(node => (
         <div key={node.id} style={{ width: node.style?.width, height: node.style?.height, flexShrink: 0 }}>
-          <PdfViewNode node={node} nodeToPageMap={nodeToPageMap} />
+          <PdfViewNode node={node} nodeToPageMap={nodeToPageMap} t={t} />
         </div>
       ))}
     </div>
@@ -109,9 +112,10 @@ const PdfPage: FC<PdfPageProps> = ({ pageNodes, nodeToPageMap, onRender }) => {
 
 
 const App: FC = () => {
+  const { t } = useTranslation();
   const { fitView } = useReactFlow();
   
-  const [nodes, setNodes] = useState<Node<ViewNodeData>[]>(initialNodes);
+  const [nodes, setNodes] = useState<Node<ViewNodeData>[]>(() => getInitialNodes(t));
   const [selectedNode, setSelectedNode] = useState<Node<ViewNodeData> | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(true);
   const [isHighlighterActive, setIsHighlighterActive] = useState(false);
@@ -226,14 +230,14 @@ const App: FC = () => {
       position: { x: Math.round((Math.random() * 200 + 50) / 16) * 16, y: Math.round(Math.random() * 200 / 16) * 16 },
       style: { width: `${viewSizeOptions[1].width}px`, height: `${viewSizeOptions[1].height}px` },
       data: {
-        title: 'New View',
+        title: t('defaults.newNodeTitle'),
         elements: [
-          { id: uuidv4(), type: 'text', content: 'Start adding content', style: TextStyle.Body }
+          { id: uuidv4(), type: 'text', content: t('defaults.newNodeContent'), style: TextStyle.Body }
         ],
       },
     };
     setNodes((nds) => nds.concat(newNode));
-  }, []);
+  }, [t]);
 
   const handleNodeSizeChange = useCallback((nodeId: string, width: number, height: number) => {
     setNodes((nds) =>
@@ -258,12 +262,12 @@ const App: FC = () => {
     const presentation: Presentation = { nodes: nodesToSave };
     const dataStr = JSON.stringify(presentation, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-    const exportFileDefaultName = 'presentation.json';
+    const exportFileDefaultName = t('app.defaultJsonFilename');
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
-  }, [nodes]);
+  }, [nodes, t]);
 
   const handleSaveToPdf = useCallback(async () => {
     setIsGeneratingPdf(true);
@@ -318,7 +322,7 @@ const App: FC = () => {
         const pageNodes = pageLayout[i];
         
         await new Promise<void>(resolve => {
-            root.render(<PdfPage pageNodes={pageNodes} nodeToPageMap={nodeToPageMap} onRender={resolve} />);
+            root.render(<PdfPage pageNodes={pageNodes} nodeToPageMap={nodeToPageMap} onRender={resolve} t={t} />);
         });
         
         const canvas = await html2canvas(offscreenContainer.firstChild as HTMLElement, { scale: 2, logging: false });
@@ -347,17 +351,22 @@ const App: FC = () => {
         pdf.setPage(i);
         pdf.setFontSize(8);
         pdf.setTextColor(150);
-        pdf.text(`Page ${i} of ${pageCount}`, A4_WIDTH - MARGIN, A4_HEIGHT - 10, { align: 'right' });
+        pdf.text(
+          t('pdf.pageOf', { currentPage: i, totalPages: pageCount }),
+          A4_WIDTH - MARGIN, 
+          A4_HEIGHT - 10, 
+          { align: 'right' }
+        );
       }
 
-      pdf.save('presentation.pdf');
+      pdf.save(t('app.defaultPdfFilename'));
     } catch (error) {
       console.error("Failed to generate PDF:", error);
-      alert("An error occurred while generating the PDF. Please check the console for details.");
+      alert(t('errors.pdfGenerationFailed'));
     } finally {
       setIsGeneratingPdf(false);
     }
-  }, [nodes]);
+  }, [nodes, t]);
 
   const handleLoad = () => {
     const input = document.createElement('input');
@@ -378,11 +387,11 @@ const App: FC = () => {
                 setNodes(nodesToLoad);
                 setTimeout(() => fitView({ duration: 500 }), 100);
               } else {
-                alert('Invalid file format.');
+                alert(t('errors.invalidFileFormat'));
               }
             }
           } catch (error) {
-            alert('Error loading file.');
+            alert(t('errors.fileLoadFailed'));
             console.error(error);
           }
         };
@@ -404,7 +413,7 @@ const App: FC = () => {
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span className="text-xl font-medium mt-4">Generating PDF...</span>
+          <span className="text-xl font-medium mt-4">{t('pdf.generating')}</span>
         </div>
       )}
       <Toolbar
