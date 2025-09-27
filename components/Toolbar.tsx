@@ -1,9 +1,10 @@
-import React, { FC, SVGProps } from 'react';
+import React, { FC, SVGProps, useState, useRef, useEffect } from 'react';
 import Button from './ui/Button';
 
 interface ToolbarProps {
   onAddView: () => void;
   onSave: () => void;
+  onSaveToPdf: () => void;
   onLoad: () => void;
   isReadOnly: boolean;
   onToggleReadOnly: () => void;
@@ -13,7 +14,20 @@ interface ToolbarProps {
   onToggleMiniMap: () => void;
 }
 
-const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onLoad, isReadOnly, onToggleReadOnly, isHighlighterActive, onToggleHighlighter, isMiniMapVisible, onToggleMiniMap }) => {
+const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onSaveToPdf, onLoad, isReadOnly, onToggleReadOnly, isHighlighterActive, onToggleHighlighter, isMiniMapVisible, onToggleMiniMap }) => {
+  const [isSaveMenuOpen, setIsSaveMenuOpen] = useState(false);
+  const saveMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (saveMenuRef.current && !saveMenuRef.current.contains(event.target as Node)) {
+        setIsSaveMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <div className="w-full bg-white shadow-md p-2 flex items-center justify-between z-10">
       <h1 className="text-xl font-bold text-gray-800">MindMap Presenter</h1>
@@ -42,10 +56,37 @@ const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onLoad, isReadOnly, onTo
                     <PlusIcon className="w-5 h-5 mr-1" />
                     Add View
                 </Button>
-                <Button onClick={onSave} variant="secondary">
-                    <SaveIcon className="w-5 h-5 mr-1" />
-                    Save
-                </Button>
+                <div className="relative" ref={saveMenuRef}>
+                    <Button onClick={() => setIsSaveMenuOpen(prev => !prev)} variant="secondary">
+                        <SaveIcon className="w-5 h-5 mr-1" />
+                        Save
+                        <ChevronDownIcon className="w-4 h-4 ml-1" />
+                    </Button>
+                    {isSaveMenuOpen && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border z-20">
+                            <ul className="py-1">
+                                <li>
+                                    <button
+                                        onClick={() => { onSave(); setIsSaveMenuOpen(false); }}
+                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                                    >
+                                        <FileJsonIcon className="w-4 h-4 mr-2" />
+                                        Save to file (.json)
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        onClick={() => { onSaveToPdf(); setIsSaveMenuOpen(false); }}
+                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                                    >
+                                        <FilePdfIcon className="w-4 h-4 mr-2" />
+                                        Save as PDF
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    )}
+                </div>
             </>
         )}
         <div className="w-px bg-gray-300 h-8 mx-2"></div>
@@ -110,5 +151,23 @@ const MiniMapIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
   </svg>
 );
 
+const ChevronDownIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+  </svg>
+);
+
+const FileJsonIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+  </svg>
+);
+
+const FilePdfIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 13.5v-3a.75.75 0 01.75-.75h3a.75.75 0 010 1.5h-2.25v1.5a.75.75 0 01-1.5 0zm2.25 1.5a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3a.75.75 0 01.75-.75zm-3-4.5a.75.75 0 01.75.75v1.5h1.5a.75.75 0 010 1.5h-1.5v1.5a.75.75 0 01-1.5 0v-4.5a.75.75 0 01.75-.75z" />
+    </svg>
+);
 
 export default Toolbar;

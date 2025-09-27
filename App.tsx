@@ -1,4 +1,5 @@
 import React, { FC, useCallback, useState, useMemo, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom/client';
 import ReactFlow, {
   Controls,
   Background,
@@ -13,14 +14,101 @@ import ReactFlow, {
   BackgroundVariant,
 } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
+import showdown from 'showdown';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 import { initialNodes, viewSizeOptions } from './constants';
-import { Presentation, TextStyle, ViewNodeData } from './types';
+import { Presentation, TextStyle, ViewNodeData, ViewElement } from './types';
 import ViewNode from './components/ViewNode';
 import Toolbar from './components/Toolbar';
 import EditorPanel from './components/EditorPanel';
+import DiagramEditor from './components/diagram/DiagramEditor';
 
 const nodeTypes = { viewNode: ViewNode };
+
+// PDF Rendering Components
+const pdfConverter = new showdown.Converter();
+pdfConverter.setOption('simpleLineBreaks', true);
+
+interface PdfViewNodeProps {
+  node: Node<ViewNodeData>;
+  nodeToPageMap: Map<string, number>;
+}
+
+const PdfViewNode: FC<PdfViewNodeProps> = ({ node, nodeToPageMap }) => {
+    const { title, elements } = node.data;
+    return (
+        <div className="bg-white border border-gray-300 h-full w-full flex flex-col font-sans">
+            <div className="px-4 pt-3 pb-2 border-b border-gray-200">
+                <h3 className="font-semibold text-gray-800 break-words">{title}</h3>
+            </div>
+            <div className="p-4 space-y-2 flex-grow overflow-y-auto">
+                {elements.map(element => {
+                    switch (element.type) {
+                        case 'text':
+                            if (element.style === TextStyle.Body) {
+                                const htmlContent = pdfConverter.makeHtml(element.content);
+                                return <div key={element.id} className="text-sm text-gray-700 break-words [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_strong]:font-bold [&_b]:font-bold [&_em]:italic [&_i]:italic [&_p]:m-0" dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+                            }
+                            return <p key={element.id} className="text-xl font-bold text-gray-900 break-words">{element.content}</p>;
+                        case 'image':
+                            return <img key={element.id} src={element.src} alt="view content" className="max-w-full h-auto rounded" />;
+                        case 'link': {
+                            const pageNum = nodeToPageMap.get(element.targetViewId);
+                            const linkText = `${element.content}${pageNum ? ` (p. ${pageNum})` : ''}`;
+                            return <div key={element.id} className="w-full text-left text-sm text-indigo-600 p-1">&rarr; {linkText}</div>;
+                        }
+                        case 'diagram':
+                            return (
+                                <div key={element.id} className="py-2">
+                                    <DiagramEditor diagramState={element.diagramState} isReadOnly={true} onChange={() => {}} height={element.height} viewBox={element.viewBox} />
+                                    {element.caption && <p className="text-xs text-gray-600 mt-2 text-center italic">{element.caption}</p>}
+                                </div>
+                            );
+                        default: return null;
+                    }
+                })}
+            </div>
+        </div>
+    );
+};
+
+interface PdfPageProps {
+  pageNodes: Node<ViewNodeData>[];
+  nodeToPageMap: Map<string, number>;
+  onRender: () => void;
+}
+
+const PdfPage: FC<PdfPageProps> = ({ pageNodes, nodeToPageMap, onRender }) => {
+  useEffect(() => {
+    // Let the event loop tick once to ensure DOM is painted, especially for images
+    const timer = setTimeout(() => {
+        onRender();
+    }, 100); // A small delay to help with image loading
+    return () => clearTimeout(timer);
+  }, [onRender]);
+
+  const containerStyle: React.CSSProperties = {
+    display: 'inline-flex',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    gap: '16px',
+    padding: '16px',
+    backgroundColor: '#f9fafb', // bg-gray-50
+  };
+
+  return (
+    <div style={containerStyle}>
+      {pageNodes.map(node => (
+        <div key={node.id} style={{ width: node.style?.width, height: node.style?.height, flexShrink: 0 }}>
+          <PdfViewNode node={node} nodeToPageMap={nodeToPageMap} />
+        </div>
+      ))}
+    </div>
+  );
+};
+
 
 const App: FC = () => {
   const { fitView } = useReactFlow();
@@ -31,6 +119,7 @@ const App: FC = () => {
   const [isHighlighterActive, setIsHighlighterActive] = useState(false);
   const highlightedElementRef = useRef<HTMLElement | SVGElement | null>(null);
   const [isMiniMapVisible, setIsMiniMapVisible] = useState(true);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   useEffect(() => {
     const currentlySelected = nodes.find(n => n.selected);
@@ -178,6 +267,100 @@ const App: FC = () => {
     linkElement.click();
   }, [nodes]);
 
+  const handleSaveToPdf = useCallback(async () => {
+    setIsGeneratingPdf(true);
+    try {
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      const A4_WIDTH = 841.89;
+      const A4_HEIGHT = 595.28;
+      const MARGIN = 30;
+      const contentWidth = A4_WIDTH - MARGIN * 2;
+      const contentHeight = A4_HEIGHT - MARGIN * 2;
+
+      // 1. Group nodes for pages
+      const sortedNodes = [...nodes].sort((a, b) => {
+        if (a.position.y !== b.position.y) return a.position.y - b.position.y;
+        return a.position.x - b.position.x;
+      });
+      const smallNodeWidth = `${viewSizeOptions[0].width}px`;
+      const pageLayout: Node<ViewNodeData>[][] = [];
+      let i = 0;
+      while (i < sortedNodes.length) {
+        const current = sortedNodes[i];
+        const isCurrentSmall = current.style?.width === smallNodeWidth;
+        if (isCurrentSmall && i + 1 < sortedNodes.length) {
+          const next = sortedNodes[i + 1];
+          const isNextSmall = next.style?.width === smallNodeWidth;
+          const yDifference = Math.abs(current.position.y - next.position.y);
+          if (isNextSmall && yDifference < 100) {
+            pageLayout.push([current, next]);
+            i += 2; continue;
+          }
+        }
+        pageLayout.push([current]);
+        i += 1;
+      }
+
+      // 2. Create node to page map
+      const nodeToPageMap = new Map<string, number>();
+      pageLayout.forEach((pageNodes, index) => {
+        pageNodes.forEach(node => nodeToPageMap.set(node.id, index + 1));
+      });
+
+      // 3. Render each page and add to PDF
+      const offscreenContainer = document.createElement('div');
+      offscreenContainer.style.position = 'absolute';
+      offscreenContainer.style.left = '-9999px';
+      offscreenContainer.style.top = '0px';
+      document.body.appendChild(offscreenContainer);
+      const root = ReactDOM.createRoot(offscreenContainer);
+
+      for (let i = 0; i < pageLayout.length; i++) {
+        if (i > 0) pdf.addPage();
+        const pageNodes = pageLayout[i];
+        
+        await new Promise<void>(resolve => {
+            root.render(<PdfPage pageNodes={pageNodes} nodeToPageMap={nodeToPageMap} onRender={resolve} />);
+        });
+        
+        const canvas = await html2canvas(offscreenContainer.firstChild as HTMLElement, { scale: 2, logging: false });
+        const imgData = canvas.toDataURL('image/png');
+        
+        const imgProps = pdf.getImageProperties(imgData);
+        const ratio = imgProps.height / imgProps.width;
+        let imgWidth = contentWidth;
+        let imgHeight = imgWidth * ratio;
+        if (imgHeight > contentHeight) {
+            imgHeight = contentHeight;
+            imgWidth = imgHeight / ratio;
+        }
+        
+        const x = (A4_WIDTH - imgWidth) / 2;
+        const y = (A4_HEIGHT - imgHeight) / 2;
+        pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+      }
+      
+      root.unmount();
+      document.body.removeChild(offscreenContainer);
+
+      // 4. Add page numbers
+      const pageCount = pdf.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(150);
+        pdf.text(`Page ${i} of ${pageCount}`, A4_WIDTH - MARGIN, A4_HEIGHT - 10, { align: 'right' });
+      }
+
+      pdf.save('presentation.pdf');
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+      alert("An error occurred while generating the PDF. Please check the console for details.");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  }, [nodes]);
+
   const handleLoad = () => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -216,10 +399,20 @@ const App: FC = () => {
   const snapGrid: [number, number] = [16, 16];
 
   return (
-    <div className="w-screen h-screen flex flex-col font-sans">
+    <div className="w-screen h-screen flex flex-col font-sans relative">
+      {isGeneratingPdf && (
+        <div className="absolute inset-0 bg-gray-900 bg-opacity-70 flex flex-col items-center justify-center z-50 text-white">
+          <svg className="animate-spin -ml-1 mr-3 h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span className="text-xl font-medium mt-4">Generating PDF...</span>
+        </div>
+      )}
       <Toolbar
         onAddView={handleAddView}
         onSave={handleSave}
+        onSaveToPdf={handleSaveToPdf}
         onLoad={handleLoad}
         isReadOnly={isReadOnly}
         onToggleReadOnly={() => {
