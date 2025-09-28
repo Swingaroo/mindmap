@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DiagramState, DiagramFigure, DiagramArrow, DiagramFigureType, ArrowType } from '../../types';
 import { FigureComponents, DataDisplay } from './figures';
 import Button from '../ui/Button';
-import { TFunction } from '../../i1n';
+import { TFunction } from '../../i18n';
 import { diagramParameterDefs } from '../../constants';
 
 interface DiagramEditorProps {
@@ -433,7 +433,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
               }
           };
 
-          const shouldShowData = isReadOnly ? !!showAllData : (typeof arrow.showData === 'boolean' ? arrow.showData : !!showAllData);
+          const shouldShowData = isReadOnly ? (!!showAllData && arrow.showData !== false) : (typeof arrow.showData === 'boolean' ? arrow.showData : !!showAllData);
 
           return (
             <g

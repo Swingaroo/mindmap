@@ -1,7 +1,7 @@
 import React, { FC, useState, useRef, useCallback, SVGProps } from 'react';
 import { Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
-import { ViewNodeData, ViewElement, TextStyle, ImageElement, LinkElement, TextElement, DiagramElement, DiagramFigure, DiagramFigureType } from '../types';
+import { ViewNodeData, ViewElement, TextStyle, ImageElement, LinkElement, TextElement, DiagramElement, DiagramFigure, DiagramFigureType, DiagramArrow, ArrowType } from '../types';
 import Button from './ui/Button';
 import DiagramEditor from './diagram/DiagramEditor';
 import { useTranslation } from '../i18n';
@@ -320,6 +320,95 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
         const newY = vy + (vh - newHeight) / 2;
         onChange(element.id, { viewBox: [newX, newY, newWidth, newHeight] });
     };
+    
+    const handleExportToDrawIo = () => {
+        if (element.type !== 'diagram') return;
+
+        const { figures, arrows } = element.diagramState;
+        const caption = element.caption;
+
+        const escapeXml = (str: string) => {
+            return str.replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;')
+                      .replace(/'/g, '&apos;');
+        };
+
+        const figureToMxCell = (fig: DiagramFigure): string => {
+            let style = 'whiteSpace=wrap;html=1;';
+            let geom = { x: 0, y: 0, width: 0, height: 0 };
+
+            switch (fig.figureType) {
+                case DiagramFigureType.Rectangle:
+                    style += 'shape=rectangle;';
+                    geom = { x: fig.position.x - 50, y: fig.position.y - 25, width: 100, height: 50 };
+                    break;
+                case DiagramFigureType.Circle:
+                    style += 'shape=ellipse;perimeter=ellipsePerimeter;';
+                    geom = { x: fig.position.x - 35, y: fig.position.y - 35, width: 70, height: 70 };
+                    break;
+                case DiagramFigureType.Cloud:
+                    style += 'shape=cloud;';
+                    geom = { x: fig.position.x - 75, y: fig.position.y - 30, width: 150, height: 60 };
+                    break;
+                case DiagramFigureType.Actor:
+                    style += 'shape=actor;';
+                    geom = { x: fig.position.x - 20, y: fig.position.y - 35, width: 40, height: 60 };
+                    break;
+            }
+
+            return `        <mxCell id="${fig.id}" value="${escapeXml(fig.label)}" style="${style}" vertex="1" parent="1">
+          <mxGeometry x="${geom.x}" y="${geom.y}" width="${geom.width}" height="${geom.height}" as="geometry" />
+        </mxCell>`;
+        };
+        
+        const arrowToMxCell = (arrow: DiagramArrow): string => {
+            let style = 'edgeStyle=entityRelationEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;';
+            
+            const arrowType = arrow.arrowType || ArrowType.OneEnd;
+            if (arrowType === ArrowType.None) {
+                style += 'startArrow=none;endArrow=none;';
+            } else if (arrowType === ArrowType.OneEnd) {
+                style += 'startArrow=none;endArrow=classic;';
+            } else if (arrowType === ArrowType.OtherEnd) {
+                style += 'startArrow=classic;endArrow=none;';
+            } else if (arrowType === ArrowType.BothEnds) {
+                style += 'startArrow=classic;endArrow=classic;';
+            }
+            
+            return `        <mxCell id="${arrow.id}" value="${escapeXml(arrow.label)}" style="${style}" edge="1" parent="1" source="${arrow.sourceId}" target="${arrow.targetId}">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>`;
+        };
+
+        const figuresXml = figures.map(figureToMxCell).join('\n');
+        const arrowsXml = arrows.map(arrowToMxCell).join('\n');
+
+        const xmlContent = `<mxfile host="app.diagrams.net" version="21.0.0" type="device">
+  <diagram name="${escapeXml(caption) || 'Page-1'}" id="${uuidv4()}">
+    <mxGraphModel dx="1434" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+${figuresXml}
+${arrowsXml}
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>`;
+
+        const blob = new Blob([xmlContent], { type: 'application/vnd.jgraph.mxfile' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const safeFilename = caption.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'diagram';
+        a.download = `${safeFilename}.drawio`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
 
     return (
         <div className="p-3 bg-gray-50 rounded-md border border-gray-200 relative group">
@@ -452,6 +541,13 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                             </Button>
                         </div>
                     </div>
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                        <label className="block text-xs font-medium text-gray-500 mb-2">{t('editorPanel.diagramElement.exportLabel')}</label>
+                        <Button onClick={handleExportToDrawIo} variant="outline" size="sm" className="w-full">
+                            <ExportIcon className="w-4 h-4 mr-2" />
+                            {t('editorPanel.diagramElement.exportToDrawIo')}
+                        </Button>
+                    </div>
                 </div>
             )}
         </div>
@@ -519,6 +615,12 @@ const ResetIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.18-3.185m-11.665-5.156a8.25 8.25 0 0111.665 0l3.18 3.184a8.25 8.25 0 01-11.665 0L2.985 9.644z" />
     </svg>
+);
+
+const ExportIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-4.5 4.5V3m0 0L9 6m4.5-3l4.5 3" />
+  </svg>
 );
 
 

@@ -75,7 +75,9 @@
       "zoomOut": "Уменьшить",
       "fitToContentView": "Подогнать вид",
       "resetView": "Сбросить вид",
-      "showAllDataLabel": "Показывать данные для всех элементов"
+      "showAllDataLabel": "Показывать данные для всех элементов",
+      "exportLabel": "Экспорт",
+      "exportToDrawIo": "Экспорт в draw.io"
     },
     "deleteView": {
       "button": "Удалить слайд",

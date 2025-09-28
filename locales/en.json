@@ -75,7 +75,9 @@
       "zoomOut": "Zoom Out",
       "fitToContentView": "Fit to Content",
       "resetView": "Reset View",
-      "showAllDataLabel": "Show data for all elements"
+      "showAllDataLabel": "Show data for all elements",
+      "exportLabel": "Export",
+      "exportToDrawIo": "Export to draw.io"
     },
     "deleteView": {
       "button": "Delete View",

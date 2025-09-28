@@ -1,7 +1,7 @@
 import { Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 import { ViewNodeData, TextStyle, DiagramFigureType, ArrowType, ImageElement, ViewElement, DiagramElement, DiagramFigure, DiagramArrow, DiagramParameterDefs } from './types';
-import { TFunction } from './i1n';
+import { TFunction } from './i18n';
 
 export const viewSizeOptions = [
   { label: 'S', width: 512, height: 768 },
