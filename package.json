@@ -2,14 +2,14 @@
   "name": "mindmap-presenter",
   "private": true,
   "version": "0.0.1",
-  "homepage": "https://swingaroo.github.io/mindmap-pages",
+  "homepage": "https://swingaroo.github.io/mindmap",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "predeploy": "mpm run build",
-    "deploy": "gh-pages -d build"
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "react": "^19.1.1",
