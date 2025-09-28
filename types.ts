@@ -27,6 +27,11 @@ export interface LinkElement extends BaseElement {
     targetViewId: string;
 }
 
+export interface RichTextElement extends BaseElement {
+  type: 'richtext';
+  content: string; // HTML content
+}
+
 // New types for DiagramElement
 export enum DiagramFigureType {
   Rectangle = 'rectangle',
@@ -90,7 +95,7 @@ export interface DiagramElement extends BaseElement {
 }
 
 
-export type ViewElement = TextElement | ImageElement | LinkElement | DiagramElement;
+export type ViewElement = TextElement | ImageElement | LinkElement | DiagramElement | RichTextElement;
 
 export interface ViewNodeData {
   id?: string;

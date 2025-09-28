@@ -44,7 +44,8 @@
     "addContent": {
       "title": "Добавить контент",
       "titleText": "Заголовок",
-      "bodyText": "Текст",
+      "bodyText": "Текст (Markdown)",
+      "richText": "Форматированный текст",
       "image": "Изображение",
       "link": "Ссылка",
       "diagram": "Диаграмма"
@@ -63,6 +64,9 @@
     "linkElement": {
       "placeholder": "Текст ссылки",
       "viewOptionPrefix": "Слайд"
+    },
+    "richTextElement": {
+      "editHint": "Нажмите кнопку \"Редактировать\" на главном виде, чтобы изменить форматированный текст."
     },
     "diagramElement": {
       "editHint": "Нажмите кнопку \"Редактировать\" на главном виде, чтобы изменить содержимое и макет диаграммы.",
@@ -91,7 +95,17 @@
   },
   "viewNode": {
     "altContentImage": "контент слайда",
-    "editDiagram": "Редакт."
+    "editDiagram": "Редакт.",
+    "editRichText": "Редакт."
+  },
+  "richTextEditor": {
+    "done": "Готово",
+    "bold": "Жирный (Ctrl+B)",
+    "italic": "Курсив (Ctrl+I)",
+    "underline": "Подчеркнутый (Ctrl+U)",
+    "strikethrough": "Зачеркнутый",
+    "unorderedList": "Маркированный список",
+    "orderedList": "Нумерованный список"
   },
   "diagramEditor": {
     "newFigure": "Новая фигура",
@@ -133,6 +147,7 @@
     "newNodeTitle": "Новый слайд",
     "newNodeContent": "Начните добавлять контент",
     "newTextElementContent": "Новый текст",
+    "newRichTextElementContent": "<p>Новый форматированный текст...</p>",
     "newLinkElementContent": "Ссылка на другой слайд",
     "newDiagramElementCaption": "Новая диаграмма"
   },

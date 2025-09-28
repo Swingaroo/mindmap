@@ -253,6 +253,19 @@ const App: FC = () => {
     }
   }, [focusOnNodeId, onFocus]);
 
+  // Effect to automatically re-fit the view when entering edit mode with a selected node.
+  useEffect(() => {
+    // When entering edit mode, the editor panel appears, shrinking the canvas.
+    // This re-fits the view to ensure the selected node remains fully visible.
+    if (!isReadOnly && selectedNode) {
+      // A timeout ensures this runs after the DOM has updated and the panel is rendered.
+      const timer = setTimeout(() => {
+        fitView({ nodes: [{ id: selectedNode.id }], duration: 400, padding: 0.1 });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isReadOnly, selectedNode, fitView]);
+
 
   const handleNodeDataChange = useCallback((nodeId: string, newData: Partial<ViewNodeData>) => {
     setNodes((nds) =>
@@ -630,7 +643,6 @@ const App: FC = () => {
                 }
             }
             setIsReadOnly(prev => !prev);
-            setNodes(nds => nds.map(n => ({...n, selected: false})));
         }}
         isHighlighterActive={isHighlighterActive}
         onToggleHighlighter={handleToggleHighlighter}

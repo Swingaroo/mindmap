@@ -44,7 +44,8 @@
     "addContent": {
       "title": "Add Content",
       "titleText": "Title Text",
-      "bodyText": "Body Text",
+      "bodyText": "Body Text (Markdown)",
+      "richText": "Rich Text",
       "image": "Image",
       "link": "Link",
       "diagram": "Diagram"
@@ -63,6 +64,9 @@
     "linkElement": {
       "placeholder": "Link text",
       "viewOptionPrefix": "View"
+    },
+    "richTextElement": {
+      "editHint": "Click the \"Edit\" button on the main view to modify the rich text."
     },
     "diagramElement": {
       "editHint": "Click the \"Edit\" button on the main view to modify the diagram's content and layout.",
@@ -91,7 +95,17 @@
   },
   "viewNode": {
     "altContentImage": "view content",
-    "editDiagram": "Edit"
+    "editDiagram": "Edit",
+    "editRichText": "Edit"
+  },
+  "richTextEditor": {
+    "done": "Done",
+    "bold": "Bold (Ctrl+B)",
+    "italic": "Italic (Ctrl+I)",
+    "underline": "Underline (Ctrl+U)",
+    "strikethrough": "Strikethrough",
+    "unorderedList": "Bulleted List",
+    "orderedList": "Numbered List"
   },
   "diagramEditor": {
     "newFigure": "New Figure",
@@ -133,6 +147,7 @@
     "newNodeTitle": "New View",
     "newNodeContent": "Start adding content",
     "newTextElementContent": "New Text",
+    "newRichTextElementContent": "<p>New rich text content...</p>",
     "newLinkElementContent": "Link to another view",
     "newDiagramElementCaption": "A new diagram"
   },

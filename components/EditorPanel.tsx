@@ -1,7 +1,7 @@
 import React, { FC, useState, useRef, useCallback, SVGProps } from 'react';
 import { Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
-import { ViewNodeData, ViewElement, TextStyle, ImageElement, LinkElement, TextElement, DiagramElement, DiagramFigure, DiagramFigureType, DiagramArrow, ArrowType, ElementData } from '../types';
+import { ViewNodeData, ViewElement, TextStyle, ImageElement, LinkElement, TextElement, DiagramElement, DiagramFigure, DiagramFigureType, DiagramArrow, ArrowType, ElementData, RichTextElement } from '../types';
 import Button from './ui/Button';
 import DiagramEditor from './diagram/DiagramEditor';
 import { useTranslation } from '../i18n';
@@ -35,7 +35,7 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
     onNodeDataChange(node.id, { elements: newElements });
   }, [node.id, onNodeDataChange]);
 
-  const addElement = (type: 'text' | 'image' | 'link' | 'diagram', style: TextStyle = TextStyle.Body) => {
+  const addElement = (type: 'text' | 'image' | 'link' | 'diagram' | 'richtext', style: TextStyle = TextStyle.Body) => {
     if (type === 'text') {
       const newElement: TextElement = { id: uuidv4(), type: 'text', content: t('defaults.newTextElementContent'), style };
       updateElements([...node.data.elements, newElement]);
@@ -56,6 +56,13 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
             caption: t('defaults.newDiagramElementCaption'),
             diagramState: { figures: [], arrows: [] },
             height: 400,
+        };
+        updateElements([...node.data.elements, newElement]);
+    } else if (type === 'richtext') {
+        const newElement: RichTextElement = {
+            id: uuidv4(),
+            type: 'richtext',
+            content: t('defaults.newRichTextElementContent'),
         };
         updateElements([...node.data.elements, newElement]);
     }
@@ -164,6 +171,9 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
                 <div className="grid grid-cols-2 gap-2">
                     <Button onClick={() => addElement('text', TextStyle.Title)} variant="outline">{t('editorPanel.addContent.titleText')}</Button>
                     <Button onClick={() => addElement('text', TextStyle.Body)} variant="outline">{t('editorPanel.addContent.bodyText')}</Button>
+                    <Button onClick={() => addElement('richtext')} variant="outline" className="col-span-2" disabled>
+                        <RichTextIcon className="w-4 h-4 mr-2" /> {t('editorPanel.addContent.richText')}
+                    </Button>
                     <Button onClick={() => addElement('image')} variant="outline">{t('editorPanel.addContent.image')}</Button>
                     <Button onClick={() => addElement('link')} variant="outline">{t('editorPanel.addContent.link')}</Button>
                     <Button onClick={() => addElement('diagram')} variant="outline" className="col-span-2">
@@ -570,6 +580,13 @@ ${cellsXml}
                     </select>
                  </div>
             )}
+            {element.type === 'richtext' && (
+                <div>
+                    <p className="text-sm text-gray-600 p-2 bg-indigo-50 rounded-md border border-indigo-200">
+                        {t('editorPanel.richTextElement.editHint')}
+                    </p>
+                </div>
+            )}
             {element.type === 'diagram' && (
                  <div>
                     <p className="text-sm text-gray-600 mb-2 p-2 bg-indigo-50 rounded-md border border-indigo-200">
@@ -668,6 +685,15 @@ const DiagramIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 12h-7.5" />
   </svg>
 );
+
+const RichTextIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 12.75L18 15l2.25-2.25" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M18 15V9.75" />
+    </svg>
+);
+
 
 const ArrowDownIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
