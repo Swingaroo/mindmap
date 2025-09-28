@@ -1,4 +1,4 @@
-import React, { FC, useState, useRef, MouseEvent, SVGProps } from 'react';
+import React, { FC, useState, useRef, MouseEvent, SVGProps, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { DiagramState, DiagramFigure, DiagramArrow, DiagramFigureType, ArrowType } from '../../types';
 import { FigureComponents, DataDisplay } from './figures';
@@ -135,6 +135,19 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
     : null;
     
   const selectedElementForData = selectedFigure || selectedArrow;
+
+  const applicableParams = useMemo(() => {
+    if (!selectedElementForData) return [];
+
+    // The type guard checks for a property unique to DiagramArrow.
+    const elementType = 'sourceId' in selectedElementForData 
+        ? 'arrow' 
+        : selectedElementForData.figureType;
+    
+    return Object.entries(diagramParameterDefs).filter(([, def]) => {
+        return def.appliesTo.includes(elementType);
+    });
+  }, [selectedElementForData]);
 
   const handleDataChange = (paramKey: string, value: string) => {
       if (!selectedElementForData) return;
@@ -323,19 +336,23 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
               </label>
 
               <div className="space-y-2">
-                  {Object.entries(diagramParameterDefs).map(([key, def]) => (
-                      <div key={key}>
-                          <label className="block text-xs font-medium text-gray-500" title={def.caption}>
-                              {def.abbr} {def.unit && `(${def.unit})`}
-                          </label>
-                          <input
-                              type="text"
-                              value={selectedElementForData.data?.[key] || ''}
-                              onChange={(e) => handleDataChange(key, e.target.value)}
-                              className="w-full mt-1 px-2 py-1 border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                          />
-                      </div>
-                  ))}
+                  {applicableParams.length > 0 ? (
+                    applicableParams.map(([key, def]) => (
+                        <div key={key}>
+                            <label className="block text-xs font-medium text-gray-500" title={def.caption}>
+                                {def.abbr} {def.unit && `(${def.unit})`}
+                            </label>
+                            <input
+                                type="text"
+                                value={selectedElementForData.data?.[key] || ''}
+                                onChange={(e) => handleDataChange(key, e.target.value)}
+                                className="w-full mt-1 px-2 py-1 border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                        </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-gray-500 italic">{t('diagramEditor.noApplicableData')}</p>
+                  )}
               </div>
           </div>
       )}
@@ -415,7 +432,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
               }
           };
 
-          const shouldShowData = (arrow.showData === true) || (arrow.showData !== false && showAllData);
+          const shouldShowData = isReadOnly ? !!showAllData : (typeof arrow.showData === 'boolean' ? arrow.showData : !!showAllData);
 
           return (
             <g
@@ -508,6 +525,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
               showData={figure.showData}
               showAllData={showAllData}
               data={figure.data}
+              isReadOnly={isReadOnly}
             />
           );
         })}

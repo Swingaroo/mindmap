@@ -56,13 +56,14 @@ interface FigureProps extends SVGProps<SVGGElement> {
   showData?: boolean;
   showAllData?: boolean;
   data?: ElementData;
+  isReadOnly?: boolean;
 }
 
 const commonStroke = 'stroke-gray-700';
 const selectedStroke = 'stroke-indigo-600';
 
-const Rectangle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, ...props }) => {
-  const shouldShowData = (showData === true) || (showData !== false && showAllData);
+const Rectangle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, isReadOnly, ...props }) => {
+  const shouldShowData = isReadOnly ? !!showAllData : (typeof showData === 'boolean' ? showData : !!showAllData);
   return (
     <g transform={`translate(${x}, ${y})`} {...props}>
       <rect 
@@ -82,8 +83,8 @@ const Rectangle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showDa
   );
 };
 
-const Circle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, ...props }) => {
-  const shouldShowData = (showData === true) || (showData !== false && showAllData);
+const Circle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, isReadOnly, ...props }) => {
+  const shouldShowData = isReadOnly ? !!showAllData : (typeof showData === 'boolean' ? showData : !!showAllData);
   return (
     <g transform={`translate(${x}, ${y})`} {...props}>
       <circle 
@@ -103,8 +104,8 @@ const Circle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData,
   );
 };
 
-const Cloud: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, ...props }) => {
-  const shouldShowData = (showData === true) || (showData !== false && showAllData);
+const Cloud: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, isReadOnly, ...props }) => {
+  const shouldShowData = isReadOnly ? !!showAllData : (typeof showData === 'boolean' ? showData : !!showAllData);
   return (
     <g transform={`translate(${x}, ${y})`} {...props}>
       <path 
@@ -124,8 +125,8 @@ const Cloud: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, 
   );
 };
 
-const Actor: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, ...props }) => {
-  const shouldShowData = (showData === true) || (showData !== false && showAllData);
+const Actor: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, isReadOnly, ...props }) => {
+  const shouldShowData = isReadOnly ? !!showAllData : (typeof showData === 'boolean' ? showData : !!showAllData);
   return (
     <g transform={`translate(${x}, ${y})`} {...props}>
       <g className={`${isSelected ? selectedStroke : commonStroke}`} strokeWidth="2" fill="none">

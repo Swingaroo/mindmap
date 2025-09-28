@@ -16,6 +16,8 @@ interface ToolbarProps {
   onToggleReadOnly: () => void;
   isHighlighterActive?: boolean;
   onToggleHighlighter?: () => void;
+  isDiagramDataVisible: boolean;
+  onToggleDiagramDataVisibility: () => void;
   isMiniMapVisible: boolean;
   onToggleMiniMap: () => void;
   // FIX: Use the aliased ReactFlowNode type.
@@ -26,7 +28,8 @@ interface ToolbarProps {
 
 const Toolbar: FC<ToolbarProps> = ({ 
     onAddView, onSave, onSaveToPdf, onSaveToHtml, onLoad, isReadOnly, 
-    onToggleReadOnly, isHighlighterActive, onToggleHighlighter, 
+    onToggleReadOnly, isHighlighterActive, onToggleHighlighter,
+    isDiagramDataVisible, onToggleDiagramDataVisibility, 
     isMiniMapVisible, onToggleMiniMap,
     sortedNodes, onFocus, selectedNodeId
 }) => {
@@ -103,10 +106,16 @@ const Toolbar: FC<ToolbarProps> = ({
             )}
         </Button>
         {isReadOnly ? (
-            <Button onClick={onToggleHighlighter} variant={isHighlighterActive ? 'secondary' : 'outline'} title={t('toolbar.toggleHighlighter')}>
-                <HighlighterIcon className="w-5 h-5 mr-1" />
-                {t('toolbar.highlighter')}
-            </Button>
+            <>
+                <Button onClick={onToggleHighlighter} variant={isHighlighterActive ? 'secondary' : 'outline'} title={t('toolbar.toggleHighlighter')}>
+                    <HighlighterIcon className="w-5 h-5 mr-1" />
+                    {t('toolbar.highlighter')}
+                </Button>
+                <Button onClick={onToggleDiagramDataVisibility} variant={isDiagramDataVisible ? 'secondary' : 'outline'} title={t('toolbar.toggleShowData')}>
+                    <TagIcon className="w-5 h-5 mr-1" />
+                    {t('toolbar.showData')}
+                </Button>
+            </>
         ) : (
             <>
                 <Button onClick={onAddView}>
@@ -237,6 +246,13 @@ const HighlighterIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.998 15.998 0 011.622-3.385m5.043.025a15.998 15.998 0 001.622-3.385m3.388 1.62a15.998 15.998 0 00-1.622-3.385m0 0a3 3 0 10-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 00-3.388-1.62m5.043.025a15.998 15.998 0 01-1.622-3.385" />
   </svg>
+);
+
+const TagIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+    </svg>
 );
 
 const MiniMapIcon: FC<SVGProps<SVGSVGElement>> = (props) => (

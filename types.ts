@@ -39,6 +39,7 @@ export interface ParameterDef {
   abbr: string;
   caption: string;
   unit: string;
+  appliesTo: (DiagramFigureType | 'arrow')[];
 }
 
 export interface DiagramParameterDefs {
@@ -103,6 +104,7 @@ export interface ViewNodeData {
   printOptions?: {
     fixedDiagramWidth?: number;
   };
+  isGlobalDiagramDataVisible?: boolean;
 }
 
 export interface Presentation {

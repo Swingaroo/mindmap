@@ -1,3 +1,4 @@
+
 {
   "appName": "MindMap Presenter",
   "app": {
@@ -10,6 +11,8 @@
     "previewMode": "Просмотр",
     "highlighter": "Выделитель",
     "toggleHighlighter": "Включить/выключить выделитель",
+    "showData": "Данные",
+    "toggleShowData": "Показать/скрыть данные диаграмм",
     "addView": "Добавить слайд",
     "save": {
       "button": "Сохранить",
@@ -95,6 +98,7 @@
     "done": "Готово",
     "editDataFor": "Редактировать данные для",
     "showDataForElement": "Показывать данные для элемента",
+    "noApplicableData": "Нет применимых параметров данных для этого элемента.",
     "figures": {
       "actor": "Актор",
       "circle": "Круг",

@@ -9,8 +9,29 @@ export const viewSizeOptions = [
 ];
 
 export const diagramParameterDefs: DiagramParameterDefs = {
-  rps: { abbr:"RPS", caption:"Requests per second", unit:"" },
-  traffic: { abbr: "Traffic", caption: "Traffic", unit:"GBpS"}
+  rps: {
+    abbr: "RPS",
+    caption: "Requests per second",
+    unit: "",
+    appliesTo: [
+      DiagramFigureType.Rectangle,
+      DiagramFigureType.Circle,
+      DiagramFigureType.Cloud,
+      DiagramFigureType.Actor
+    ]
+  },
+  traffic: {
+    abbr: "Traffic",
+    caption: "Traffic",
+    unit: "GBpS",
+    appliesTo: ['arrow']
+  },
+  dau: {
+    abbr: "DAU",
+    caption: "Daily active users",
+    unit: "",
+    appliesTo: [DiagramFigureType.Actor]
+  }
 };
 
 export const getInitialNodes = (t: TFunction): Node<ViewNodeData>[] => {

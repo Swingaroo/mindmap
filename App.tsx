@@ -173,6 +173,7 @@ const App: FC = () => {
   const [isMiniMapVisible, setIsMiniMapVisible] = useState(true);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [focusOnNodeId, setFocusOnNodeId] = useState<string | null>(null);
+  const [isDiagramDataVisible, setIsDiagramDataVisible] = useState(false);
 
   useEffect(() => {
     const currentlySelected = nodes.find(n => n.selected);
@@ -265,6 +266,10 @@ const App: FC = () => {
     );
   }, []);
 
+  const handleToggleDiagramDataVisibility = useCallback(() => {
+    setIsDiagramDataVisible(prev => !prev);
+  }, []);
+
   const nodesForFlow = useMemo(() => (
     nodes.map(node => ({
         ...node,
@@ -276,9 +281,10 @@ const App: FC = () => {
             onNodeDataChange: handleNodeDataChange,
             isHighlighterActive,
             onHighlightElement: handleHighlightElement,
+            isGlobalDiagramDataVisible: isDiagramDataVisible,
         }
     }))
-  ), [nodes, isReadOnly, onFocus, handleNodeDataChange, isHighlighterActive, handleHighlightElement]);
+  ), [nodes, isReadOnly, onFocus, handleNodeDataChange, isHighlighterActive, handleHighlightElement, isDiagramDataVisible]);
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -628,6 +634,8 @@ const App: FC = () => {
         }}
         isHighlighterActive={isHighlighterActive}
         onToggleHighlighter={handleToggleHighlighter}
+        isDiagramDataVisible={isDiagramDataVisible}
+        onToggleDiagramDataVisibility={handleToggleDiagramDataVisibility}
         isMiniMapVisible={isMiniMapVisible}
         onToggleMiniMap={handleToggleMiniMap}
         sortedNodes={sortedNodesForNav}

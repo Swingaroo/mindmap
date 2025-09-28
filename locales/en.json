@@ -11,6 +11,8 @@
     "previewMode": "Preview Mode",
     "highlighter": "Highlighter",
     "toggleHighlighter": "Toggle highlighter tool",
+    "showData": "Data",
+    "toggleShowData": "Show/Hide Diagram Data",
     "addView": "Add View",
     "save": {
       "button": "Save",
@@ -96,6 +98,7 @@
     "done": "Done",
     "editDataFor": "Edit Data for",
     "showDataForElement": "Show data for this element",
+    "noApplicableData": "No applicable data parameters for this element.",
     "figures": {
       "actor": "Actor",
       "circle": "Circle",

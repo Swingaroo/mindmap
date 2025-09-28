@@ -11,7 +11,7 @@ converter.setOption('simpleLineBreaks', true);
 converter.setOption('openLinksInNewWindow', true);
 
 const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
-  const { id: nodeId, title, elements, onFocus, isReadOnly, onNodeDataChange, isHighlighterActive, onHighlightElement, printOptions } = data;
+  const { id: nodeId, title, elements, onFocus, isReadOnly, onNodeDataChange, isHighlighterActive, onHighlightElement, printOptions, isGlobalDiagramDataVisible } = data;
   const [editingDiagramId, setEditingDiagramId] = useState<string | null>(null);
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
@@ -143,6 +143,7 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
               );
             case 'diagram': {
                 const isEditingThisDiagram = editingDiagramId === element.id;
+                const effectiveShowAllData = isReadOnly ? isGlobalDiagramDataVisible : element.showAllData;
                 return (
                     <div key={element.id} className="py-2 diagram-container">
                         <div className="relative">
@@ -165,7 +166,7 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
                                 onHighlightElement={onHighlightElement}
                                 t={t}
                                 fixedWidth={printOptions?.fixedDiagramWidth}
-                                showAllData={element.showAllData}
+                                showAllData={effectiveShowAllData}
                             />
                         </div>
                         {element.caption && (
