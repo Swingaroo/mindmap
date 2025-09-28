@@ -336,23 +336,30 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                       .replace(/'/g, '&apos;');
         };
 
-        const formatScientificForDrawIo = (num: number | string): string => {
+        const formatNumberForDrawIo = (num: number | string): string => {
             const number = Number(num);
             if (isNaN(number)) return String(num);
-            if (number === 0) return "0.0";
-            const exponent = Math.floor(Math.log10(Math.abs(number)));
-            if (exponent === 0) return number.toFixed(1);
-            const absNumber = Math.abs(number);
-            const sign = number < 0 ? '-' : '';
-            const mantissa = absNumber / Math.pow(10, exponent);
-            if (mantissa < 1.5) return `${sign}10<sup>${exponent}</sup>`;
-            let roundedMantissaStr = mantissa.toFixed(1);
-            let finalExponent = exponent;
-            if (roundedMantissaStr === '10.0') {
-                roundedMantissaStr = '1.0';
-                finalExponent += 1;
+
+            if (Math.abs(number) >= 1_000_000) {
+                // Scientific notation for large numbers
+                if (number === 0) return "0.0";
+                const exponent = Math.floor(Math.log10(Math.abs(number)));
+                const absNumber = Math.abs(number);
+                const sign = number < 0 ? '-' : '';
+                const mantissa = absNumber / Math.pow(10, exponent);
+                if (mantissa < 1.5) return `${sign}10<sup>${exponent}</sup>`;
+                
+                let roundedMantissaStr = mantissa.toFixed(1);
+                let finalExponent = exponent;
+                if (roundedMantissaStr === '10.0') {
+                    roundedMantissaStr = '1.0';
+                    finalExponent += 1;
+                }
+                return `${sign}${roundedMantissaStr} &times; 10<sup>${finalExponent}</sup>`;
+            } else {
+                // Format with thousands separator for smaller numbers, using a locale that provides spaces.
+                return number.toLocaleString('sv-SE');
             }
-            return `${sign}${roundedMantissaStr} &times; 10<sup>${finalExponent}</sup>`;
         };
 
         const dataTableToMxCell = (
@@ -373,28 +380,28 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
 
             if (rows.length === 0) return null;
 
-            const tableRowsHtml = rows.map(row => `
-                <tr>
-                    <td style="font-weight: bold; padding-right: 4px; white-space: nowrap;">${escapeXml(row.def.abbr)}:</td>
-                    <td style="text-align: right; padding-right: 4px; white-space: nowrap;">${formatScientificForDrawIo(row.value)}</td>
-                    <td style="color: #6b7280; white-space: nowrap;">${escapeXml(row.def.unit)}</td>
-                </tr>
+            const rowsHtml = rows.map(row => `
+                <div style="white-space: nowrap;">
+                    <span style="font-weight: bold;">${escapeXml(row.def.abbr)}:</span>
+                    <span style="margin-left: 4px;">${formatNumberForDrawIo(row.value)}</span>
+                    <span style="margin-left: 4px; color: #6b7280;">${escapeXml(row.def.unit)}</span>
+                </div>
             `).join('');
 
-            const tableHtml = `<div style="font-family: sans-serif; font-size: 10px; background-color: rgba(255, 255, 255, 0.8); border-radius: 4px; padding: 4px; display: inline-block;">
-                <table style="width: auto; border-collapse: collapse;">
-                    <tbody>
-                        ${tableRowsHtml}
-                    </tbody>
-                </table>
+            const cellWidth = 250;
+            const cellHeight = rows.length * 18 + 8;
+
+            const tableHtml = `<div style="width: ${cellWidth}px; height: ${cellHeight}px; display: flex; justify-content: center; align-items: center;">
+                <div style="font-family: sans-serif; font-size: 12px; background-color: rgba(255, 255, 255, 0.8); border-radius: 4px; padding: 4px; display: inline-block;">
+                    ${rowsHtml}
+                </div>
             </div>`;
 
-            const height = rows.length * 15 + 10;
             const dataCellId = `${el.id}-data`;
             const style = 'html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;';
 
             return `        <mxCell id="${dataCellId}" value="${escapeXml(tableHtml)}" style="${style}" vertex="1" parent="1">
-          <mxGeometry x="${geom.x}" y="${geom.y}" width="140" height="${height}" as="geometry" />
+          <mxGeometry x="${geom.x}" y="${geom.y}" width="${cellWidth}" height="${cellHeight}" as="geometry" />
         </mxCell>`;
         };
 
@@ -457,7 +464,7 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                 case DiagramFigureType.Circle:
                 case DiagramFigureType.Cloud: dataYOffset = 55; break;
             }
-            const geom = { x: fig.position.x - 70, y: fig.position.y + dataYOffset + labelHeightAddition };
+            const geom = { x: fig.position.x - 125, y: fig.position.y + dataYOffset + labelHeightAddition };
             cells.push(dataTableToMxCell(fig, geom, fig.figureType));
         });
         arrows.forEach(arrow => {
@@ -467,7 +474,7 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
             if (source && target) {
                 const midX = (source.position.x + target.position.x) / 2;
                 const midY = (source.position.y + target.position.y) / 2;
-                const geom = { x: midX - 70, y: midY + 30 };
+                const geom = { x: midX - 125, y: midY + 30 };
                 cells.push(dataTableToMxCell(arrow, geom, 'arrow'));
             }
         });

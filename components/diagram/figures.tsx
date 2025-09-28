@@ -8,51 +8,49 @@ interface DataDisplayProps {
   data?: ElementData;
 }
 
-const formatScientific = (num: number | string): ReactNode => {
+const formatNumber = (num: number | string): ReactNode => {
     const number = Number(num);
     if (isNaN(number)) {
         return String(num); // return original string if not a number
     }
-    if (number === 0) {
-        return "0.0";
-    }
 
-    const exponent = Math.floor(Math.log10(Math.abs(number)));
+    if (Math.abs(number) >= 1_000_000) {
+        // Scientific notation for large numbers
+        if (number === 0) return "0.0"; // Should not happen with the check above, but for safety
 
-    // Handle numbers that don't need scientific notation (e.g., from 1.0 up to 10.0)
-    if (exponent === 0) {
-        return number.toFixed(1);
-    }
+        const exponent = Math.floor(Math.log10(Math.abs(number)));
+        const absNumber = Math.abs(number);
+        const sign = number < 0 ? '-' : '';
+        const mantissa = absNumber / Math.pow(10, exponent);
 
-    const absNumber = Math.abs(number);
-    const sign = number < 0 ? '-' : '';
-    
-    const mantissa = absNumber / Math.pow(10, exponent);
+        // If the mantissa is less than 1.5, we only show the order of magnitude.
+        if (mantissa < 1.5) {
+            return (
+                <span style={{ whiteSpace: 'nowrap' }}>
+                    {sign}10<sup>{exponent}</sup>
+                </span>
+            );
+        }
 
-    // If the mantissa is less than 1.5, we only show the order of magnitude.
-    if (mantissa < 1.5) {
+        // Otherwise, show the mantissa rounded to 1 decimal place.
+        let roundedMantissaStr = mantissa.toFixed(1);
+        let finalExponent = exponent;
+
+        // Handle cases where rounding the mantissa bumps it to 10.0
+        if (roundedMantissaStr === '10.0') {
+            roundedMantissaStr = '1.0';
+            finalExponent += 1;
+        }
+        
         return (
             <span style={{ whiteSpace: 'nowrap' }}>
-                {sign}10<sup>{exponent}</sup>
+                {sign}{roundedMantissaStr} &times; 10<sup>{finalExponent}</sup>
             </span>
         );
+    } else {
+        // Format with thousands separator for smaller numbers, using a locale that provides spaces.
+        return number.toLocaleString('sv-SE');
     }
-
-    // Otherwise, show the mantissa rounded to 1 decimal place.
-    let roundedMantissaStr = mantissa.toFixed(1);
-    let finalExponent = exponent;
-
-    // Handle cases where rounding the mantissa bumps it to 10.0
-    if (roundedMantissaStr === '10.0') {
-        roundedMantissaStr = '1.0';
-        finalExponent += 1;
-    }
-    
-    return (
-        <span style={{ whiteSpace: 'nowrap' }}>
-            {sign}{roundedMantissaStr} &times; 10<sup>{finalExponent}</sup>
-        </span>
-    );
 };
 
 export const DataDisplay: FC<DataDisplayProps> = ({ x, y, data }) => {
@@ -68,26 +66,35 @@ export const DataDisplay: FC<DataDisplayProps> = ({ x, y, data }) => {
         
     if (rows.length === 0) return null;
 
+    const height = rows.length * 18 + 8; // ~18px line-height for 12px font + p-1 padding
+    const width = 250; // A reasonably large width to contain the centered content
+
     return (
-        <foreignObject x={x} y={y} width="140" height="100">
-            {/* FIX: Removed xmlns attribute which is not a valid prop for a div in React's JSX and causes a TypeScript error. */}
+        <foreignObject x={x - (width / 2)} y={y} width={width} height={height}>
             <div
-                className="bg-white/80 rounded-md p-1 text-[10px] text-gray-800"
-                style={{ fontFamily: 'sans-serif' }}
+                style={{
+                    fontFamily: 'sans-serif',
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                }}
             >
-                <table className="w-full">
-                    <tbody>
-                        {rows.map(row => (
-                          row && (
-                            <tr key={row.key}>
-                                <td className="font-bold pr-1">{row.def.abbr}:</td>
-                                <td className="text-right pr-1">{formatScientific(row.value)}</td>
-                                <td className="text-gray-600">{row.def.unit}</td>
-                            </tr>
-                          )
-                        ))}
-                    </tbody>
-                </table>
+                <div
+                    className="bg-white/80 rounded-md p-1 text-[12px] text-gray-800"
+                    style={{ display: 'inline-block' }}
+                >
+                    {rows.map(row => (
+                      row && (
+                        <div key={row.key} className="whitespace-nowrap">
+                            <span className="font-bold">{row.def.abbr}:</span>
+                            <span className="ml-1">{formatNumber(row.value)}</span>
+                            <span className="ml-1 text-gray-600">{row.def.unit}</span>
+                        </div>
+                      )
+                    ))}
+                </div>
             </div>
         </foreignObject>
     );
@@ -127,7 +134,7 @@ const Rectangle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showDa
           ))}
         </text>
       )}
-      {shouldShowData && <DataDisplay x={-70} y={45 + labelHeightAddition} data={data} />}
+      {shouldShowData && <DataDisplay x={0} y={45 + labelHeightAddition} data={data} />}
     </g>
   );
 };
@@ -150,7 +157,7 @@ const Circle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData,
               ))}
           </text>
       )}
-      {shouldShowData && <DataDisplay x={-70} y={55 + labelHeightAddition} data={data} />}
+      {shouldShowData && <DataDisplay x={0} y={55 + labelHeightAddition} data={data} />}
     </g>
   );
 };
@@ -173,7 +180,7 @@ const Cloud: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, 
               ))}
           </text>
       )}
-      {shouldShowData && <DataDisplay x={-70} y={55 + labelHeightAddition} data={data} />}
+      {shouldShowData && <DataDisplay x={0} y={55 + labelHeightAddition} data={data} />}
     </g>
   );
 };
@@ -198,7 +205,7 @@ const Actor: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, 
               ))}
           </text>
       )}
-      {shouldShowData && <DataDisplay x={-70} y={45 + labelHeightAddition} data={data} />}
+      {shouldShowData && <DataDisplay x={0} y={45 + labelHeightAddition} data={data} />}
     </g>
   );
 };

@@ -508,7 +508,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                   );
               })()}
               {shouldShowData && arrow.data && (
-                  <DataDisplay x={midX - 70} y={midY + 5} data={arrow.data} />
+                  <DataDisplay x={midX} y={midY + 5} data={arrow.data} />
               )}
             </g>
           );
