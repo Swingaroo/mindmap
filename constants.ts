@@ -17,7 +17,7 @@ export const getInitialNodes = (t: TFunction): Node<ViewNodeData>[] => {
   const nodeWidth = size.width;
   const nodeHeight = size.height;
   const horizontalGap = 64;
-  const verticalGap = 16;
+  const verticalGap = 32;
   const startX = 100;
   const startY = 5;
 

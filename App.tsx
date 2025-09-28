@@ -588,7 +588,7 @@ const App: FC = () => {
   
   const handleToggleMiniMap = () => setIsMiniMapVisible(prev => !prev);
 
-  const snapGrid: [number, number] = [16, 16];
+  const snapGrid: [number, number] = [32, 32];
 
   return (
     <div className="w-screen h-screen flex flex-col font-sans relative">
