@@ -243,14 +243,21 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
         if (!source || !target) return null;
         initialValue = arrow.label;
         const midY = (source.position.y + target.position.y) / 2;
+        
+        // Calculate the height of the multi-line label to position the textarea correctly
+        const lines = arrow.label.split('\n');
+        const lineHeight = 14.4; // 1.2em for 12px font
+        const yOffset = 10;
+        const totalLabelHeight = (lines.length - 1) * lineHeight;
+
         position = {
             x: (source.position.x + target.position.x) / 2 - 60,
-            y: midY - 40,
+            y: midY - yOffset - totalLabelHeight - 17, // 17 is a magic number for centering
         };
     }
     
     return (
-        <foreignObject x={position.x} y={position.y} width="120" height="40">
+        <foreignObject x={position.x} y={position.y + 2} width="120" height="40">
             <textarea
                 value={initialValue}
                 onChange={(e) => handleLiveUpdate(e.target.value)}
@@ -463,7 +470,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                   const charWidth = 7; // Heuristic avg char width
                   const lineHeight = 14.4; // 1.2em for 12px font
                   const padding = 2;
-                  const yOffset = 15; // Distance from arrow line to the bottom of the label
+                  const yOffset = 10; // Distance from arrow line to the bottom of the label
 
                   const boxWidth = longestLine.length * charWidth + padding * 2;
                   const boxHeight = lines.length * lineHeight + padding * 2;
@@ -479,7 +486,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                     <g>
                       <rect
                         x={boxX}
-                        y={boxY}
+                        y={boxY + 2}
                         width={boxWidth}
                         height={boxHeight}
                         fill="white"
@@ -488,7 +495,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                       />
                       <text
                         x={midX}
-                        y={textY}
+                        y={textY + 2}
                         textAnchor="middle"
                         fontSize="12"
                         className="select-none fill-current"
@@ -501,7 +508,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                   );
               })()}
               {shouldShowData && arrow.data && (
-                  <DataDisplay x={midX - 70} y={midY + 30} data={arrow.data} />
+                  <DataDisplay x={midX - 70} y={midY + 5} data={arrow.data} />
               )}
             </g>
           );
