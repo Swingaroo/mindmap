@@ -54,14 +54,19 @@ const PrintableDocument: FC<{
   // A4 Page dimensions in points (pt)
   const A4_LANDSCAPE_WIDTH_PT = 842;
   const A4_LANDSCAPE_HEIGHT_PT = 595;
-  // Margin in points (0.5 inch * 72 pt/inch)
+  // Margin in points
   const MARGIN_PT = 36;
   const GAP_PX = 20;
 
-  // The printable area is the page size minus margins. This is our target container size.
-  // We'll calculate it in pixels, assuming 96 DPI (1pt = 4/3px or 1.333px)
-  const PRINTABLE_WIDTH_PX = Math.floor((A4_LANDSCAPE_WIDTH_PT - MARGIN_PT * 2) * (4/3)); // ~1026px
-  const PRINTABLE_HEIGHT_PX = Math.floor((A4_LANDSCAPE_HEIGHT_PT - MARGIN_PT * 2) * (4/3)); // ~697px
+  // Convert page dimensions and margin to pixels assuming 96 DPI (1pt = 4/3px)
+  const PAGE_WIDTH_PX = Math.floor(A4_LANDSCAPE_WIDTH_PT * (4/3));
+  const PAGE_HEIGHT_PX = Math.floor(A4_LANDSCAPE_HEIGHT_PT * (4/3));
+  const MARGIN_PX = Math.floor(MARGIN_PT * (4/3));
+
+  // The printable area is the page size minus margins. This is our target container for scaling.
+  const PRINTABLE_WIDTH_PX = PAGE_WIDTH_PX - (MARGIN_PX * 2);
+  const PRINTABLE_HEIGHT_PX = PAGE_HEIGHT_PX - (MARGIN_PX * 2);
+
 
   return (
     // Add base font-family to help html2pdf render text correctly if Tailwind fails to load in its context
@@ -69,33 +74,32 @@ const PrintableDocument: FC<{
       {pageLayout.map((pageNodes, index) => {
         const totalContentWidth = pageNodes.reduce((acc, node) => acc + parseFloat(String(node.style?.width ?? '0')), 0) + (pageNodes.length > 1 ? GAP_PX * (pageNodes.length - 1) : 0);
         const maxContentHeight = Math.max(0, ...pageNodes.map(node => parseFloat(String(node.style?.height ?? '0'))));
-
-        if (totalContentWidth === 0 || maxContentHeight === 0) {
-            return <div key={index} style={{ width: `${PRINTABLE_WIDTH_PX}px`, height: `${PRINTABLE_HEIGHT_PX}px` }} />;
-        }
-
-        // Scale the content to fit within the printable area.
+        
         const scaleX = totalContentWidth > PRINTABLE_WIDTH_PX ? PRINTABLE_WIDTH_PX / totalContentWidth : 1;
         const scaleY = maxContentHeight > PRINTABLE_HEIGHT_PX ? PRINTABLE_HEIGHT_PX / maxContentHeight : 1;
         const scale = Math.min(scaleX, scaleY);
         
         const pageStyle: React.CSSProperties = {
-            width: `${PRINTABLE_WIDTH_PX}px`,
-            height: `${PRINTABLE_HEIGHT_PX}px`,
+            width: `${PAGE_WIDTH_PX}px`,
+            height: `${PAGE_HEIGHT_PX}px`,
             backgroundColor: '#ffffff',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             overflow: 'hidden',
             boxSizing: 'border-box',
-            paddingTop: '1px',
+            padding: `${MARGIN_PX}px`,
         };
 
         if (outputFormat === 'html') {
             // For HTML output, simulate the full page with margins and box shadow
-            pageStyle.margin = `${MARGIN_PT * (4/3)}px auto`;
+            pageStyle.margin = `${MARGIN_PX}px auto`;
             pageStyle.boxShadow = '0 0 10px rgba(0,0,0,0.1)';
             pageStyle.pageBreakAfter = 'always';
+        }
+        
+        if (totalContentWidth === 0 || maxContentHeight === 0) {
+            return <div key={index} style={pageStyle} className={outputFormat === 'pdf' ? 'printable-page' : ''}></div>;
         }
 
         return (
