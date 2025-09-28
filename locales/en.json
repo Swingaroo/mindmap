@@ -19,12 +19,19 @@
       "asHtml": "Save as HTML"
     },
     "load": "Load",
+    "hideNavPanel": "Hide Navigation",
+    "showNavPanel": "Show Navigation",
     "hideMinimap": "Hide Minimap",
     "showMinimap": "Show Minimap",
     "languages": {
       "en": "English",
       "ru": "Russian"
     }
+  },
+  "navPanel": {
+    "title": "Navigation",
+    "untitledView": "Untitled View",
+    "selectView": "Select a view..."
   },
   "editorPanel": {
     "title": "Edit View",

@@ -1,5 +1,9 @@
 import React, { FC, SVGProps, useState, useRef, useEffect } from 'react';
+// FIX: Alias reactflow's Node to avoid conflict with DOM's Node type.
+import { Node as ReactFlowNode } from 'reactflow';
 import Button from './ui/Button';
+import NavigationPanel from './NavigationPanel';
+import { ViewNodeData } from '../types';
 import { useTranslation } from '../i18n';
 
 interface ToolbarProps {
@@ -14,31 +18,76 @@ interface ToolbarProps {
   onToggleHighlighter?: () => void;
   isMiniMapVisible: boolean;
   onToggleMiniMap: () => void;
+  // FIX: Use the aliased ReactFlowNode type.
+  sortedNodes: ReactFlowNode<ViewNodeData>[];
+  onFocus: (id: string) => void;
+  selectedNodeId: string | null;
 }
 
-const Toolbar: FC<ToolbarProps> = ({ onAddView, onSave, onSaveToPdf, onSaveToHtml, onLoad, isReadOnly, onToggleReadOnly, isHighlighterActive, onToggleHighlighter, isMiniMapVisible, onToggleMiniMap }) => {
+const Toolbar: FC<ToolbarProps> = ({ 
+    onAddView, onSave, onSaveToPdf, onSaveToHtml, onLoad, isReadOnly, 
+    onToggleReadOnly, isHighlighterActive, onToggleHighlighter, 
+    isMiniMapVisible, onToggleMiniMap,
+    sortedNodes, onFocus, selectedNodeId
+}) => {
   const { t, locale, setLocale } = useTranslation();
   const [isSaveMenuOpen, setIsSaveMenuOpen] = useState(false);
-  const saveMenuRef = useRef<HTMLDivElement>(null);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const [isNavDropdownOpen, setIsNavDropdownOpen] = useState(false);
+  const saveMenuRef = useRef<HTMLDivElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
+  const navMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // FIX: Cast event.target to the DOM `Node` type. The type alias for `ReactFlowNode` resolves the name collision.
       if (saveMenuRef.current && !saveMenuRef.current.contains(event.target as Node)) {
         setIsSaveMenuOpen(false);
       }
+      // FIX: Cast event.target to the DOM `Node` type.
       if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
         setIsLangMenuOpen(false);
+      }
+      // FIX: Cast event.target to the DOM `Node` type.
+      if (navMenuRef.current && !navMenuRef.current.contains(event.target as Node)) {
+        setIsNavDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+  
+  const handleNavFocus = (id: string) => {
+    onFocus(id);
+    setIsNavDropdownOpen(false); // Close dropdown on selection
+  };
+  
+  const selectedNode = sortedNodes.find(node => node.id === selectedNodeId);
+  const selectedNodeTitle = selectedNode?.data.title || t('navPanel.selectView');
 
   return (
     <div className="w-full bg-white shadow-md p-2 flex items-center justify-between z-30">
-      <h1 className="text-xl font-bold text-gray-800">{t('appName')}</h1>
+      <div className="flex items-center gap-4">
+        <h1 className="text-xl font-bold text-gray-800">{t('appName')}</h1>
+        <div className="relative" ref={navMenuRef}>
+            <Button
+                onClick={() => setIsNavDropdownOpen(prev => !prev)}
+                variant="outline"
+                className="w-72 justify-between"
+                title={selectedNodeTitle}
+            >
+                <span className="truncate text-left">{selectedNodeTitle}</span>
+                <ChevronDownIcon className="w-4 h-4 ml-2 flex-shrink-0" />
+            </Button>
+            {isNavDropdownOpen && (
+                <NavigationPanel
+                    sortedNodes={sortedNodes}
+                    onFocus={handleNavFocus}
+                    selectedNodeId={selectedNodeId}
+                />
+            )}
+        </div>
+      </div>
       <div className="flex items-center gap-2">
          <Button onClick={onToggleReadOnly} variant="secondary">
             {isReadOnly ? (

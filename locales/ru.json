@@ -18,12 +18,19 @@
       "asHtml": "Сохранить как HTML"
     },
     "load": "Загрузить",
+    "hideNavPanel": "Скрыть навигацию",
+    "showNavPanel": "Показать навигацию",
     "hideMinimap": "Скрыть миникарту",
     "showMinimap": "Показать миникарту",
     "languages": {
       "en": "Английский",
       "ru": "Русский"
     }
+  },
+  "navPanel": {
+    "title": "Навигация",
+    "untitledView": "Безымянный слайд",
+    "selectView": "Выберите слайд..."
   },
   "editorPanel": {
     "title": "Редактировать слайд",

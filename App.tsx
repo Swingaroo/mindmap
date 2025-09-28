@@ -22,7 +22,6 @@ import { Presentation, TextStyle, ViewNodeData, ViewElement, DiagramElement, Ima
 import ViewNode from './components/ViewNode';
 import Toolbar from './components/Toolbar';
 import EditorPanel from './components/EditorPanel';
-import DiagramEditor from './components/diagram/DiagramEditor';
 import { useTranslation, TFunction, I18nProvider } from './i18n';
 
 const nodeTypes = { viewNode: ViewNode };
@@ -179,6 +178,10 @@ const App: FC = () => {
   useEffect(() => {
     const currentlySelected = nodes.find(n => n.selected);
     setSelectedNode(currentlySelected || null);
+  }, [nodes]);
+
+  const sortedNodesForNav = useMemo(() => {
+    return [...nodes].sort((a, b) => a.position.x - b.position.x || a.position.y - b.position.y);
   }, [nodes]);
 
   const clearHighlight = useCallback(() => {
@@ -619,6 +622,9 @@ const App: FC = () => {
         onToggleHighlighter={handleToggleHighlighter}
         isMiniMapVisible={isMiniMapVisible}
         onToggleMiniMap={handleToggleMiniMap}
+        sortedNodes={sortedNodesForNav}
+        onFocus={onFocus}
+        selectedNodeId={selectedNode?.id || null}
       />
       <div className={`flex-grow flex min-h-0 ${isHighlighterActive ? 'highlighter-cursor' : ''}`}>
         <div className="flex-grow h-full relative">
