@@ -242,9 +242,10 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
         const target = figureMap.get(arrow.targetId);
         if (!source || !target) return null;
         initialValue = arrow.label;
+        const midY = (source.position.y + target.position.y) / 2;
         position = {
             x: (source.position.x + target.position.x) / 2 - 60,
-            y: (source.position.y + target.position.y) / 2,
+            y: midY - 40,
         };
     }
     
@@ -462,12 +463,17 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                   const charWidth = 7; // Heuristic avg char width
                   const lineHeight = 14.4; // 1.2em for 12px font
                   const padding = 2;
+                  const yOffset = 15; // Distance from arrow line to the bottom of the label
 
                   const boxWidth = longestLine.length * charWidth + padding * 2;
                   const boxHeight = lines.length * lineHeight + padding * 2;
                   const boxX = midX - boxWidth / 2;
-                  // Position box vertically; text 'y' is baseline of first line, so move up by font size
-                  const boxY = (midY + 15) - 12 - padding;
+
+                  // Calculate Y position for the first line of text so the entire block is above the arrow
+                  const textY = midY - yOffset - (lines.length - 1) * lineHeight;
+
+                  // Position box vertically; text 'y' is baseline of first line, so move up by approx font size
+                  const boxY = textY - 12 - padding;
 
                   return (
                     <g>
@@ -482,7 +488,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                       />
                       <text
                         x={midX}
-                        y={midY + 15}
+                        y={textY}
                         textAnchor="middle"
                         fontSize="12"
                         className="select-none fill-current"
