@@ -67,41 +67,81 @@ export const getInitialNodes = (t: TFunction): Node<ViewNodeData>[] => {
     switch (viewType) {
       // Case 0: Diagram View
       case 0: {
-        const fig1: DiagramFigure = {
-          id: uuidv4(),
-          figureType: DiagramFigureType.Rectangle,
-          position: { x: 150, y: 150 },
-          label: t('initialNodes.welcome.diagramFig1_label'),
-        };
-        const fig2: DiagramFigure = {
-          id: uuidv4(),
-          figureType: DiagramFigureType.Circle,
-          position: { x: 450, y: 150 },
-          label: t('initialNodes.welcome.diagramFig2_label'),
-        };
-        const arrow1: DiagramArrow = {
-          id: uuidv4(),
-          type: 'arrow',
-          sourceId: fig1.id,
-          targetId: fig2.id,
-          label: t('initialNodes.welcome.diagramArrow1_label'),
-          arrowType: ArrowType.OneEnd,
-        };
+        let diagramFigures: DiagramFigure[];
+        let diagramArrows: DiagramArrow[];
+        let diagramCaption: string;
+        let diagramHeight: number;
+        let diagramViewBox: [number, number, number, number] | undefined;
+        let textContent: string;
 
         if (i === 1) {
-          fig1.data = { rps: 11100 };
-          fig2.data = { rps: 1110000 };
-          arrow1.data = { traffic: 1000 };
+          textContent = t('initialNodes.welcome.element2_content_diagram');
+          diagramCaption = t('initialNodes.welcome.diagram_caption');
+          diagramHeight = 650;
+
+          const users: DiagramFigure = { id: uuidv4(), figureType: DiagramFigureType.Actor, position: { x: 30, y: 300 }, label: "Users", data: { dau: 2000000 }, showData: true };
+          const internet: DiagramFigure = { id: uuidv4(), figureType: DiagramFigureType.Cloud, position: { x: 163, y: 301 }, label: "Internet" };
+          const lb: DiagramFigure = { id: uuidv4(), figureType: DiagramFigureType.Rectangle, position: { x: 400, y: 300 }, label: "Load Balancer\n(nginx)", data: { rps: 50000 }, showData: true };
+          const web1: DiagramFigure = { id: uuidv4(), figureType: DiagramFigureType.Rectangle, position: { x: 549, y: 200 }, label: "Web Server 1\n(Node.js)", data: { rps: 25000 }, showData: true };
+          const web2: DiagramFigure = { id: uuidv4(), figureType: DiagramFigureType.Rectangle, position: { x: 550, y: 400 }, label: "Web Server 2\n(Node.js)", data: { rps: 25000 }, showData: true };
+          const cache: DiagramFigure = { id: uuidv4(), figureType: DiagramFigureType.Circle, position: { x: 767, y: 227 }, label: "Cache\n(Redis)" };
+          const db: DiagramFigure = { id: uuidv4(), figureType: DiagramFigureType.Circle, position: { x: 764, y: 353 }, label: "Database\n(Postgres)", data: { rps: 100000 }, showData: true };
+
+          diagramFigures = [users, internet, lb, web1, web2, cache, db];
+          
+          diagramArrows = [
+            { id: uuidv4(), type: 'arrow', sourceId: users.id, targetId: internet.id, label: "", arrowType: ArrowType.OneEnd },
+            { id: uuidv4(), type: 'arrow', sourceId: internet.id, targetId: lb.id, label: "", arrowType: ArrowType.OneEnd, data: { traffic: 500 }, showData: true },
+            { id: uuidv4(), type: 'arrow', sourceId: lb.id, targetId: web1.id, label: "", arrowType: ArrowType.OneEnd },
+            { id: uuidv4(), type: 'arrow', sourceId: lb.id, targetId: web2.id, label: "", arrowType: ArrowType.OneEnd },
+            { id: uuidv4(), type: 'arrow', sourceId: web1.id, targetId: cache.id, label: "read/write", arrowType: ArrowType.BothEnds },
+            { id: uuidv4(), type: 'arrow', sourceId: web1.id, targetId: db.id, label: "read/write", arrowType: ArrowType.BothEnds },
+            { id: uuidv4(), type: 'arrow', sourceId: web2.id, targetId: cache.id, label: "read/write", arrowType: ArrowType.BothEnds },
+            { id: uuidv4(), type: 'arrow', sourceId: web2.id, targetId: db.id, label: "read/write", arrowType: ArrowType.BothEnds },
+          ];
+
+          diagramViewBox = [-30.140296936035156, 135, 872.6170425415039, 359.4];
+          
+        } else {
+          textContent = `This view (No. **${i}**) contains a sample diagram.`;
+          diagramCaption = `Sample diagram in view ${i}`;
+          diagramHeight = 300;
+          diagramViewBox = undefined;
+
+          const fig1: DiagramFigure = {
+            id: uuidv4(),
+            figureType: DiagramFigureType.Rectangle,
+            position: { x: 150, y: 150 },
+            label: t('initialNodes.welcome.diagramFig1_label'),
+          };
+          const fig2: DiagramFigure = {
+            id: uuidv4(),
+            figureType: DiagramFigureType.Circle,
+            position: { x: 450, y: 150 },
+            label: t('initialNodes.welcome.diagramFig2_label'),
+          };
+          const arrow1: DiagramArrow = {
+            id: uuidv4(),
+            type: 'arrow',
+            sourceId: fig1.id,
+            targetId: fig2.id,
+            label: t('initialNodes.welcome.diagramArrow1_label'),
+            arrowType: ArrowType.OneEnd,
+          };
+
+          diagramFigures = [fig1, fig2];
+          diagramArrows = [arrow1];
         }
 
         elements = [
-          { id: uuidv4(), type: 'text', content: `This view (No. **${i}**) contains a sample diagram.`, style: TextStyle.Body },
+          { id: uuidv4(), type: 'text', content: textContent, style: TextStyle.Body },
           {
             id: uuidv4(),
             type: 'diagram',
-            diagramState: { figures: [fig1, fig2], arrows: [arrow1] },
-            caption: `Sample diagram in view ${i}`,
-            height: 300,
+            diagramState: { figures: diagramFigures, arrows: diagramArrows },
+            caption: diagramCaption,
+            height: diagramHeight,
+            viewBox: diagramViewBox,
           } as DiagramElement,
         ];
         break;

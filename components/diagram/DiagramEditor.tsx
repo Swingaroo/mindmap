@@ -1,4 +1,4 @@
-import React, { FC, useState, useRef, MouseEvent, SVGProps, useMemo } from 'react';
+import React, { FC, useState, useRef, MouseEvent, SVGProps, useMemo, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { DiagramState, DiagramFigure, DiagramArrow, DiagramFigureType, ArrowType } from '../../types';
 import { FigureComponents, DataDisplay } from './figures';
@@ -33,6 +33,60 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
   const [dragging, setDragging] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
   const [editingLabel, setEditingLabel] = useState<{ id: string; type: 'figure' | 'arrow' } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+
+  const [panelPosition, setPanelPosition] = useState({ top: 64, right: 8 });
+  const panelDragStartRef = useRef<{ startX: number; startY: number; initialTop: number; initialRight: number } | null>(null);
+
+  // Reset panel position and selection only when exiting edit mode
+  useEffect(() => {
+    if (isReadOnly) {
+      setPanelPosition({ top: 64, right: 8 });
+      setSelectedElement(null);
+    }
+  }, [isReadOnly]);
+
+  const handlePanelDragMove = useCallback((e: globalThis.MouseEvent) => {
+    if (!panelDragStartRef.current) return;
+    
+    const dx = e.clientX - panelDragStartRef.current.startX;
+    const dy = e.clientY - panelDragStartRef.current.startY;
+
+    setPanelPosition({
+        top: panelDragStartRef.current.initialTop + dy,
+        right: panelDragStartRef.current.initialRight - dx, // right is inverse of x
+    });
+  }, []);
+
+  const handlePanelDragEnd = useCallback(() => {
+    panelDragStartRef.current = null;
+    window.removeEventListener('mousemove', handlePanelDragMove);
+    window.removeEventListener('mouseup', handlePanelDragEnd);
+    document.body.style.cursor = '';
+  }, [handlePanelDragMove]);
+
+  const handlePanelDragStart = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    panelDragStartRef.current = {
+        startX: e.clientX,
+        startY: e.clientY,
+        initialTop: panelPosition.top,
+        initialRight: panelPosition.right,
+    };
+    
+    window.addEventListener('mousemove', handlePanelDragMove);
+    window.addEventListener('mouseup', handlePanelDragEnd);
+    document.body.style.cursor = 'grabbing';
+  };
+
+  // Cleanup listeners on unmount
+  useEffect(() => {
+    return () => {
+        window.removeEventListener('mousemove', handlePanelDragMove);
+        window.removeEventListener('mouseup', handlePanelDragEnd);
+    };
+  }, [handlePanelDragMove, handlePanelDragEnd]);
 
   const updateState = (updates: Partial<DiagramState>) => {
     onChange({ ...diagramState, ...updates });
@@ -329,10 +383,19 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
         </div>
       )}
       {!isReadOnly && selectedElementForData && (
-          <div className="absolute top-16 right-2 z-10 p-3 bg-white shadow-lg rounded-md border w-64">
-              <h4 className="text-sm font-semibold mb-2 truncate" title={selectedElementForData.label}>
-                  {t('diagramEditor.editDataFor')} "{selectedElementForData.label}"
-              </h4>
+          <div
+            className="absolute z-10 p-3 bg-white shadow-lg rounded-md border w-64"
+            style={{ top: `${panelPosition.top}px`, right: `${panelPosition.right}px` }}
+          >
+              <div 
+                className="flex items-center justify-between mb-2 cursor-grab active:cursor-grabbing"
+                onMouseDown={handlePanelDragStart}
+              >
+                <h4 className="text-sm font-semibold truncate select-none" title={selectedElementForData.label}>
+                    {t('diagramEditor.editDataFor')} "{selectedElementForData.label}"
+                </h4>
+                <GrabHandleIcon className="w-5 h-5 text-gray-400 flex-shrink-0 ml-2" />
+              </div>
               
               <label className="flex items-center justify-between text-xs font-medium text-gray-600 mb-3">
                   <span>{t('diagramEditor.showDataForElement')}</span>
@@ -582,6 +645,17 @@ const ArrowBothIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
         <line x1="5" y1="12" x2="19" y2="12"></line>
         <polyline points="12 5 19 12 12 19"></polyline>
         <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
+);
+
+const GrabHandleIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <circle cx="9" cy="12" r="1"></circle>
+        <circle cx="9" cy="5" r="1"></circle>
+        <circle cx="9" cy="19" r="1"></circle>
+        <circle cx="15" cy="12" r="1"></circle>
+        <circle cx="15" cy="5" r="1"></circle>
+        <circle cx="15" cy="19" r="1"></circle>
     </svg>
 );
 

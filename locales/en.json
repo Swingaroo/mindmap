@@ -153,14 +153,11 @@
   },
   "initialNodes": {
     "welcome": {
-      "title": "Welcome to MindMap Presenter!",
-      "element1_content": "This is a Title",
-      "element2_content": "This is a **body text**. You can add more content in the *editor panel* on the right when a view is selected.",
-      "element4_caption": "This is an example diagram. Edit its caption in the side panel.",
+      "element2_content_diagram": "This is an example of a more complex diagram representing a simple web service architecture. You can interact with it in **Edit Mode**.",
+      "diagram_caption": "Example Web Service Architecture",
       "diagramFig1_label": "Start Here",
       "diagramFig2_label": "Go Next",
-      "diagramArrow1_label": "Connector",
-      "element5_content": "Go to the next view"
+      "diagramArrow1_label": "Connector"
     },
     "howItWorks": {
       "title": "Markdown Typography Guide",
