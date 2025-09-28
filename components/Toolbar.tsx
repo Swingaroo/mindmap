@@ -73,7 +73,7 @@ const Toolbar: FC<ToolbarProps> = ({
             <Button
                 onClick={() => setIsNavDropdownOpen(prev => !prev)}
                 variant="outline"
-                className="w-72 justify-between"
+                className="w-[36rem] justify-between"
                 title={selectedNodeTitle}
             >
                 <span className="truncate text-left">{selectedNodeTitle}</span>

@@ -13,7 +13,7 @@ const NavigationPanel: FC<NavigationPanelProps> = ({ sortedNodes, onFocus, selec
   const { t } = useTranslation();
 
   return (
-    <div className="absolute left-0 mt-2 w-80 bg-white rounded-md shadow-lg border z-20 flex flex-col">
+    <div className="absolute left-0 mt-2 w-[36rem] bg-white rounded-md shadow-lg border z-20 flex flex-col">
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <h2 className="text-lg font-semibold text-gray-800">{t('navPanel.title')}</h2>
       </div>

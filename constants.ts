@@ -13,6 +13,19 @@ export const getInitialNodes = (t: TFunction): Node<ViewNodeData>[] => {
   let yPos = 5;
   const size = viewSizeOptions[1]; // All views are size 'M'
 
+  const titleTemplates = [
+    "Executive Summary - View {{i}}",
+    "Deep Dive on Topic {{i}}",
+    "Q{{q}} Financials for View {{i}}",
+    "A Comprehensive Review of the Strategic Initiatives for Fiscal Year {{fy}} - Focus Area {{i}}",
+    "Exploring the Synergistic Potential between Cross-Functional Teams in the Context of Agile Project Management Methodologies: A Case Study from View {{i}}",
+    "Key Takeaways: View {{i}}",
+    "Appendix {{i}}",
+    "Market Analysis - Sector {{i}}",
+    "Unpacking the Nuances of Quantum Chromodynamics and Its Unexpected Parallels with 14th-Century Renaissance Art, Specifically Focusing on the Brushstroke Techniques of Early Florentine Masters - An Esoteric Exploration (View {{i}})",
+    "Quick Update #{{i}}",
+  ];
+
   for (let i = 1; i <= 50; i++) {
     let elements: ViewElement[] = [];
     const viewType = (i - 1) % 3;
@@ -84,13 +97,19 @@ export const getInitialNodes = (t: TFunction): Node<ViewNodeData>[] => {
       }
     }
 
+    const template = titleTemplates[(i - 1) % titleTemplates.length];
+    const title = template
+      .replace('{{i}}', String(i))
+      .replace('{{q}}', String((i % 4) + 1))
+      .replace('{{fy}}', String(new Date().getFullYear() + Math.floor(i / 10)));
+
     const newNode: Node<ViewNodeData> = {
       id: `test-node-${i}`,
       type: 'viewNode',
       position: { x: 100, y: yPos },
       style: { width: `${size.width}px`, height: `${size.height}px` },
       data: {
-        title: `Test View ${i}`,
+        title: title,
         elements: elements,
       },
     };
