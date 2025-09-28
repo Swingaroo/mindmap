@@ -81,7 +81,7 @@ const NavigationPanel: FC<NavigationPanelProps> = ({ sortedNodes, onFocus, selec
     });
   };
 
-  const renderNode = (node: Node<ViewNodeData>, prefix: string) => (
+  const renderNode = (node: Node<ViewNodeData>) => (
     <button
       onClick={() => onFocus(node.id)}
       className={`w-full text-left px-3 py-2 rounded-md transition-colors text-sm flex items-start ${
@@ -90,7 +90,6 @@ const NavigationPanel: FC<NavigationPanelProps> = ({ sortedNodes, onFocus, selec
           : 'text-gray-700 hover:bg-gray-100'
       }`}
     >
-      <span className="text-gray-500 w-8 flex-shrink-0">{prefix}</span>
       <span className="break-words flex-1">{node.data.title || t('navPanel.untitledView')}</span>
     </button>
   );
@@ -102,30 +101,30 @@ const NavigationPanel: FC<NavigationPanelProps> = ({ sortedNodes, onFocus, selec
       </div>
       <div className="flex-grow overflow-y-auto max-h-[calc(100vh-200px)]">
         <ul className="p-2 space-y-1">
-          {navTree.map(({ root, children }, index) => {
+          {navTree.map(({ root, children }) => {
             const isOpen = openSections.has(root.id);
             return (
               <li key={root.id}>
                 <div className="flex items-center gap-1">
                   <div className="flex-grow">
-                    {renderNode(root, `${index + 1}.`)}
+                    {renderNode(root)}
                   </div>
                   {children.length > 0 && (
                     <button
                       onClick={() => toggleSection(root.id)}
-                      className="p-2 rounded-md hover:bg-gray-100 text-gray-500 flex-shrink-0"
+                      className="w-9 py-2 flex items-center justify-center rounded-md hover:bg-gray-100 text-gray-500 flex-shrink-0"
                       aria-expanded={isOpen}
                       aria-label={root.data.title}
                     >
-                      <ChevronDownIcon className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                      <ChevronDownIcon className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                     </button>
                   )}
                 </div>
                 {isOpen && children.length > 0 && (
                   <ul className="pl-6 mt-1 space-y-1 border-l-2 border-gray-200 ml-4">
-                    {children.map((child, childIndex) => (
+                    {children.map((child) => (
                       <li key={child.id}>
-                        {renderNode(child, `${index + 1}.${childIndex + 1}`)}
+                        {renderNode(child)}
                       </li>
                     ))}
                   </ul>
