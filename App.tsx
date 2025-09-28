@@ -71,7 +71,7 @@ const PrintableDocument: FC<{
         const maxContentHeight = Math.max(0, ...pageNodes.map(node => parseFloat(String(node.style?.height ?? '0'))));
 
         if (totalContentWidth === 0 || maxContentHeight === 0) {
-            return <div key={index} style={{ width: `${PRINTABLE_WIDTH_PX}px`, height: `${PRINTABLE_HEIGHT_PX}px`, pageBreakAfter: 'always' }} />;
+            return <div key={index} style={{ width: `${PRINTABLE_WIDTH_PX}px`, height: `${PRINTABLE_HEIGHT_PX}px` }} />;
         }
 
         // Scale the content to fit within the printable area.
@@ -92,7 +92,7 @@ const PrintableDocument: FC<{
         };
 
         if (outputFormat === 'html') {
-            // For HTML output, simulate the full page with margins and forced page breaks
+            // For HTML output, simulate the full page with margins and box shadow
             pageStyle.margin = `${MARGIN_PT * (4/3)}px auto`;
             pageStyle.boxShadow = '0 0 10px rgba(0,0,0,0.1)';
             pageStyle.pageBreakAfter = 'always';
@@ -439,30 +439,42 @@ const App: FC = () => {
       });
       
       if (format === 'pdf') {
-        const pageElements = container.querySelectorAll('.printable-page');
-        if (pageElements.length === 0) {
-            throw new Error("No printable pages found to generate PDF.");
+        const pages = Array.from(container.querySelectorAll('.printable-page'));
+        if (pages.length === 0) {
+          throw new Error("No printable pages found.");
         }
+        
         const opt = {
-          margin: 36, // 0.5 inch margin in points
+          margin: 0,
           filename: t('app.defaultPdfFilename'),
           image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-          jsPDF: { unit: 'pt', format: 'a4', orientation: 'landscape' },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            letterRendering: true,
+          },
+          jsPDF: {
+            unit: 'pt',
+            format: 'a4',
+            orientation: 'landscape' as const,
+          },
         };
-        
-        const worker = html2pdf().set(opt);
-        let promise = worker.from(pageElements[0]).toPdf();
-        
-        for (let i = 1; i < pageElements.length; i++) {
-            const pageElement = pageElements[i];
-            promise = promise.get('pdf').then(pdf => {
-                pdf.addPage();
-            }).from(pageElement).toPdf();
+
+        const pdf = await html2pdf().from(pages[0]).set(opt).toPdf().get('pdf');
+
+        if (pages.length > 1) {
+          for (let i = 1; i < pages.length; i++) {
+            const pageElement = pages[i];
+            const canvas = await html2pdf().from(pageElement).set(opt).toCanvas().get('canvas');
+            const imgData = canvas.toDataURL('image/jpeg', 0.98);
+            pdf.addPage();
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
+          }
         }
-
-        await promise.save();
-
+        
+        pdf.save();
       } else { // html
         const printableHtml = container.innerHTML;
         const fullHtmlSource = `
@@ -477,7 +489,7 @@ const App: FC = () => {
                   body {
                       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
                   }
-                  ${format === 'html' ? 'body { background-color: #e5e7eb; }' : ''}
+                  body { background-color: #e5e7eb; }
               </style>
           </head>
           <body>
