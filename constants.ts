@@ -88,6 +88,12 @@ export const getInitialNodes = (t: TFunction): Node<ViewNodeData>[] => {
           arrowType: ArrowType.OneEnd,
         };
 
+        if (i === 1) {
+          fig1.data = { rps: 111 };
+          fig2.data = { rps: 111 };
+          arrow1.data = { traffic: 1000 };
+        }
+
         elements = [
           { id: uuidv4(), type: 'text', content: `This view (No. **${i}**) contains a sample diagram.`, style: TextStyle.Body },
           {
