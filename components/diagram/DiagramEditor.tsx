@@ -30,6 +30,7 @@ const figureRadii: Record<DiagramFigureType, number> = {
 const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = false, onChange, onDoneEditing, height, viewBox, isHighlighterActive, onHighlightElement, t, fixedWidth, showAllData }) => {
   const [selectedElement, setSelectedElement] = useState<{ type: 'figure' | 'arrow'; id: string } | null>(null);
   const [connecting, setConnecting] = useState<{ sourceId: string } | null>(null);
+  const [placingFigureType, setPlacingFigureType] = useState<DiagramFigureType | null>(null);
   const [dragging, setDragging] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
   const [editingLabel, setEditingLabel] = useState<{ id: string; type: 'figure' | 'arrow' } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -44,6 +45,21 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
       setSelectedElement(null);
     }
   }, [isReadOnly]);
+
+  // Add Escape key handler to cancel placing or connecting
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setPlacingFigureType(null);
+        setConnecting(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
 
   const handlePanelDragMove = useCallback((e: globalThis.MouseEvent) => {
     if (!panelDragStartRef.current) return;
@@ -92,14 +108,9 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
     onChange({ ...diagramState, ...updates });
   };
 
-  const addFigure = (figureType: DiagramFigureType) => {
-    const newFigure: DiagramFigure = {
-      id: uuidv4(),
-      figureType,
-      position: { x: 100, y: 100 },
-      label: t('diagramEditor.newFigure'),
-    };
-    updateState({ figures: [...diagramState.figures, newFigure] });
+  const handleSetPlacingFigure = (figureType: DiagramFigureType) => {
+    setPlacingFigureType(prev => (prev === figureType ? null : figureType));
+    setConnecting(null); // Cancel connecting mode
   };
 
   const deleteSelected = () => {
@@ -121,6 +132,10 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
   };
 
   const handleMouseDown = (e: MouseEvent<SVGGElement>, figure: DiagramFigure) => {
+    if (placingFigureType) {
+        e.stopPropagation();
+        return;
+    }
     if (isReadOnly || editingLabel || isHighlighterActive) return;
     e.stopPropagation();
 
@@ -172,10 +187,29 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
     setDragging(null);
   };
   
-  const handleSvgClick = () => {
-      if (isHighlighterActive) return;
+  const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (isHighlighterActive) return;
+
+    if (placingFigureType) {
+      if (!svgRef.current) return;
+      const pt = svgRef.current.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      const svgP = pt.matrixTransform(svgRef.current.getScreenCTM()?.inverse());
+
+      const newFigure: DiagramFigure = {
+        id: uuidv4(),
+        figureType: placingFigureType,
+        position: { x: Math.round(svgP.x), y: Math.round(svgP.y) },
+        label: t('diagramEditor.newFigure'),
+      };
+      updateState({ figures: [...diagramState.figures, newFigure] });
+
+      setPlacingFigureType(null);
+    } else {
       setSelectedElement(null);
       setConnecting(null);
+    }
   };
   
   const figureMap = new Map(diagramState.figures.map(f => [f.id, f]));
@@ -334,6 +368,12 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
     );
   };
 
+  const svgCursorClass = useMemo(() => {
+    if (placingFigureType) return 'cursor-crosshair';
+    if (!isReadOnly && !isHighlighterActive) return 'cursor-grab active:cursor-grabbing';
+    return '';
+  }, [placingFigureType, isReadOnly, isHighlighterActive]);
+
 
   return (
     <div 
@@ -341,13 +381,16 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
     >
       {!isReadOnly && (
         <div className="absolute top-0 left-0 right-0 z-10 p-2 bg-white/90 backdrop-blur-sm border-b rounded-t-md flex flex-wrap gap-2 items-center">
-            <Button onClick={() => addFigure(DiagramFigureType.Actor)} variant="outline" size="sm">{t('diagramEditor.figures.actor')}</Button>            
-            <Button onClick={() => addFigure(DiagramFigureType.Circle)} variant="outline" size="sm">{t('diagramEditor.figures.circle')}</Button>
-            <Button onClick={() => addFigure(DiagramFigureType.Rectangle)} variant="outline" size="sm">{t('diagramEditor.figures.rectangle')}</Button>
-            <Button onClick={() => addFigure(DiagramFigureType.Cloud)} variant="outline" size="sm">{t('diagramEditor.figures.cloud')}</Button>
+            <Button onClick={() => handleSetPlacingFigure(DiagramFigureType.Actor)} variant={placingFigureType === DiagramFigureType.Actor ? 'secondary' : 'outline'} size="sm">{t('diagramEditor.figures.actor')}</Button>            
+            <Button onClick={() => handleSetPlacingFigure(DiagramFigureType.Circle)} variant={placingFigureType === DiagramFigureType.Circle ? 'secondary' : 'outline'} size="sm">{t('diagramEditor.figures.circle')}</Button>
+            <Button onClick={() => handleSetPlacingFigure(DiagramFigureType.Rectangle)} variant={placingFigureType === DiagramFigureType.Rectangle ? 'secondary' : 'outline'} size="sm">{t('diagramEditor.figures.rectangle')}</Button>
+            <Button onClick={() => handleSetPlacingFigure(DiagramFigureType.Cloud)} variant={placingFigureType === DiagramFigureType.Cloud ? 'secondary' : 'outline'} size="sm">{t('diagramEditor.figures.cloud')}</Button>
             
             <div className="w-px h-6 bg-gray-300 mx-1"></div>
-            <Button onClick={() => setConnecting({ sourceId: selectedElement?.id! })} disabled={!selectedElement || selectedElement.type !== 'figure'} variant={connecting ? 'secondary' : 'outline'} size="sm">
+            <Button onClick={() => {
+                setConnecting({ sourceId: selectedElement?.id! });
+                setPlacingFigureType(null);
+            }} disabled={!selectedElement || selectedElement.type !== 'figure'} variant={connecting ? 'secondary' : 'outline'} size="sm">
                 {connecting ? t('diagramEditor.selectTarget') : t('diagramEditor.connect')}
             </Button>
             <Button onClick={deleteSelected} disabled={!selectedElement} variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-50">{t('diagramEditor.delete')}</Button>
@@ -437,7 +480,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onClick={handleSvgClick}
-        className={!isReadOnly && !isHighlighterActive ? 'cursor-grab active:cursor-grabbing' : ''}
+        className={svgCursorClass}
         preserveAspectRatio="xMidYMin meet"
       >
         <defs>
@@ -497,6 +540,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
 
           const handleArrowClick = (e: React.MouseEvent<SVGGElement>) => {
               e.stopPropagation();
+              if (placingFigureType) return;
               if (isHighlighterActive && onHighlightElement) {
                   onHighlightElement(e.currentTarget);
               } else if (!isReadOnly) {
