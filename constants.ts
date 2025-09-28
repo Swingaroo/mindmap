@@ -89,8 +89,8 @@ export const getInitialNodes = (t: TFunction): Node<ViewNodeData>[] => {
         };
 
         if (i === 1) {
-          fig1.data = { rps: 111 };
-          fig2.data = { rps: 111 };
+          fig1.data = { rps: 11100 };
+          fig2.data = { rps: 1110000 };
           arrow1.data = { traffic: 1000 };
         }
 

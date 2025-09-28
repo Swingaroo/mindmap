@@ -25,7 +25,7 @@ export const DataDisplay: FC<DataDisplayProps> = ({ x, y, data }) => {
         <foreignObject x={x} y={y} width="120" height="100">
             {/* FIX: Removed xmlns attribute which is not a valid prop for a div in React's JSX and causes a TypeScript error. */}
             <div
-                className="bg-white/80 border border-gray-400 rounded-md p-1 text-[10px] text-gray-800"
+                className="bg-white/80 rounded-md p-1 text-[10px] text-gray-800"
                 style={{ fontFamily: 'sans-serif' }}
             >
                 <table className="w-full">
@@ -64,6 +64,8 @@ const selectedStroke = 'stroke-indigo-600';
 
 const Rectangle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, isReadOnly, ...props }) => {
   const shouldShowData = isReadOnly ? !!showAllData : (typeof showData === 'boolean' ? showData : !!showAllData);
+  const numLines = label.split('\n').length;
+  const labelHeightAddition = (numLines - 1) * 14.4; // 12px font * 1.2em line height
   return (
     <g transform={`translate(${x}, ${y})`} {...props}>
       <rect 
@@ -78,13 +80,15 @@ const Rectangle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showDa
           ))}
         </text>
       )}
-      {shouldShowData && <DataDisplay x={-60} y={45} data={data} />}
+      {shouldShowData && <DataDisplay x={-60} y={45 + labelHeightAddition} data={data} />}
     </g>
   );
 };
 
 const Circle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, isReadOnly, ...props }) => {
   const shouldShowData = isReadOnly ? !!showAllData : (typeof showData === 'boolean' ? showData : !!showAllData);
+  const numLines = label.split('\n').length;
+  const labelHeightAddition = (numLines - 1) * 14.4; // 12px font * 1.2em line height
   return (
     <g transform={`translate(${x}, ${y})`} {...props}>
       <circle 
@@ -99,13 +103,15 @@ const Circle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData,
               ))}
           </text>
       )}
-      {shouldShowData && <DataDisplay x={-60} y={55} data={data} />}
+      {shouldShowData && <DataDisplay x={-60} y={55 + labelHeightAddition} data={data} />}
     </g>
   );
 };
 
 const Cloud: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, isReadOnly, ...props }) => {
   const shouldShowData = isReadOnly ? !!showAllData : (typeof showData === 'boolean' ? showData : !!showAllData);
+  const numLines = label.split('\n').length;
+  const labelHeightAddition = (numLines - 1) * 14.4; // 12px font * 1.2em line height
   return (
     <g transform={`translate(${x}, ${y})`} {...props}>
       <path 
@@ -120,13 +126,15 @@ const Cloud: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, 
               ))}
           </text>
       )}
-      {shouldShowData && <DataDisplay x={-60} y={55} data={data} />}
+      {shouldShowData && <DataDisplay x={-60} y={55 + labelHeightAddition} data={data} />}
     </g>
   );
 };
 
 const Actor: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, isReadOnly, ...props }) => {
   const shouldShowData = isReadOnly ? !!showAllData : (typeof showData === 'boolean' ? showData : !!showAllData);
+  const numLines = label.split('\n').length;
+  const labelHeightAddition = (numLines - 1) * 14.4; // 12px font * 1.2em line height
   return (
     <g transform={`translate(${x}, ${y})`} {...props}>
       <g className={`${isSelected ? selectedStroke : commonStroke}`} strokeWidth="2" fill="none">
@@ -143,7 +151,7 @@ const Actor: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, 
               ))}
           </text>
       )}
-      {shouldShowData && <DataDisplay x={-60} y={45} data={data} />}
+      {shouldShowData && <DataDisplay x={-60} y={45 + labelHeightAddition} data={data} />}
     </g>
   );
 };
