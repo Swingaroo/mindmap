@@ -181,6 +181,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
           updateState({ arrows: newArrows });
       } else { // Figure
           const newFigures = diagramState.figures.map(f => 
+// FIX: Corrected a typo where 'a' was used instead of 'f'. The map parameter is 'f'.
               f.id === selectedElementForData.id ? { ...f, showData: show } : f
           );
           updateState({ figures: newFigures });
@@ -494,7 +495,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                   );
               })()}
               {shouldShowData && arrow.data && (
-                  <DataDisplay x={midX - 60} y={midY + 30} data={arrow.data} />
+                  <DataDisplay x={midX - 70} y={midY + 30} data={arrow.data} />
               )}
             </g>
           );

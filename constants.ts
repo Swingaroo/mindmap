@@ -23,7 +23,7 @@ export const diagramParameterDefs: DiagramParameterDefs = {
   traffic: {
     abbr: "Traffic",
     caption: "Traffic",
-    unit: "GBpS",
+    unit: "GBps",
     appliesTo: ['arrow']
   },
   dau: {

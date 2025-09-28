@@ -1,4 +1,4 @@
-import React, { FC, SVGProps } from 'react';
+import React, { FC, SVGProps, ReactNode } from 'react';
 import { ElementData } from '../../types';
 import { diagramParameterDefs } from '../../constants';
 
@@ -7,6 +7,53 @@ interface DataDisplayProps {
   y: number;
   data?: ElementData;
 }
+
+const formatScientific = (num: number | string): ReactNode => {
+    const number = Number(num);
+    if (isNaN(number)) {
+        return String(num); // return original string if not a number
+    }
+    if (number === 0) {
+        return "0.0";
+    }
+
+    const exponent = Math.floor(Math.log10(Math.abs(number)));
+
+    // Handle numbers that don't need scientific notation (e.g., from 1.0 up to 10.0)
+    if (exponent === 0) {
+        return number.toFixed(1);
+    }
+
+    const absNumber = Math.abs(number);
+    const sign = number < 0 ? '-' : '';
+    
+    const mantissa = absNumber / Math.pow(10, exponent);
+
+    // If the mantissa is less than 1.5, we only show the order of magnitude.
+    if (mantissa < 1.5) {
+        return (
+            <span style={{ whiteSpace: 'nowrap' }}>
+                {sign}10<sup>{exponent}</sup>
+            </span>
+        );
+    }
+
+    // Otherwise, show the mantissa rounded to 1 decimal place.
+    let roundedMantissaStr = mantissa.toFixed(1);
+    let finalExponent = exponent;
+
+    // Handle cases where rounding the mantissa bumps it to 10.0
+    if (roundedMantissaStr === '10.0') {
+        roundedMantissaStr = '1.0';
+        finalExponent += 1;
+    }
+    
+    return (
+        <span style={{ whiteSpace: 'nowrap' }}>
+            {sign}{roundedMantissaStr} &times; 10<sup>{finalExponent}</sup>
+        </span>
+    );
+};
 
 export const DataDisplay: FC<DataDisplayProps> = ({ x, y, data }) => {
     if (!data) return null;
@@ -22,7 +69,7 @@ export const DataDisplay: FC<DataDisplayProps> = ({ x, y, data }) => {
     if (rows.length === 0) return null;
 
     return (
-        <foreignObject x={x} y={y} width="120" height="100">
+        <foreignObject x={x} y={y} width="140" height="100">
             {/* FIX: Removed xmlns attribute which is not a valid prop for a div in React's JSX and causes a TypeScript error. */}
             <div
                 className="bg-white/80 rounded-md p-1 text-[10px] text-gray-800"
@@ -34,7 +81,7 @@ export const DataDisplay: FC<DataDisplayProps> = ({ x, y, data }) => {
                           row && (
                             <tr key={row.key}>
                                 <td className="font-bold pr-1">{row.def.abbr}:</td>
-                                <td className="text-right pr-1">{row.value}</td>
+                                <td className="text-right pr-1">{formatScientific(row.value)}</td>
                                 <td className="text-gray-600">{row.def.unit}</td>
                             </tr>
                           )
@@ -80,7 +127,7 @@ const Rectangle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showDa
           ))}
         </text>
       )}
-      {shouldShowData && <DataDisplay x={-60} y={45 + labelHeightAddition} data={data} />}
+      {shouldShowData && <DataDisplay x={-70} y={45 + labelHeightAddition} data={data} />}
     </g>
   );
 };
@@ -103,7 +150,7 @@ const Circle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData,
               ))}
           </text>
       )}
-      {shouldShowData && <DataDisplay x={-60} y={55 + labelHeightAddition} data={data} />}
+      {shouldShowData && <DataDisplay x={-70} y={55 + labelHeightAddition} data={data} />}
     </g>
   );
 };
@@ -126,7 +173,7 @@ const Cloud: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, 
               ))}
           </text>
       )}
-      {shouldShowData && <DataDisplay x={-60} y={55 + labelHeightAddition} data={data} />}
+      {shouldShowData && <DataDisplay x={-70} y={55 + labelHeightAddition} data={data} />}
     </g>
   );
 };
@@ -151,7 +198,7 @@ const Actor: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, 
               ))}
           </text>
       )}
-      {shouldShowData && <DataDisplay x={-60} y={45 + labelHeightAddition} data={data} />}
+      {shouldShowData && <DataDisplay x={-70} y={45 + labelHeightAddition} data={data} />}
     </g>
   );
 };
