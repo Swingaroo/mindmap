@@ -1,10 +1,11 @@
 import React, { FC, useState, useRef, useCallback, SVGProps } from 'react';
 import { Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
-import { ViewNodeData, ViewElement, TextStyle, ImageElement, LinkElement, TextElement, DiagramElement, DiagramFigure, DiagramFigureType, DiagramArrow, ArrowType } from '../types';
+import { ViewNodeData, ViewElement, TextStyle, ImageElement, LinkElement, TextElement, DiagramElement, DiagramFigure, DiagramFigureType, DiagramArrow, ArrowType, ElementData } from '../types';
 import Button from './ui/Button';
 import DiagramEditor from './diagram/DiagramEditor';
 import { useTranslation } from '../i18n';
+import { diagramParameterDefs } from '../constants';
 
 interface EditorPanelProps {
   node: Node<ViewNodeData>;
@@ -335,6 +336,68 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                       .replace(/'/g, '&apos;');
         };
 
+        const formatScientificForDrawIo = (num: number | string): string => {
+            const number = Number(num);
+            if (isNaN(number)) return String(num);
+            if (number === 0) return "0.0";
+            const exponent = Math.floor(Math.log10(Math.abs(number)));
+            if (exponent === 0) return number.toFixed(1);
+            const absNumber = Math.abs(number);
+            const sign = number < 0 ? '-' : '';
+            const mantissa = absNumber / Math.pow(10, exponent);
+            if (mantissa < 1.5) return `${sign}10<sup>${exponent}</sup>`;
+            let roundedMantissaStr = mantissa.toFixed(1);
+            let finalExponent = exponent;
+            if (roundedMantissaStr === '10.0') {
+                roundedMantissaStr = '1.0';
+                finalExponent += 1;
+            }
+            return `${sign}${roundedMantissaStr} &times; 10<sup>${finalExponent}</sup>`;
+        };
+
+        const dataTableToMxCell = (
+            el: DiagramFigure | DiagramArrow,
+            geom: { x: number; y: number },
+            elementType: DiagramFigureType | 'arrow'
+        ): string | null => {
+            if (!el.showData || !el.data) return null;
+
+            const rows = Object.entries(diagramParameterDefs)
+                .map(([key, def]) => {
+                    if (!def.appliesTo.includes(elementType)) return null;
+                    const value = el.data![key];
+                    if (value === undefined || value === '') return null;
+                    return { key, def, value };
+                })
+                .filter((row): row is { key: string; def: any; value: string | number } => row !== null);
+
+            if (rows.length === 0) return null;
+
+            const tableRowsHtml = rows.map(row => `
+                <tr>
+                    <td style="font-weight: bold; padding-right: 4px; white-space: nowrap;">${escapeXml(row.def.abbr)}:</td>
+                    <td style="text-align: right; padding-right: 4px; white-space: nowrap;">${formatScientificForDrawIo(row.value)}</td>
+                    <td style="color: #6b7280; white-space: nowrap;">${escapeXml(row.def.unit)}</td>
+                </tr>
+            `).join('');
+
+            const tableHtml = `<div style="font-family: sans-serif; font-size: 10px; background-color: rgba(255, 255, 255, 0.8); border-radius: 4px; padding: 4px; display: inline-block;">
+                <table style="width: auto; border-collapse: collapse;">
+                    <tbody>
+                        ${tableRowsHtml}
+                    </tbody>
+                </table>
+            </div>`;
+
+            const height = rows.length * 15 + 10;
+            const dataCellId = `${el.id}-data`;
+            const style = 'html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;';
+
+            return `        <mxCell id="${dataCellId}" value="${escapeXml(tableHtml)}" style="${style}" vertex="1" parent="1">
+          <mxGeometry x="${geom.x}" y="${geom.y}" width="140" height="${height}" as="geometry" />
+        </mxCell>`;
+        };
+
         const figureToMxCell = (fig: DiagramFigure): string => {
             let style = 'whiteSpace=wrap;html=1;';
             let geom = { x: 0, y: 0, width: 0, height: 0 };
@@ -382,8 +445,33 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
         </mxCell>`;
         };
 
-        const figuresXml = figures.map(figureToMxCell).join('\n');
-        const arrowsXml = arrows.map(arrowToMxCell).join('\n');
+        const cells: (string | null)[] = [];
+        figures.forEach(fig => {
+            cells.push(figureToMxCell(fig));
+            const numLines = fig.label.split('\n').length;
+            const labelHeightAddition = (numLines - 1) * 14.4;
+            let dataYOffset = 0;
+            switch (fig.figureType) {
+                case DiagramFigureType.Rectangle:
+                case DiagramFigureType.Actor: dataYOffset = 45; break;
+                case DiagramFigureType.Circle:
+                case DiagramFigureType.Cloud: dataYOffset = 55; break;
+            }
+            const geom = { x: fig.position.x - 70, y: fig.position.y + dataYOffset + labelHeightAddition };
+            cells.push(dataTableToMxCell(fig, geom, fig.figureType));
+        });
+        arrows.forEach(arrow => {
+            cells.push(arrowToMxCell(arrow));
+            const source = figures.find(f => f.id === arrow.sourceId);
+            const target = figures.find(f => f.id === arrow.targetId);
+            if (source && target) {
+                const midX = (source.position.x + target.position.x) / 2;
+                const midY = (source.position.y + target.position.y) / 2;
+                const geom = { x: midX - 70, y: midY + 30 };
+                cells.push(dataTableToMxCell(arrow, geom, 'arrow'));
+            }
+        });
+        const cellsXml = cells.filter(Boolean).join('\n');
 
         const xmlContent = `<mxfile host="app.diagrams.net" version="21.0.0" type="device">
   <diagram name="${escapeXml(caption) || 'Page-1'}" id="${uuidv4()}">
@@ -391,8 +479,7 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-${figuresXml}
-${arrowsXml}
+${cellsXml}
       </root>
     </mxGraphModel>
   </diagram>
