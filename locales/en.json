@@ -101,7 +101,6 @@
   },
   "pdf": {
     "generating": "Generating...",
-    "altContentImage": "view content",
     "pageOf": "Page {{currentPage}} of {{totalPages}}",
     "linkAlert": "This link goes to page {{page}}. In the live app, this would jump to the view."
   },

@@ -443,10 +443,28 @@ const App: FC = () => {
       });
       
       if (format === 'pdf') {
-        const pages = Array.from(container.querySelectorAll('.printable-page'));
+        const pages = Array.from(container.querySelectorAll('.printable-page')) as HTMLElement[];
         if (pages.length === 0) {
           throw new Error("No printable pages found.");
         }
+        
+        // Add page numbers via DOM manipulation to ensure correct font rendering for all locales.
+        const totalPages = pages.length;
+        pages.forEach((page, index) => {
+            const pageNumText = t('pdf.pageOf', { currentPage: index + 1, totalPages });
+            const pageNumEl = document.createElement('div');
+            pageNumEl.textContent = pageNumText;
+            
+            pageNumEl.style.position = 'absolute';
+            pageNumEl.style.bottom = '18pt';
+            pageNumEl.style.right = '36pt';
+            pageNumEl.style.fontFamily = 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
+            pageNumEl.style.fontSize = '10pt';
+            pageNumEl.style.color = '#6b7280';
+            
+            page.style.position = 'relative'; // Ensure child is positioned relative to page
+            page.appendChild(pageNumEl);
+        });
         
         const opt = {
           margin: 0,
@@ -465,15 +483,15 @@ const App: FC = () => {
         };
 
         const pdf = await html2pdf().from(pages[0]).set(opt).toPdf().get('pdf');
-
+        
         if (pages.length > 1) {
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
           for (let i = 1; i < pages.length; i++) {
             const pageElement = pages[i];
             const canvas = await html2pdf().from(pageElement).set(opt).toCanvas().get('canvas');
             const imgData = canvas.toDataURL('image/jpeg', 0.98);
             pdf.addPage();
-            const pageWidth = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
             pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
           }
         }

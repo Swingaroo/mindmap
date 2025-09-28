@@ -100,7 +100,6 @@
   },
   "pdf": {
     "generating": "Создание...",
-    "altContentImage": "контент слайда",
     "pageOf": "Стр. {{currentPage}} из {{totalPages}}",
     "linkAlert": "Эта ссылка ведет на страницу {{page}}. В живом приложении это бы переключило вид."
   },
