@@ -1,7 +1,7 @@
 import { Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 import { ViewNodeData, TextStyle, DiagramFigureType, ArrowType, ImageElement, ViewElement, DiagramElement, DiagramFigure, DiagramArrow } from './types';
-import { TFunction } from './i18n';
+import { TFunction } from './i1n';
 
 export const viewSizeOptions = [
   { label: 'S', width: 512, height: 768 },
@@ -10,8 +10,16 @@ export const viewSizeOptions = [
 
 export const getInitialNodes = (t: TFunction): Node<ViewNodeData>[] => {
   const nodes: Node<ViewNodeData>[] = [];
-  let yPos = 5;
   const size = viewSizeOptions[1]; // All views are size 'M'
+
+  // Define column layout
+  const columnCounts = [12, 7, 10, 5, 9, 7]; // 50 total nodes
+  const nodeWidth = size.width;
+  const nodeHeight = size.height;
+  const horizontalGap = 64;
+  const verticalGap = 16;
+  const startX = 100;
+  const startY = 5;
 
   const titleTemplates = [
     "Executive Summary - View {{i}}",
@@ -102,11 +110,29 @@ export const getInitialNodes = (t: TFunction): Node<ViewNodeData>[] => {
       .replace('{{i}}', String(i))
       .replace('{{q}}', String((i % 4) + 1))
       .replace('{{fy}}', String(new Date().getFullYear() + Math.floor(i / 10)));
+    
+    // Calculate position based on column layout
+    const nodeIndex = i - 1;
+    let cumulativeNodes = 0;
+    let targetColumn = -1;
+    let nodeIndexInColumn = -1;
+
+    for (let c = 0; c < columnCounts.length; c++) {
+      if (nodeIndex < cumulativeNodes + columnCounts[c]) {
+        targetColumn = c;
+        nodeIndexInColumn = nodeIndex - cumulativeNodes;
+        break;
+      }
+      cumulativeNodes += columnCounts[c];
+    }
+    
+    const xPos = startX + targetColumn * (nodeWidth + horizontalGap);
+    const yPos = startY + nodeIndexInColumn * (nodeHeight + verticalGap);
 
     const newNode: Node<ViewNodeData> = {
       id: `test-node-${i}`,
       type: 'viewNode',
-      position: { x: 100, y: yPos },
+      position: { x: xPos, y: yPos },
       style: { width: `${size.width}px`, height: `${size.height}px` },
       data: {
         title: title,
@@ -115,7 +141,6 @@ export const getInitialNodes = (t: TFunction): Node<ViewNodeData>[] => {
     };
 
     nodes.push(newNode);
-    yPos += size.height + 16; // Add gap
   }
 
   return nodes;
