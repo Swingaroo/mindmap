@@ -143,7 +143,9 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
               );
             case 'diagram': {
                 const isEditingThisDiagram = editingDiagramId === element.id;
-                const effectiveShowAllData = isReadOnly ? isGlobalDiagramDataVisible : element.showAllData;
+                // In Preview mode, pass the global toggle state. In Edit mode, always pass true
+                // so that visibility is determined solely by the per-element `showData` property.
+                const effectiveShowAllData = isReadOnly ? isGlobalDiagramDataVisible : true;
                 return (
                     <div key={element.id} className="py-2 diagram-container">
                         <div className="relative">

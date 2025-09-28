@@ -110,7 +110,7 @@ const commonStroke = 'stroke-gray-700';
 const selectedStroke = 'stroke-indigo-600';
 
 const Rectangle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, isReadOnly, ...props }) => {
-  const shouldShowData = isReadOnly ? (!!showAllData && showData !== false) : (typeof showData === 'boolean' ? showData : !!showAllData);
+  const shouldShowData = isReadOnly ? (showData === true && !!showAllData) : (showData === true);
   const numLines = label.split('\n').length;
   const labelHeightAddition = (numLines - 1) * 14.4; // 12px font * 1.2em line height
   return (
@@ -133,7 +133,7 @@ const Rectangle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showDa
 };
 
 const Circle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, isReadOnly, ...props }) => {
-  const shouldShowData = isReadOnly ? (!!showAllData && showData !== false) : (typeof showData === 'boolean' ? showData : !!showAllData);
+  const shouldShowData = isReadOnly ? (showData === true && !!showAllData) : (showData === true);
   const numLines = label.split('\n').length;
   const labelHeightAddition = (numLines - 1) * 14.4; // 12px font * 1.2em line height
   return (
@@ -156,7 +156,7 @@ const Circle: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData,
 };
 
 const Cloud: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, isReadOnly, ...props }) => {
-  const shouldShowData = isReadOnly ? (!!showAllData && showData !== false) : (typeof showData === 'boolean' ? showData : !!showAllData);
+  const shouldShowData = isReadOnly ? (showData === true && !!showAllData) : (showData === true);
   const numLines = label.split('\n').length;
   const labelHeightAddition = (numLines - 1) * 14.4; // 12px font * 1.2em line height
   return (
@@ -179,7 +179,7 @@ const Cloud: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, 
 };
 
 const Actor: FC<FigureProps> = ({ x, y, label, isSelected, isEditing, showData, showAllData, data, isReadOnly, ...props }) => {
-  const shouldShowData = isReadOnly ? (!!showAllData && showData !== false) : (typeof showData === 'boolean' ? showData : !!showAllData);
+  const shouldShowData = isReadOnly ? (showData === true && !!showAllData) : (showData === true);
   const numLines = label.split('\n').length;
   const labelHeightAddition = (numLines - 1) * 14.4; // 12px font * 1.2em line height
   return (

@@ -433,7 +433,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
               }
           };
 
-          const shouldShowData = isReadOnly ? (!!showAllData && arrow.showData !== false) : (typeof arrow.showData === 'boolean' ? arrow.showData : !!showAllData);
+          const shouldShowData = isReadOnly ? (arrow.showData === true && !!showAllData) : (arrow.showData === true);
 
           return (
             <g
