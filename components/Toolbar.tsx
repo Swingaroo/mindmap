@@ -7,13 +7,14 @@ import { ViewNodeData } from '../types';
 import { useTranslation } from '../i18n';
 
 interface ToolbarProps {
-  onAddView: () => void;
   onSave: () => void;
   onSaveToPdf: () => void;
   onSaveToHtml: () => void;
   onLoad: () => void;
   isReadOnly: boolean;
   onToggleReadOnly: () => void;
+  isPlacingView: boolean;
+  onTogglePlacingView: () => void;
   isHighlighterActive?: boolean;
   onToggleHighlighter?: () => void;
   isDiagramDataVisible: boolean;
@@ -27,8 +28,8 @@ interface ToolbarProps {
 }
 
 const Toolbar: FC<ToolbarProps> = ({ 
-    onAddView, onSave, onSaveToPdf, onSaveToHtml, onLoad, isReadOnly, 
-    onToggleReadOnly, isHighlighterActive, onToggleHighlighter,
+    onSave, onSaveToPdf, onSaveToHtml, onLoad, isReadOnly, 
+    onToggleReadOnly, isPlacingView, onTogglePlacingView, isHighlighterActive, onToggleHighlighter,
     isDiagramDataVisible, onToggleDiagramDataVisibility, 
     isMiniMapVisible, onToggleMiniMap,
     sortedNodes, onFocus, selectedNodeId
@@ -146,7 +147,7 @@ const Toolbar: FC<ToolbarProps> = ({
             </>
         ) : (
             <>
-                <Button onClick={onAddView}>
+                <Button onClick={onTogglePlacingView} variant={isPlacingView ? 'secondary' : 'primary'}>
                     <PlusIcon className="w-5 h-5 mr-1" />
                     {t('toolbar.addView')}
                 </Button>

@@ -163,11 +163,12 @@ const findFirstNavNode = (nodeArray: Node<ViewNodeData>[]) => {
 
 const App: FC = () => {
   const { t, locale } = useTranslation();
-  const { fitView } = useReactFlow();
+  const { fitView, screenToFlowPosition } = useReactFlow();
   
   const [nodes, setNodes] = useState<Node<ViewNodeData>[]>(() => getInitialNodes(t));
   const [selectedNode, setSelectedNode] = useState<Node<ViewNodeData> | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(true);
+  const [isPlacingView, setIsPlacingView] = useState(false);
   const [isHighlighterActive, setIsHighlighterActive] = useState(false);
   const highlightedElementRef = useRef<HTMLElement | SVGElement | null>(null);
   const [isMiniMapVisible, setIsMiniMapVisible] = useState(true);
@@ -184,6 +185,14 @@ const App: FC = () => {
     return [...nodes].sort((a, b) => a.position.x - b.position.x || a.position.y - b.position.y);
   }, [nodes]);
 
+  const nodeOrderMap = useMemo(() => {
+    const map = new Map<string, number>();
+    sortedNodesForNav.forEach((node, index) => {
+        map.set(node.id, index + 1);
+    });
+    return map;
+  }, [sortedNodesForNav]);
+
   const clearHighlight = useCallback(() => {
     if (highlightedElementRef.current) {
         if (highlightedElementRef.current instanceof SVGElement) {
@@ -197,13 +206,27 @@ const App: FC = () => {
     }
   }, []);
 
+  const handleTogglePlacingView = useCallback(() => {
+    setIsPlacingView(prev => {
+        const nextState = !prev;
+        if (nextState) { // Turning ON
+            setIsHighlighterActive(false);
+            clearHighlight();
+        }
+        return nextState;
+    });
+  }, [clearHighlight]);
+
   const handleToggleHighlighter = useCallback(() => {
-      setIsHighlighterActive(prev => {
-          if (prev) { // If turning off
-              clearHighlight();
-          }
-          return !prev;
-      });
+    setIsHighlighterActive(prev => {
+        const nextState = !prev;
+        if (nextState) { // Turning ON
+            setIsPlacingView(false);
+        } else { // Turning OFF
+            clearHighlight();
+        }
+        return nextState;
+    });
   }, [clearHighlight]);
 
   const handleHighlightElement = useCallback((element: HTMLElement | SVGElement) => {
@@ -266,6 +289,19 @@ const App: FC = () => {
     }
   }, [isReadOnly, selectedNode, fitView]);
 
+  // Add Escape key handler to cancel placing mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsPlacingView(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
 
   const handleNodeDataChange = useCallback((nodeId: string, newData: Partial<ViewNodeData>) => {
     setNodes((nds) =>
@@ -289,6 +325,7 @@ const App: FC = () => {
         data: {
             ...node.data,
             id: node.id,
+            viewNumber: nodeOrderMap.get(node.id),
             isReadOnly,
             onFocus,
             onNodeDataChange: handleNodeDataChange,
@@ -297,7 +334,7 @@ const App: FC = () => {
             isGlobalDiagramDataVisible: isDiagramDataVisible,
         }
     }))
-  ), [nodes, isReadOnly, onFocus, handleNodeDataChange, isHighlighterActive, handleHighlightElement, isDiagramDataVisible]);
+  ), [nodes, isReadOnly, onFocus, handleNodeDataChange, isHighlighterActive, handleHighlightElement, isDiagramDataVisible, nodeOrderMap]);
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -314,27 +351,40 @@ const App: FC = () => {
     // This handler can be used for other click-specific logic if needed.
   }, []);
 
-  const handlePaneClick = useCallback(() => {
-    setNodes(nds => nds.map(n => ({ ...n, selected: false })));
-    clearHighlight();
-  }, [setNodes, clearHighlight]);
+  const snapGrid: [number, number] = [32, 32];
 
-  const handleAddView = useCallback(() => {
-    const newNodeId = uuidv4();
-    const newNode: Node<ViewNodeData> = {
-      id: newNodeId,
-      type: 'viewNode',
-      position: { x: Math.round((Math.random() * 200 + 50) / 16) * 16, y: Math.round(Math.random() * 200 / 16) * 16 },
-      style: { width: `${viewSizeOptions[1].width}px`, height: `${viewSizeOptions[1].height}px` },
-      data: {
-        title: t('defaults.newNodeTitle'),
-        elements: [
-          { id: uuidv4(), type: 'text', content: t('defaults.newNodeContent'), style: TextStyle.Body }
-        ],
-      },
-    };
-    setNodes((nds) => nds.concat(newNode));
-  }, [t]);
+  const handlePaneClick = useCallback((event?: React.MouseEvent) => {
+    if (isPlacingView) {
+        // FIX: Add a check for the event object, as it's now optional.
+        if (!event) {
+            // Cannot place without an event. Cancel placing mode.
+            setIsPlacingView(false);
+            return;
+        }
+        const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+        const snappedX = Math.round(position.x / snapGrid[0]) * snapGrid[0];
+        const snappedY = Math.round(position.y / snapGrid[1]) * snapGrid[1];
+
+        const newNodeId = uuidv4();
+        const newNode: Node<ViewNodeData> = {
+          id: newNodeId,
+          type: 'viewNode',
+          position: { x: snappedX, y: snappedY },
+          style: { width: `${viewSizeOptions[1].width}px`, height: `${viewSizeOptions[1].height}px` },
+          data: {
+            title: t('defaults.newNodeTitle'),
+            elements: [
+              { id: uuidv4(), type: 'text', content: t('defaults.newNodeContent'), style: TextStyle.Body }
+            ],
+          },
+        };
+        setNodes((nds) => nds.concat(newNode));
+        setIsPlacingView(false);
+    } else {
+        setNodes(nds => nds.map(n => ({ ...n, selected: false })));
+        clearHighlight();
+    }
+  }, [isPlacingView, screenToFlowPosition, t, snapGrid, clearHighlight, setNodes, setIsPlacingView]);
 
   const handleNodeSizeChange = useCallback((nodeId: string, width: number, height: number) => {
     setNodes((nds) =>
@@ -433,7 +483,7 @@ const App: FC = () => {
               }
               return el;
           });
-          return { ...node, data: { ...node.data, elements: newElements } };
+          return { ...node, data: { ...node.data, elements: newElements, viewNumber: nodeOrderMap.get(node.id) } };
       });
 
       const sortedNodes = [...printableNodes].sort((a, b) => {
@@ -571,7 +621,7 @@ const App: FC = () => {
       }
       setIsGeneratingPdf(false);
     }
-  }, [nodes, locale, t]);
+  }, [nodes, locale, t, nodeOrderMap]);
 
   const handleSaveToPdf = useCallback(() => handleExport('pdf'), [handleExport]);
   const handleSaveToHtml = useCallback(() => handleExport('html'), [handleExport]);
@@ -614,8 +664,19 @@ const App: FC = () => {
   };
   
   const handleToggleMiniMap = () => setIsMiniMapVisible(prev => !prev);
-
-  const snapGrid: [number, number] = [32, 32];
+  
+  const handleToggleReadOnly = useCallback(() => {
+    // If turning off readonly mode (entering edit mode)
+    if (isReadOnly) {
+        if (isHighlighterActive) {
+            setIsHighlighterActive(false);
+            clearHighlight();
+        }
+    }
+    // Always cancel placing mode when toggling read-only state
+    setIsPlacingView(false);
+    setIsReadOnly(prev => !prev);
+  }, [isReadOnly, isHighlighterActive, clearHighlight]);
 
   return (
     <div className="w-screen h-screen flex flex-col font-sans relative">
@@ -629,21 +690,14 @@ const App: FC = () => {
         </div>
       )}
       <Toolbar
-        onAddView={handleAddView}
         onSave={handleSave}
         onSaveToPdf={handleSaveToPdf}
         onSaveToHtml={handleSaveToHtml}
         onLoad={handleLoad}
         isReadOnly={isReadOnly}
-        onToggleReadOnly={() => {
-            // If turning off readonly mode, ensure highlighter is also turned off
-            if (isReadOnly) { // isReadOnly is true, about to become false
-                if (isHighlighterActive) {
-                    handleToggleHighlighter();
-                }
-            }
-            setIsReadOnly(prev => !prev);
-        }}
+        onToggleReadOnly={handleToggleReadOnly}
+        isPlacingView={isPlacingView}
+        onTogglePlacingView={handleTogglePlacingView}
         isHighlighterActive={isHighlighterActive}
         onToggleHighlighter={handleToggleHighlighter}
         isDiagramDataVisible={isDiagramDataVisible}
@@ -654,7 +708,7 @@ const App: FC = () => {
         onFocus={onFocus}
         selectedNodeId={selectedNode?.id || null}
       />
-      <div className={`flex-grow flex min-h-0 ${isHighlighterActive ? 'highlighter-cursor' : ''}`}>
+      <div className={`flex-grow flex min-h-0 ${isHighlighterActive ? 'highlighter-cursor' : ''} ${isPlacingView ? 'placing-view-cursor' : ''}`}>
         <div className="flex-grow h-full relative">
             <ReactFlow
               nodes={nodesForFlow}
@@ -694,7 +748,9 @@ const App: FC = () => {
               onNodeDataChange={handleNodeDataChange}
               onNodeSizeChange={handleNodeSizeChange}
               onDeleteNode={handleDeleteNode}
-              onClose={() => handlePaneClick()} // Re-use handlePaneClick to deselect
+              // FIX: Call `handlePaneClick` without arguments. This function now handles an optional event,
+              // correctly deselecting the node and avoiding the type error.
+              onClose={() => handlePaneClick()}
               allNodes={nodes}
               sizeOptions={viewSizeOptions}
             />

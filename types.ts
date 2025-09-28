@@ -100,6 +100,7 @@ export type ViewElement = TextElement | ImageElement | LinkElement | DiagramElem
 export interface ViewNodeData {
   id?: string;
   title: string;
+  viewNumber?: number;
   elements: ViewElement[];
   onFocus?: (id: string) => void;
   isReadOnly?: boolean;

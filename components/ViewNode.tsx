@@ -129,7 +129,7 @@ const RichTextElementDisplay: FC<{
 
 
 const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
-  const { id: nodeId, title, elements, onFocus, isReadOnly, onNodeDataChange, isHighlighterActive, onHighlightElement, printOptions, isGlobalDiagramDataVisible } = data;
+  const { id: nodeId, title, elements, onFocus, isReadOnly, onNodeDataChange, isHighlighterActive, onHighlightElement, printOptions, isGlobalDiagramDataVisible, viewNumber } = data;
   const [editingDiagramId, setEditingDiagramId] = useState<string | null>(null);
   const [editingRichTextId, setEditingRichTextId] = useState<string | null>(null);
   const contentContainerRef = useRef<HTMLDivElement>(null);
@@ -189,10 +189,15 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
       `}
     >
       <div 
-        className={`px-4 pt-3 pb-2 border-b border-gray-200 ${isReadOnly ? 'cursor-pointer' : 'cursor-move'} flex-shrink-0`}
+        className={`px-4 pt-3 pb-2 border-b border-gray-200 ${isReadOnly ? 'cursor-pointer' : 'cursor-move'} flex-shrink-0 flex justify-between items-center`}
         onDoubleClickCapture={handleHeaderDoubleClick}
       >
-        <h3 className="font-semibold text-gray-800 break-words">{title}</h3>
+        <h3 className="font-semibold text-gray-800 break-words flex-grow pr-2">{title}</h3>
+        {viewNumber != null && (
+          <span className="text-sm font-medium text-gray-400 bg-gray-100 rounded-full w-7 h-7 flex items-center justify-center flex-shrink-0">
+            <span className="relative bottom-px">{viewNumber}</span>
+          </span>
+        )}
       </div>
       
       <div 
