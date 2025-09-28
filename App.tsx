@@ -175,6 +175,11 @@ const App: FC = () => {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [focusOnNodeId, setFocusOnNodeId] = useState<string | null>(null);
   const [isDiagramDataVisible, setIsDiagramDataVisible] = useState(false);
+  const prevIsReadOnlyRef = useRef(isReadOnly);
+
+  useEffect(() => {
+    prevIsReadOnlyRef.current = isReadOnly;
+  });
 
   useEffect(() => {
     const currentlySelected = nodes.find(n => n.selected);
@@ -276,11 +281,12 @@ const App: FC = () => {
     }
   }, [focusOnNodeId, onFocus]);
 
-  // Effect to automatically re-fit the view when entering edit mode with a selected node.
+  // Effect to automatically re-fit the view when switching from Preview to Edit mode.
   useEffect(() => {
+    const wasReadOnly = prevIsReadOnlyRef.current;
     // When entering edit mode, the editor panel appears, shrinking the canvas.
     // This re-fits the view to ensure the selected node remains fully visible.
-    if (!isReadOnly && selectedNode) {
+    if (wasReadOnly && !isReadOnly && selectedNode) {
       // A timeout ensures this runs after the DOM has updated and the panel is rendered.
       const timer = setTimeout(() => {
         fitView({ nodes: [{ id: selectedNode.id }], duration: 400, padding: 0.1 });
@@ -347,9 +353,16 @@ const App: FC = () => {
   );
   
   const handleNodeClick = useCallback((event: React.MouseEvent, node: Node<ViewNodeData>) => {
-    // Selection is now handled by onNodesChange and the useEffect hook.
-    // This handler can be used for other click-specific logic if needed.
-  }, []);
+    // A node click event only fires on a click, not on a drag.
+    // We use this to fit the view, ensuring the selected node isn't obscured by the
+    // editor panel when the user focuses on it by clicking.
+    if (!isReadOnly) {
+        // A timeout ensures this runs after the DOM has updated and the panel is rendered.
+        setTimeout(() => {
+            fitView({ nodes: [{ id: node.id }], duration: 400, padding: 0.1 });
+        }, 100);
+    }
+  }, [isReadOnly, fitView]);
 
   const snapGrid: [number, number] = [32, 32];
 
