@@ -424,6 +424,17 @@ const ElementEditor: FC<ElementEditorProps> = ({ element, onChange, onDelete, al
                             </Button>
                         </div>
                     </div>
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                        <label className="flex items-center justify-between text-xs font-medium text-gray-500">
+                            <span>{t('editorPanel.diagramElement.showAllDataLabel')}</span>
+                            <input
+                                type="checkbox"
+                                checked={element.showAllData ?? false}
+                                onChange={(e) => onChange(element.id, { showAllData: e.target.checked })}
+                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            />
+                        </label>
+                    </div>
                      <div className="mt-2 pt-2 border-t border-gray-200">
                         <label className="block text-xs font-medium text-gray-500 mb-2">{t('editorPanel.diagramElement.viewLabel')}</label>
                         <div className="grid grid-cols-4 gap-2">

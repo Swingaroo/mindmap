@@ -72,7 +72,8 @@
       "zoomIn": "Zoom In",
       "zoomOut": "Zoom Out",
       "fitToContentView": "Fit to Content",
-      "resetView": "Reset View"
+      "resetView": "Reset View",
+      "showAllDataLabel": "Show data for all elements"
     },
     "deleteView": {
       "button": "Delete View",
@@ -93,6 +94,8 @@
     "connect": "Connect",
     "delete": "Delete",
     "done": "Done",
+    "editDataFor": "Edit Data for",
+    "showDataForElement": "Show data for this element",
     "figures": {
       "actor": "Actor",
       "circle": "Circle",

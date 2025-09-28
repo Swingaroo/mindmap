@@ -165,6 +165,7 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
                                 onHighlightElement={onHighlightElement}
                                 t={t}
                                 fixedWidth={printOptions?.fixedDiagramWidth}
+                                showAllData={element.showAllData}
                             />
                         </div>
                         {element.caption && (

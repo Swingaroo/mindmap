@@ -71,7 +71,8 @@
       "zoomIn": "Увеличить",
       "zoomOut": "Уменьшить",
       "fitToContentView": "Подогнать вид",
-      "resetView": "Сбросить вид"
+      "resetView": "Сбросить вид",
+      "showAllDataLabel": "Показывать данные для всех элементов"
     },
     "deleteView": {
       "button": "Удалить слайд",
@@ -92,6 +93,8 @@
     "connect": "Соединить",
     "delete": "Удалить",
     "done": "Готово",
+    "editDataFor": "Редактировать данные для",
+    "showDataForElement": "Показывать данные для элемента",
     "figures": {
       "actor": "Актор",
       "circle": "Круг",

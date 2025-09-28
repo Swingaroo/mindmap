@@ -1,9 +1,10 @@
 import React, { FC, useState, useRef, MouseEvent, SVGProps } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { DiagramState, DiagramFigure, DiagramArrow, DiagramFigureType, ArrowType } from '../../types';
-import { FigureComponents } from './figures';
+import { FigureComponents, DataDisplay } from './figures';
 import Button from '../ui/Button';
-import { TFunction } from '../../i18n';
+import { TFunction } from '../../i1n';
+import { diagramParameterDefs } from '../../constants';
 
 interface DiagramEditorProps {
   diagramState: DiagramState;
@@ -16,6 +17,7 @@ interface DiagramEditorProps {
   onHighlightElement?: (element: HTMLElement | SVGElement) => void;
   t: TFunction;
   fixedWidth?: number;
+  showAllData?: boolean;
 }
 
 const figureRadii: Record<DiagramFigureType, number> = {
@@ -25,7 +27,7 @@ const figureRadii: Record<DiagramFigureType, number> = {
   [DiagramFigureType.Actor]: 41,
 };
 
-const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = false, onChange, onDoneEditing, height, viewBox, isHighlighterActive, onHighlightElement, t, fixedWidth }) => {
+const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = false, onChange, onDoneEditing, height, viewBox, isHighlighterActive, onHighlightElement, t, fixedWidth, showAllData }) => {
   const [selectedElement, setSelectedElement] = useState<{ type: 'figure' | 'arrow'; id: string } | null>(null);
   const [connecting, setConnecting] = useState<{ sourceId: string } | null>(null);
   const [dragging, setDragging] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
@@ -127,6 +129,50 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
   const selectedArrow = selectedElement?.type === 'arrow'
     ? diagramState.arrows.find(a => a.id === selectedElement.id)
     : null;
+    
+  const selectedFigure = selectedElement?.type === 'figure'
+    ? diagramState.figures.find(f => f.id === selectedElement.id)
+    : null;
+    
+  const selectedElementForData = selectedFigure || selectedArrow;
+
+  const handleDataChange = (paramKey: string, value: string) => {
+      if (!selectedElementForData) return;
+
+      const updatedData = { ...selectedElementForData.data, [paramKey]: value };
+
+      // FIX: Use a type guard to check for a property unique to DiagramArrow ('sourceId')
+      // because DiagramFigure does not have a 'type' property.
+      if ('sourceId' in selectedElementForData) {
+          const newArrows = diagramState.arrows.map(a => 
+              a.id === selectedElementForData.id ? { ...a, data: updatedData } : a
+          );
+          updateState({ arrows: newArrows });
+      } else { // Figure
+          const newFigures = diagramState.figures.map(f => 
+              f.id === selectedElementForData.id ? { ...f, data: updatedData } : f
+          );
+          updateState({ figures: newFigures });
+      }
+  };
+  
+  const handleShowDataToggle = (show: boolean) => {
+      if (!selectedElementForData) return;
+      
+      // FIX: Use a type guard to check for a property unique to DiagramArrow ('sourceId')
+      // because DiagramFigure does not have a 'type' property.
+      if ('sourceId' in selectedElementForData) {
+          const newArrows = diagramState.arrows.map(a => 
+              a.id === selectedElementForData.id ? { ...a, showData: show } : a
+          );
+          updateState({ arrows: newArrows });
+      } else { // Figure
+          const newFigures = diagramState.figures.map(f => 
+              f.id === selectedElementForData.id ? { ...f, showData: show } : f
+          );
+          updateState({ figures: newFigures });
+      }
+  };
 
   const handleArrowTypeChange = (type: ArrowType) => {
     if (!selectedArrow) return;
@@ -260,6 +306,39 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
             </Button>
         </div>
       )}
+      {!isReadOnly && selectedElementForData && (
+          <div className="absolute top-16 right-2 z-10 p-3 bg-white shadow-lg rounded-md border w-64">
+              <h4 className="text-sm font-semibold mb-2 truncate" title={selectedElementForData.label}>
+                  {t('diagramEditor.editDataFor')} "{selectedElementForData.label}"
+              </h4>
+              
+              <label className="flex items-center justify-between text-xs font-medium text-gray-600 mb-3">
+                  <span>{t('diagramEditor.showDataForElement')}</span>
+                  <input
+                      type="checkbox"
+                      checked={selectedElementForData.showData ?? false}
+                      onChange={(e) => handleShowDataToggle(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+              </label>
+
+              <div className="space-y-2">
+                  {Object.entries(diagramParameterDefs).map(([key, def]) => (
+                      <div key={key}>
+                          <label className="block text-xs font-medium text-gray-500" title={def.caption}>
+                              {def.abbr} {def.unit && `(${def.unit})`}
+                          </label>
+                          <input
+                              type="text"
+                              value={selectedElementForData.data?.[key] || ''}
+                              onChange={(e) => handleDataChange(key, e.target.value)}
+                              className="w-full mt-1 px-2 py-1 border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                          />
+                      </div>
+                  ))}
+              </div>
+          </div>
+      )}
       <svg
         ref={svgRef}
         width={fixedWidth ?? "100%"}
@@ -336,6 +415,8 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
               }
           };
 
+          const shouldShowData = (arrow.showData === true) || (arrow.showData !== false && showAllData);
+
           return (
             <g
               key={arrow.id}
@@ -395,6 +476,9 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                     </g>
                   );
               })()}
+              {shouldShowData && arrow.data && (
+                  <DataDisplay x={midX - 60} y={midY + 30} data={arrow.data} />
+              )}
             </g>
           );
         })}
@@ -421,6 +505,9 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
               }}
               onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(figure.id, 'figure'); }}
               className={`cursor-pointer ${connecting ? 'cursor-crosshair' : ''}`}
+              showData={figure.showData}
+              showAllData={showAllData}
+              data={figure.data}
             />
           );
         })}

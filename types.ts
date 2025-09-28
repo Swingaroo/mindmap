@@ -35,10 +35,26 @@ export enum DiagramFigureType {
   Actor = 'actor',
 }
 
+export interface ParameterDef {
+  abbr: string;
+  caption: string;
+  unit: string;
+}
+
+export interface DiagramParameterDefs {
+  [key: string]: ParameterDef;
+}
+
+export interface ElementData {
+  [key: string]: string | number;
+}
+
 export interface DiagramFigure extends BaseElement {
   figureType: DiagramFigureType;
   position: { x: number; y: number };
   label: string;
+  data?: ElementData;
+  showData?: boolean;
 }
 
 export enum ArrowType {
@@ -54,6 +70,8 @@ export interface DiagramArrow extends BaseElement {
   targetId: string;
   label: string;
   arrowType?: ArrowType;
+  data?: ElementData;
+  showData?: boolean;
 }
 
 export interface DiagramState {
@@ -67,6 +85,7 @@ export interface DiagramElement extends BaseElement {
   caption: string;
   height?: number;
   viewBox?: [number, number, number, number];
+  showAllData?: boolean;
 }
 
 

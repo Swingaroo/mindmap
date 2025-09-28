@@ -1,12 +1,17 @@
 import { Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
-import { ViewNodeData, TextStyle, DiagramFigureType, ArrowType, ImageElement, ViewElement, DiagramElement, DiagramFigure, DiagramArrow } from './types';
+import { ViewNodeData, TextStyle, DiagramFigureType, ArrowType, ImageElement, ViewElement, DiagramElement, DiagramFigure, DiagramArrow, DiagramParameterDefs } from './types';
 import { TFunction } from './i1n';
 
 export const viewSizeOptions = [
   { label: 'S', width: 512, height: 768 },
   { label: 'M', width: 1024, height: 768 }
 ];
+
+export const diagramParameterDefs: DiagramParameterDefs = {
+  rps: { abbr:"RPS", caption:"Requests per second", unit:"" },
+  traffic: { abbr: "Traffic", caption: "Traffic", unit:"GBpS"}
+};
 
 export const getInitialNodes = (t: TFunction): Node<ViewNodeData>[] => {
   const nodes: Node<ViewNodeData>[] = [];
