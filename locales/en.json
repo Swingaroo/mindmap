@@ -25,6 +25,8 @@
     "showNavPanel": "Show Navigation",
     "hideMinimap": "Hide Minimap",
     "showMinimap": "Show Minimap",
+    "previousView": "Previous View",
+    "nextView": "Next View",
     "languages": {
       "en": "English",
       "ru": "Russian"

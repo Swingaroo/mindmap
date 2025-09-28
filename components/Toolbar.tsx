@@ -1,4 +1,4 @@
-import React, { FC, SVGProps, useState, useRef, useEffect } from 'react';
+import React, { FC, SVGProps, useState, useRef, useEffect, useMemo } from 'react';
 // FIX: Alias reactflow's Node to avoid conflict with DOM's Node type.
 import { Node as ReactFlowNode } from 'reactflow';
 import Button from './ui/Button';
@@ -68,27 +68,55 @@ const Toolbar: FC<ToolbarProps> = ({
   const selectedNode = sortedNodes.find(node => node.id === selectedNodeId);
   const selectedNodeTitle = selectedNode?.data.title || t('navPanel.selectView');
 
+  const currentIndex = useMemo(() => {
+    if (!selectedNodeId) return -1;
+    return sortedNodes.findIndex(node => node.id === selectedNodeId);
+  }, [selectedNodeId, sortedNodes]);
+
+  const canGoBack = currentIndex > 0;
+  const canGoForward = currentIndex !== -1 && currentIndex < sortedNodes.length - 1;
+
+  const handleBack = () => {
+      if (canGoBack) {
+          onFocus(sortedNodes[currentIndex - 1].id);
+      }
+  };
+
+  const handleForward = () => {
+      if (canGoForward) {
+          onFocus(sortedNodes[currentIndex + 1].id);
+      }
+  };
+
   return (
     <div className="w-full bg-white shadow-md p-2 flex items-center justify-between z-30">
       <div className="flex items-center gap-4">
         <h1 className="text-xl font-bold text-gray-800">{t('appName')}</h1>
-        <div className="relative" ref={navMenuRef}>
-            <Button
-                onClick={() => setIsNavDropdownOpen(prev => !prev)}
-                variant="outline"
-                className="w-[36rem] justify-between"
-                title={selectedNodeTitle}
-            >
-                <span className="truncate text-left">{selectedNodeTitle}</span>
-                <ChevronDownIcon className="w-4 h-4 ml-2 flex-shrink-0" />
+        <div className="flex items-center gap-2">
+            <div className="relative" ref={navMenuRef}>
+                <Button
+                    onClick={() => setIsNavDropdownOpen(prev => !prev)}
+                    variant="outline"
+                    className="w-[36rem] justify-between"
+                    title={selectedNodeTitle}
+                >
+                    <span className="truncate text-left">{selectedNodeTitle}</span>
+                    <ChevronDownIcon className="w-4 h-4 ml-2 flex-shrink-0" />
+                </Button>
+                {isNavDropdownOpen && (
+                    <NavigationPanel
+                        sortedNodes={sortedNodes}
+                        onFocus={handleNavFocus}
+                        selectedNodeId={selectedNodeId}
+                    />
+                )}
+            </div>
+            <Button onClick={handleBack} disabled={!canGoBack} variant="outline" className="p-2" title={t('toolbar.previousView')}>
+                <ArrowLeftIcon className="w-5 h-5" />
             </Button>
-            {isNavDropdownOpen && (
-                <NavigationPanel
-                    sortedNodes={sortedNodes}
-                    onFocus={handleNavFocus}
-                    selectedNodeId={selectedNodeId}
-                />
-            )}
+            <Button onClick={handleForward} disabled={!canGoForward} variant="outline" className="p-2" title={t('toolbar.nextView')}>
+                <ArrowRightIcon className="w-5 h-5" />
+            </Button>
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -293,5 +321,18 @@ const GlobeIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
         <path strokeLinecap="round" strokeLinejoin="round" d="M12.01 1.006v21.998M23.141 12.005H.858m2.518-6.855a16.892 16.892 0 0 1 17.256 0m0 13.71a16.892 16.892 0 0 1-17.256 0M11.152 1.293A14.004 14.004 0 0 0 6.08 12.057a14.004 14.004 0 0 0 5.071 10.79m1.713 0a14.004 14.004 0 0 0 5.071-10.79 14.004 14.004 0 0 0-5.071-10.765"/>
     </svg>
 );
+
+const ArrowLeftIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15m0 0l6.75 6.75M4.5 12l6.75-6.75" />
+    </svg>
+);
+
+const ArrowRightIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75" />
+    </svg>
+);
+
 
 export default Toolbar;
