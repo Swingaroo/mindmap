@@ -155,12 +155,10 @@ const PrintableDocument: FC<{
   );
 };
 
-const findTopLeftNode = (nodeArray: Node<ViewNodeData>[]) => {
+const findFirstNavNode = (nodeArray: Node<ViewNodeData>[]) => {
     if (!nodeArray || nodeArray.length === 0) return null;
-    return [...nodeArray].sort((a, b) => {
-        if (a.position.y !== b.position.y) return a.position.y - b.position.y;
-        return a.position.x - b.position.x;
-    })[0];
+    // Sort by x position first, then y, to match the navigation panel's column-based structure.
+    return [...nodeArray].sort((a, b) => a.position.x - b.position.x || a.position.y - b.position.y)[0];
 };
 
 const App: FC = () => {
@@ -174,6 +172,7 @@ const App: FC = () => {
   const highlightedElementRef = useRef<HTMLElement | SVGElement | null>(null);
   const [isMiniMapVisible, setIsMiniMapVisible] = useState(true);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [focusOnNodeId, setFocusOnNodeId] = useState<string | null>(null);
 
   useEffect(() => {
     const currentlySelected = nodes.find(n => n.selected);
@@ -231,19 +230,28 @@ const App: FC = () => {
     }, 0);
   }, [fitView, setNodes]);
 
-  // Effect for initial load focus
+  // Set initial focus target after mount
   useEffect(() => {
-    const topLeftNode = findTopLeftNode(nodes);
-    if (topLeftNode) {
+    const firstNode = findFirstNavNode(nodes);
+    if (firstNode) {
         // Delay to allow React Flow's initial fitView to complete before we override it.
         const timer = setTimeout(() => {
-            onFocus(topLeftNode.id);
+            setFocusOnNodeId(firstNode.id);
         }, 100); 
         return () => clearTimeout(timer);
     }
-    // We only want this to run once on mount. `onFocus` is memoized and stable.
+    // We only want this to run once on mount. `nodes` is stable on first render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Effect to perform focus when target is set
+  useEffect(() => {
+    if (focusOnNodeId) {
+      onFocus(focusOnNodeId);
+      setFocusOnNodeId(null); // Reset after focusing
+    }
+  }, [focusOnNodeId, onFocus]);
+
 
   const handleNodeDataChange = useCallback((nodeId: string, newData: Partial<ViewNodeData>) => {
     setNodes((nds) =>
@@ -563,13 +571,13 @@ const App: FC = () => {
             if (typeof result === 'string') {
               const presentation: Presentation = JSON.parse(result);
               if (presentation.nodes) {
-                // Deselect all nodes upon loading a new presentation
                 const nodesToLoad = presentation.nodes.map(n => ({...n, selected: false}));
-                setNodes(nodesToLoad);
+                const firstNode = findFirstNavNode(nodesToLoad);
                 
-                const topLeftNode = findTopLeftNode(nodesToLoad);
-                if (topLeftNode) {
-                    onFocus(topLeftNode.id);
+                // Set nodes and focus target together. React will batch these updates.
+                setNodes(nodesToLoad);
+                if (firstNode) {
+                    setFocusOnNodeId(firstNode.id);
                 }
               } else {
                 alert(t('errors.invalidFileFormat'));
