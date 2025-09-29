@@ -16,7 +16,6 @@ interface C4EditorProps {
   t: TFunction;
 }
 
-// FIX: Define the missing C4_SYSTEM_COLORS constant array.
 const C4_SYSTEM_COLORS = [
     '#2563eb', // blue-600
     '#16a34a', // green-600
@@ -319,7 +318,7 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
       )}
       
       <svg ref={svgRef} width="100%" height={height || 400} viewBox={viewBox ? viewBox.join(' ') : '0 0 800 400'} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} onClick={handleSvgClick} className={svgCursorClass} preserveAspectRatio="xMidYMin meet">
-          <defs><marker id="c4-arrowhead" markerWidth="10" markerHeight="7" refX="9.5" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" className="fill-current text-gray-700" /></marker></defs>
+          <defs><marker id="c4-arrowhead" markerWidth="10" markerHeight="7" refX="9.5" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" className="fill-current text-gray-500" /></marker></defs>
           {diagramState.relationships.map(rel => {
               const source = allElementsMap.get(rel.sourceId);
               const target = allElementsMap.get(rel.targetId);
@@ -387,11 +386,19 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
               return (
                   <g key={rel.id} className="cursor-pointer" onClick={(e) => { e.stopPropagation(); if (!isReadOnly) setSelectedElement({type: 'relationship', id: rel.id}); }}>
                       <line x1={startX} y1={startY} x2={endX} y2={endY} stroke="transparent" strokeWidth="12" />
-                      <line x1={startX} y1={startY} x2={endX} y2={endY} strokeWidth="2" markerEnd="url(#c4-arrowhead)" className={isSelected ? 'stroke-indigo-600' : 'stroke-gray-700'} />
-                      <foreignObject x={(startX + endX) / 2 - 75} y={(startY + endY) / 2 - 30} width="150" height="60">
-                          <div className="text-center">
-                              <p className="text-sm font-semibold">{rel.label}</p>
-                              <p className="text-xs text-gray-500">{rel.technology || ''}</p>
+                      <line
+                        x1={startX} y1={startY} x2={endX} y2={endY}
+                        strokeWidth="2"
+                        markerEnd="url(#c4-arrowhead)"
+                        className={isSelected ? 'stroke-indigo-600' : 'stroke-gray-500'}
+                        strokeDasharray="6 4"
+                      />
+                      <foreignObject x={(startX + endX) / 2 - 75} y={(startY + endY) / 2 - 40} width="150" height="80">
+                          <div className="w-full h-full flex items-center justify-center">
+                            <div className="text-center bg-white/70 backdrop-blur-sm px-2 py-1 rounded-md inline-block">
+                                <p className="text-sm font-semibold">{rel.label}</p>
+                                <p className="text-xs text-gray-600">{rel.technology || ''}</p>
+                            </div>
                           </div>
                       </foreignObject>
                   </g>

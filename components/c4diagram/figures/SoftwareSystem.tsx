@@ -52,7 +52,7 @@ const SoftwareSystem: FC<SoftwareSystemProps> = ({ element, isSelected, onMouseD
         >
           <div className="text-xs" style={{ opacity: 0.85 }}>[{element.isSystemInFocus ? 'Software System [In Focus]' : 'Software System'}]</div>
           <div className="font-bold text-center">{element.label}</div>
-          <div className="text-xs text-center break-words" style={{ opacity: 0.85 }}>{element.description}</div>
+          <div className="text-xs text-center break-words" style={{ opacity: 0.85, whiteSpace: 'pre-wrap' }}>{element.description}</div>
         </div>
       </foreignObject>
     </g>

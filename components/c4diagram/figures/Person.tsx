@@ -50,7 +50,7 @@ const Person: FC<PersonProps> = ({ element, isSelected, onMouseDown, onHeightCha
         <div ref={contentRef} className="w-full p-2 pt-4 flex flex-col items-center justify-start text-center select-none" style={{ color: '#166534' }}>
           <div className="text-xs" style={{ opacity: 0.85 }}>[Person]</div>
           <div className="font-bold">{element.label}</div>
-          <div className="text-xs break-words" style={{ opacity: 0.85 }}>{element.description}</div>
+          <div className="text-xs break-words" style={{ opacity: 0.85, whiteSpace: 'pre-wrap' }}>{element.description}</div>
         </div>
       </foreignObject>
     </g>

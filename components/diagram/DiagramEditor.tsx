@@ -599,7 +599,7 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
                         width={boxWidth}
                         height={boxHeight}
                         fill="white"
-                        fillOpacity="0.8"
+                        fillOpacity="0.7"
                         rx="3"
                       />
                       <text
