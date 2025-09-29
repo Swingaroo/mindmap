@@ -12,7 +12,7 @@ interface PersonProps {
 const ELEMENT_WIDTH = 180;
 const MIN_BODY_HEIGHT = 90;
 const HEAD_RADIUS = 39.6;
-const HEAD_Y_OFFSET = -40.04;
+const HEAD_Y_OFFSET = -33;
 const HEAD_VISIBLE_HEIGHT = Math.abs(HEAD_Y_OFFSET) + HEAD_RADIUS; // How much head is above y=0
 
 const Person: FC<PersonProps> = ({ element, isSelected, onMouseDown, onHeightChange, isReadOnly }) => {
