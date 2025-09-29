@@ -1,8 +1,9 @@
 import React, { FC, memo, useState, SVGProps, useRef, useEffect } from 'react';
 import { NodeProps } from 'reactflow';
 import showdown from 'showdown';
-import { ViewNodeData, TextStyle, DiagramState, ViewElement, ImageElement, RichTextElement } from '../types';
+import { ViewNodeData, TextStyle, DiagramState, ViewElement, ImageElement, RichTextElement, C4SystemContextDiagramState } from '../types';
 import DiagramEditor from './diagram/DiagramEditor';
+import C4SystemContextDiagramEditor from './c4diagram/C4SystemContextDiagramEditor';
 import RichTextEditor from './richtext/RichTextEditor';
 import Button from './ui/Button';
 import { useTranslation, TFunction } from '../i18n';
@@ -14,6 +15,7 @@ converter.setOption('openLinksInNewWindow', true);
 const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
   const { id: nodeId, title, elements, onFocus, isReadOnly, onNodeDataChange, isHighlighterActive, onHighlightElement, printOptions, isGlobalDiagramDataVisible, viewNumber } = data;
   const [editingDiagramId, setEditingDiagramId] = useState<string | null>(null);
+  const [editingC4DiagramId, setEditingC4DiagramId] = useState<string | null>(null);
   const [editingRichTextId, setEditingRichTextId] = useState<string | null>(null);
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
@@ -26,8 +28,20 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
     onNodeDataChange(nodeId, { elements: newElements as ViewElement[] });
   };
   
+  const handleC4DiagramChange = (diagramId: string, newDiagramState: C4SystemContextDiagramState) => {
+    if (!nodeId || !onNodeDataChange) return;
+    const newElements = elements.map(el =>
+      el.id === diagramId && el.type === 'c4diagram' ? { ...el, diagramState: newDiagramState } : el
+    );
+    onNodeDataChange(nodeId, { elements: newElements as ViewElement[] });
+  };
+  
   const handleToggleDiagramEdit = (diagramId: string) => {
     setEditingDiagramId(prevId => (prevId === diagramId ? null : diagramId));
+  };
+
+  const handleToggleC4DiagramEdit = (diagramId: string) => {
+    setEditingC4DiagramId(prevId => (prevId === diagramId ? null : diagramId));
   };
 
   const handleContentClick = (e: React.MouseEvent) => {
@@ -36,7 +50,7 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
         const target = e.target as HTMLElement;
 
         // If click is inside a diagram, let the diagram's handler take care of it.
-        if (target.closest('.diagram-container')) {
+        if (target.closest('.diagram-container') || target.closest('.c4-diagram-container')) {
             return;
         }
 
@@ -200,6 +214,35 @@ const ViewNode: FC<NodeProps<ViewNodeData>> = ({ data, selected }) => {
                                 t={t}
                                 fixedWidth={printOptions?.fixedDiagramWidth}
                                 showAllData={effectiveShowAllData}
+                            />
+                        </div>
+                        {element.caption && (
+                            <p className="text-xs text-gray-600 mt-2 text-center italic">{element.caption}</p>
+                        )}
+                    </div>
+                );
+            }
+            case 'c4diagram': {
+                const isEditingThisDiagram = editingC4DiagramId === element.id;
+                return (
+                    <div key={element.id} className="py-2 c4-diagram-container">
+                        <div className="relative">
+                            {!isReadOnly && !isEditingThisDiagram && (
+                                <div className="absolute top-2 right-2 z-10">
+                                    <Button onClick={() => handleToggleC4DiagramEdit(element.id)} variant="outline" size="sm">
+                                        <EditIcon className="w-4 h-4 mr-1" />
+                                        {t('viewNode.editDiagram')}
+                                    </Button>
+                                </div>
+                            )}
+                            <C4SystemContextDiagramEditor
+                                diagramState={element.diagramState}
+                                isReadOnly={isReadOnly || !isEditingThisDiagram}
+                                onChange={(newState) => handleC4DiagramChange(element.id, newState)}
+                                onDoneEditing={() => handleToggleC4DiagramEdit(element.id)}
+                                height={element.height}
+                                viewBox={element.viewBox}
+                                t={t}
                             />
                         </div>
                         {element.caption && (

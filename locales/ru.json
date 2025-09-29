@@ -48,7 +48,8 @@
       "richText": "Форматированный текст",
       "image": "Изображение",
       "link": "Ссылка",
-      "diagram": "Диаграмма"
+      "diagram": "Диаграмма",
+      "c4Diagram": "C4 Диаграмма"
     },
     "contentElementsTitle": "Элементы контента",
     "textElement": {
@@ -84,6 +85,9 @@
       "showAllDataLabel": "Показывать данные для всех элементов",
       "exportLabel": "Экспорт",
       "exportToDrawIo": "Экспорт в draw.io"
+    },
+     "c4DiagramElement": {
+      "editHint": "Нажмите кнопку \"Редактировать\" на главном виде, чтобы изменить C4 диаграмму."
     },
     "deleteView": {
       "button": "Удалить слайд",
@@ -130,6 +134,20 @@
       "bothEnds": "Стрелки с обеих сторон"
     }
   },
+  "c4diagramEditor": {
+    "done": "Готово",
+    "addPerson": "Добавить актора",
+    "addSystem": "Добавить систему",
+    "connect": "Соединить",
+    "delete": "Удалить",
+    "selectTarget": "Выберите цель...",
+    "editPropertiesFor": "Свойства для",
+    "label": "Название",
+    "description": "Описание",
+    "technology": "Технология",
+    "isSystemInFocus": "Система в фокусе",
+    "relationship": "Отношение"
+  },
   "pdf": {
     "generating": "Создание...",
     "pageOf": "Стр. {{currentPage}} из {{totalPages}}",
@@ -149,6 +167,15 @@
     "newTextElementContent": "Новый текст",
     "newRichTextElementContent": "<p>Новый форматированный текст...</p>",
     "newLinkElementContent": "Ссылка на другой слайд",
-    "newDiagramElementCaption": "Новая диаграмма"
+    "newDiagramElementCaption": "Новая диаграмма",
+    "newC4DiagramCaption": "Новая диаграмма C4 System Context",
+    "c4NewSystemLabel": "Моя система",
+    "c4NewSystemDescription": "Система, которую мы создаем.",
+    "c4NewExternalSystemLabel": "Новая система",
+    "c4NewExternalSystemDescription": "Внешняя программная система.",
+    "c4NewPersonLabel": "Новый актор",
+    "c4NewPersonDescription": "Описание актора.",
+    "c4NewRelationshipLabel": "Взаимодействует с",
+    "c4NewRelationshipTechnology": "[HTTPS]"
   }
 }

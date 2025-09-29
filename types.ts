@@ -94,8 +94,51 @@ export interface DiagramElement extends BaseElement {
   showAllData?: boolean;
 }
 
+// New C4 Diagram Types
+export enum C4DiagramType {
+  SystemContext = 'SystemContext',
+  // Container = 'Container',
+  // Component = 'Component',
+}
 
-export type ViewElement = TextElement | ImageElement | LinkElement | DiagramElement | RichTextElement;
+export interface C4Person extends BaseElement {
+  label: string;
+  description: string;
+  position: { x: number; y: number };
+}
+
+export interface C4SoftwareSystem extends BaseElement {
+  label: string;
+  description: string;
+  isSystemInFocus: boolean;
+  position: { x: number; y: number };
+  color?: string;
+}
+
+export interface C4Relationship extends BaseElement {
+  sourceId: string;
+  targetId: string;
+  label: string;
+  technology?: string;
+}
+
+export interface C4SystemContextDiagramState {
+  persons: C4Person[];
+  softwareSystems: C4SoftwareSystem[];
+  relationships: C4Relationship[];
+}
+
+export interface C4DiagramElement extends BaseElement {
+  type: 'c4diagram';
+  diagramType: C4DiagramType;
+  diagramState: C4SystemContextDiagramState;
+  caption: string;
+  height?: number;
+  viewBox?: [number, number, number, number];
+}
+
+
+export type ViewElement = TextElement | ImageElement | LinkElement | DiagramElement | RichTextElement | C4DiagramElement;
 
 export interface ViewNodeData {
   id?: string;

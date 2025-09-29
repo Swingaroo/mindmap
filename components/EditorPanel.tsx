@@ -1,7 +1,7 @@
 import React, { FC, useState, useRef, useCallback, SVGProps } from 'react';
 import { Node } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
-import { ViewNodeData, ViewElement, TextStyle, ImageElement, LinkElement, TextElement, DiagramElement, DiagramFigure, DiagramFigureType, DiagramArrow, ArrowType, ElementData, RichTextElement } from '../types';
+import { ViewNodeData, ViewElement, TextStyle, ImageElement, LinkElement, TextElement, DiagramElement, DiagramFigure, DiagramFigureType, DiagramArrow, ArrowType, ElementData, RichTextElement, C4DiagramElement, C4DiagramType } from '../types';
 import Button from './ui/Button';
 import DiagramEditor from './diagram/DiagramEditor';
 import { useTranslation } from '../i18n';
@@ -35,7 +35,7 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
     onNodeDataChange(node.id, { elements: newElements });
   }, [node.id, onNodeDataChange]);
 
-  const addElement = (type: 'text' | 'image' | 'link' | 'diagram' | 'richtext', style: TextStyle = TextStyle.Body) => {
+  const addElement = (type: 'text' | 'image' | 'link' | 'diagram' | 'richtext' | 'c4diagram', style: TextStyle = TextStyle.Body) => {
     if (type === 'text') {
       const newElement: TextElement = { id: uuidv4(), type: 'text', content: t('defaults.newTextElementContent'), style };
       updateElements([...node.data.elements, newElement]);
@@ -63,6 +63,29 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
             id: uuidv4(),
             type: 'richtext',
             content: t('defaults.newRichTextElementContent'),
+        };
+        updateElements([...node.data.elements, newElement]);
+    } else if (type === 'c4diagram') {
+        const newElement: C4DiagramElement = {
+            id: uuidv4(),
+            type: 'c4diagram',
+            diagramType: C4DiagramType.SystemContext,
+            caption: t('defaults.newC4DiagramCaption'),
+            diagramState: {
+                persons: [],
+                softwareSystems: [
+                    {
+                        id: uuidv4(),
+                        label: t('defaults.c4NewSystemLabel'),
+                        description: t('defaults.c4NewSystemDescription'),
+                        isSystemInFocus: true,
+                        position: { x: 400, y: 200 },
+                        color: '#2563eb', // Default: blue-600
+                    }
+                ],
+                relationships: [],
+            },
+            height: 400,
         };
         updateElements([...node.data.elements, newElement]);
     }
@@ -171,13 +194,16 @@ const EditorPanel: FC<EditorPanelProps> = ({ node, onNodeDataChange, onNodeSizeC
                 <div className="grid grid-cols-2 gap-2">
                     <Button onClick={() => addElement('text', TextStyle.Title)} variant="outline">{t('editorPanel.addContent.titleText')}</Button>
                     <Button onClick={() => addElement('text', TextStyle.Body)} variant="outline">{t('editorPanel.addContent.bodyText')}</Button>
-                    <Button onClick={() => addElement('richtext')} variant="outline" className="col-span-2" disabled>
+                    <Button onClick={() => addElement('richtext')} variant="outline" className="col-span-2">
                         <RichTextIcon className="w-4 h-4 mr-2" /> {t('editorPanel.addContent.richText')}
                     </Button>
                     <Button onClick={() => addElement('image')} variant="outline">{t('editorPanel.addContent.image')}</Button>
                     <Button onClick={() => addElement('link')} variant="outline">{t('editorPanel.addContent.link')}</Button>
-                    <Button onClick={() => addElement('diagram')} variant="outline" className="col-span-2">
+                    <Button onClick={() => addElement('diagram')} variant="outline">
                       <DiagramIcon className="w-4 h-4 mr-2" /> {t('editorPanel.addContent.diagram')}
+                    </Button>
+                    <Button onClick={() => addElement('c4diagram')} variant="outline">
+                        <C4Icon className="w-4 h-4 mr-2" /> {t('editorPanel.addContent.c4Diagram')}
                     </Button>
                 </div>
                  <input
@@ -661,6 +687,38 @@ ${cellsXml}
                     </div>
                 </div>
             )}
+            {element.type === 'c4diagram' && (
+                 <div>
+                    <p className="text-sm text-gray-600 mb-2 p-2 bg-indigo-50 rounded-md border border-indigo-200">
+                        {t('editorPanel.c4DiagramElement.editHint')}
+                    </p>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">{t('editorPanel.diagramElement.captionLabel')}</label>
+                    <textarea
+                        value={element.caption}
+                        onChange={(e) => onChange(element.id, { caption: e.target.value })}
+                        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                        rows={2}
+                        placeholder={t('editorPanel.diagramElement.captionPlaceholder')}
+                    />
+                     <div className="mt-2 pt-2 border-t border-gray-200">
+                        <label className="block text-xs font-medium text-gray-500 mb-2">{t('editorPanel.diagramElement.heightLabel')}</label>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                onClick={() => onChange(element.id, { height: Math.max(200, (element.height || 400) - 50) })}
+                                variant="outline" size="sm" className="flex-1"
+                            >
+                                -
+                            </Button>
+                            <Button
+                                onClick={() => onChange(element.id, { height: (element.height || 400) + 50 })}
+                                variant="outline" size="sm" className="flex-1"
+                            >
+                                +
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -681,6 +739,14 @@ const TrashIcon: FC<React.SVGProps<SVGSVGElement>> = (props) => (
 const DiagramIcon: FC<SVGProps<SVGSVGElement>> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 3.75A2.25 2.25 0 018.25 6h7.5a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5A2.25 2.25 0 016 15.75v-7.5A2.25 2.25 0 016 6V3.75z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v7.5" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 12h-7.5" />
+  </svg>
+);
+
+const C4Icon: FC<SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v16.5h16.5V3.75H3.75z" />
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v7.5" />
     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 12h-7.5" />
   </svg>

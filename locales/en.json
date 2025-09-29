@@ -48,7 +48,8 @@
       "richText": "Rich Text",
       "image": "Image",
       "link": "Link",
-      "diagram": "Diagram"
+      "diagram": "Diagram",
+      "c4Diagram": "C4 Diagram"
     },
     "contentElementsTitle": "Content Elements",
     "textElement": {
@@ -84,6 +85,9 @@
       "showAllDataLabel": "Show data for all elements",
       "exportLabel": "Export",
       "exportToDrawIo": "Export to draw.io"
+    },
+    "c4DiagramElement": {
+        "editHint": "Click the \"Edit\" button on the main view to modify the C4 diagram."
     },
     "deleteView": {
       "button": "Delete View",
@@ -130,6 +134,20 @@
       "bothEnds": "Arrowheads at both ends"
     }
   },
+  "c4diagramEditor": {
+    "done": "Done",
+    "addPerson": "Add Person",
+    "addSystem": "Add System",
+    "connect": "Connect",
+    "delete": "Delete",
+    "selectTarget": "Select Target...",
+    "editPropertiesFor": "Edit Properties for",
+    "label": "Label",
+    "description": "Description",
+    "technology": "Technology",
+    "isSystemInFocus": "System in Focus",
+    "relationship": "Relationship"
+  },
   "pdf": {
     "generating": "Generating...",
     "pageOf": "Page {{currentPage}} of {{totalPages}}",
@@ -149,6 +167,15 @@
     "newTextElementContent": "New Text",
     "newRichTextElementContent": "<p>New rich text content...</p>",
     "newLinkElementContent": "Link to another view",
-    "newDiagramElementCaption": "A new diagram"
+    "newDiagramElementCaption": "A new diagram",
+    "newC4DiagramCaption": "A new C4 System Context diagram",
+    "c4NewSystemLabel": "My Software System",
+    "c4NewSystemDescription": "The system we are building.",
+    "c4NewExternalSystemLabel": "New System",
+    "c4NewExternalSystemDescription": "External software system.",
+    "c4NewPersonLabel": "New Person",
+    "c4NewPersonDescription": "Description of person.",
+    "c4NewRelationshipLabel": "Interacts with",
+    "c4NewRelationshipTechnology": "[HTTPS]"
   }
 }
