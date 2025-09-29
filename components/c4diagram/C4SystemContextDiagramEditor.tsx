@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { C4SystemContextDiagramState, C4Person, C4SoftwareSystem, C4Relationship } from '../../types';
 import Button from '../ui/Button';
 import { TFunction } from '../../i18n';
+import Person from './figures/Person';
+import SoftwareSystem from './figures/SoftwareSystem';
 
 interface C4EditorProps {
   diagramState: C4SystemContextDiagramState;
@@ -14,18 +16,25 @@ interface C4EditorProps {
   t: TFunction;
 }
 
-const ELEMENT_WIDTH = 180;
-const ELEMENT_HEIGHT = 90;
-
+// FIX: Define the missing C4_SYSTEM_COLORS constant array.
 const C4_SYSTEM_COLORS = [
-  '#2563eb', // blue-600
-  '#ca8a04', // yellow-600
-  '#dc2626', // red-600
-  '#16a34a', // green-600
-  '#9333ea', // purple-600
-  '#ea580c', // orange-600
-  '#0891b2', // cyan-600
+    '#2563eb', // blue-600
+    '#16a34a', // green-600
+    '#ca8a04', // yellow-600
+    '#dc2626', // red-600
+    '#9333ea', // purple-600
+    '#ea580c', // orange-600
+    '#db2777', // pink-600
+    '#475569', // slate-600
 ];
+
+const ELEMENT_WIDTH = 180;
+// Default heights and person geometry constants, used for initial render and connection logic.
+const MIN_ELEMENT_HEIGHT = 90;
+const MIN_BODY_HEIGHT = 90;
+const HEAD_RADIUS = 39.6;
+const HEAD_Y_OFFSET = -40.04;
+const HEAD_VISIBLE_HEIGHT = Math.abs(HEAD_Y_OFFSET) + HEAD_RADIUS;
 
 
 const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadOnly = false, onChange, onDoneEditing, height, viewBox, t }) => {
@@ -33,10 +42,18 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
   const [connecting, setConnecting] = useState<{ sourceId: string } | null>(null);
   const [placingElementType, setPlacingElementType] = useState<'person' | 'system' | null>(null);
   const [dragging, setDragging] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
+  const [elementHeights, setElementHeights] = useState<Record<string, number>>({});
   const svgRef = useRef<SVGSVGElement>(null);
 
   const [panelPosition, setPanelPosition] = useState({ top: 64, right: 8 });
   const panelDragStartRef = useRef<{ startX: number; startY: number; initialTop: number; initialRight: number } | null>(null);
+
+  const handleHeightChange = useCallback((id: string, newHeight: number) => {
+    setElementHeights(prev => {
+        if (prev[id] === newHeight) return prev;
+        return { ...prev, [id]: newHeight };
+    });
+  }, []);
 
   useEffect(() => {
     if (isReadOnly) {
@@ -180,18 +197,24 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
     if (!selectedElement) return;
     const { type, id } = selectedElement;
 
+    let newPersons = diagramState.persons;
+    let newSystems = diagramState.softwareSystems;
+
     if (type === 'person') {
-      updateState({ persons: diagramState.persons.filter(p => p.id !== id) });
+      newPersons = diagramState.persons.filter(p => p.id !== id);
     } else if (type === 'system') {
-      updateState({ softwareSystems: diagramState.softwareSystems.filter(s => s.id !== id) });
+      newSystems = diagramState.softwareSystems.filter(s => s.id !== id);
     } else if (type === 'relationship') {
       updateState({ relationships: diagramState.relationships.filter(r => r.id !== id) });
     }
     
     // Also delete relationships connected to a deleted element
     if (type === 'person' || type === 'system') {
+        const newRelationships = diagramState.relationships.filter(r => r.sourceId !== id && r.targetId !== id);
         updateState({
-            relationships: diagramState.relationships.filter(r => r.sourceId !== id && r.targetId !== id)
+            persons: newPersons,
+            softwareSystems: newSystems,
+            relationships: newRelationships,
         });
     }
 
@@ -259,7 +282,7 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
                 {'description' in selectedItem && (
                   <div>
                       <label className="block text-xs font-medium text-gray-500">{t('c4diagramEditor.description')}</label>
-                      <textarea value={selectedItem.description} onChange={e => handlePropertyChange('description', e.target.value)} rows={2} className="w-full mt-1 px-2 py-1 border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+                      <textarea value={selectedItem.description} onChange={e => handlePropertyChange('description', e.target.value)} rows={3} className="w-full mt-1 px-2 py-1 border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
                   </div>
                 )}
                 {'technology' in selectedItem && (
@@ -269,11 +292,27 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
                   </div>
                 )}
                 {'isSystemInFocus' in selectedItem && (
-                  <label className="flex items-center justify-between text-xs font-medium text-gray-600">
-                      <span>{t('c4diagramEditor.isSystemInFocus')}</span>
-                      {/* FIX: Add a type assertion to satisfy the compiler. The `in` operator guard ensures this is safe. */}
-                      <input type="checkbox" checked={(selectedItem as C4SoftwareSystem).isSystemInFocus} onChange={e => handlePropertyChange('isSystemInFocus', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                  </label>
+                  <>
+                    <label className="flex items-center justify-between text-xs font-medium text-gray-600 mt-2">
+                        <span>{t('c4diagramEditor.isSystemInFocus')}</span>
+                        <input type="checkbox" checked={(selectedItem as C4SoftwareSystem).isSystemInFocus} onChange={e => handlePropertyChange('isSystemInFocus', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                    </label>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mt-2">{t('c4diagramEditor.color')}</label>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {C4_SYSTEM_COLORS.map(color => (
+                          <button
+                            key={color}
+                            onClick={() => handlePropertyChange('color', color)}
+                            className={`w-6 h-6 rounded-full border-2 transition-colors ${(selectedItem as C4SoftwareSystem).color === color ? 'border-indigo-600' : 'border-transparent'} hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1`}
+                            style={{ backgroundColor: color }}
+                            aria-label={`Select color ${color}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </>
                 )}
             </div>
         </div>
@@ -286,20 +325,67 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
               const target = allElementsMap.get(rel.targetId);
               if (!source || !target) return null;
               
-              const dx = target.position.x - source.position.x, dy = target.position.y - source.position.y;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              if (dist === 0) return null;
+              const getElementMetrics = (element: C4Person | C4SoftwareSystem) => {
+                  const isPerson = !('isSystemInFocus' in element);
+                  if (isPerson) {
+                      const totalHeight = elementHeights[element.id] || MIN_BODY_HEIGHT + HEAD_VISIBLE_HEIGHT;
+                      const bodyHeight = totalHeight - HEAD_VISIBLE_HEIGHT;
+                      return {
+                          center: { x: element.position.x, y: element.position.y + bodyHeight / 2 },
+                          width: ELEMENT_WIDTH,
+                          height: bodyHeight,
+                      };
+                  } else {
+                      const height = elementHeights[element.id] || MIN_ELEMENT_HEIGHT;
+                      return {
+                          center: element.position,
+                          width: ELEMENT_WIDTH,
+                          height: height,
+                      };
+                  }
+              };
+              
+              const getIntersectionPoint = (rect: {center: {x:number, y:number}, width: number, height: number}, externalPoint: {x:number, y:number}) => {
+                  const { center, width, height } = rect;
+                  const dx = externalPoint.x - center.x;
+                  const dy = externalPoint.y - center.y;
+                  
+                  const w = width / 2;
+                  const h = height / 2;
 
-              const angle = Math.atan2(dy, dx);
-              const startX = source.position.x + (ELEMENT_WIDTH / 2) * Math.cos(angle);
-              const startY = source.position.y + (ELEMENT_HEIGHT / 2) * Math.sin(angle);
-              const endX = target.position.x - (ELEMENT_WIDTH / 2) * Math.cos(angle);
-              const endY = target.position.y - (ELEMENT_HEIGHT / 2) * Math.sin(angle);
+                  if (dx === 0 && dy === 0) return center;
+
+                  const slope = dy / dx;
+
+                  let x, y;
+                  if (Math.abs(dy) * w > Math.abs(dx) * h) {
+                      y = center.y + (dy > 0 ? h : -h);
+                      x = center.x + (y - center.y) / slope;
+                  } else {
+                      x = center.x + (dx > 0 ? w : -w);
+                      y = center.y + (x - center.x) * slope;
+                  }
+                  return { x, y };
+              };
+
+              const sourceMetrics = getElementMetrics(source);
+              const targetMetrics = getElementMetrics(target);
+              
+              const distSq = (targetMetrics.center.x - sourceMetrics.center.x)**2 + (targetMetrics.center.y - sourceMetrics.center.y)**2;
+              if (distSq === 0) return null;
+
+              const startPoint = getIntersectionPoint(sourceMetrics, targetMetrics.center);
+              const endPoint = getIntersectionPoint(targetMetrics, sourceMetrics.center);
+
+              const startX = startPoint.x;
+              const startY = startPoint.y;
+              const endX = endPoint.x;
+              const endY = endPoint.y;
               
               const isSelected = selectedElement?.type === 'relationship' && selectedElement.id === rel.id;
               
               return (
-                  <g key={rel.id} className="cursor-pointer" onClick={(e) => { e.stopPropagation(); setSelectedElement({type: 'relationship', id: rel.id}); }}>
+                  <g key={rel.id} className="cursor-pointer" onClick={(e) => { e.stopPropagation(); if (!isReadOnly) setSelectedElement({type: 'relationship', id: rel.id}); }}>
                       <line x1={startX} y1={startY} x2={endX} y2={endY} stroke="transparent" strokeWidth="12" />
                       <line x1={startX} y1={startY} x2={endX} y2={endY} strokeWidth="2" markerEnd="url(#c4-arrowhead)" className={isSelected ? 'stroke-indigo-600' : 'stroke-gray-700'} />
                       <foreignObject x={(startX + endX) / 2 - 75} y={(startY + endY) / 2 - 30} width="150" height="60">
@@ -311,48 +397,26 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
                   </g>
               );
           })}
-          {[...diagramState.persons, ...diagramState.softwareSystems].map(el => {
-            const isPerson = 'isSystemInFocus' in el === false;
-            const isSelected = selectedElement?.id === el.id;
-            const system = isPerson ? null : el as C4SoftwareSystem;
-
-            return (
-              <g key={el.id} transform={`translate(${el.position.x}, ${el.position.y})`} onMouseDown={(e) => handleElementMouseDown(e, el)} className={isReadOnly ? '' : 'cursor-pointer'}>
-                  {isPerson ? (
-                    <rect x={-ELEMENT_WIDTH/2} y={-ELEMENT_HEIGHT/2} width={ELEMENT_WIDTH} height={ELEMENT_HEIGHT} rx="4" className={`fill-blue-600 ${isSelected ? 'stroke-indigo-500' : 'stroke-black'}`} strokeWidth={isSelected ? 3 : 1.5} />
-                  ) : (
-                    <rect 
-                      x={-ELEMENT_WIDTH/2} y={-ELEMENT_HEIGHT/2} 
-                      width={ELEMENT_WIDTH} height={ELEMENT_HEIGHT} 
-                      rx="4" 
-                      style={{
-                        fill: 'white',
-                        stroke: isSelected ? '#6366f1' : (system?.color || '#6b7280'),
-                      }}
-                      strokeWidth={isSelected ? 3 : 1.5} 
-                    />
-                  )}
-                  <foreignObject x={-ELEMENT_WIDTH/2} y={-ELEMENT_HEIGHT/2} width={ELEMENT_WIDTH} height={ELEMENT_HEIGHT}>
-                      {isPerson ? (
-                        <div className="w-full h-full p-2 flex flex-col items-center justify-center text-white select-none">
-                            <div className="text-xs text-gray-200">[Person]</div>
-                            <div className="font-bold text-center">{el.label}</div>
-                            <div className="text-xs text-gray-300 text-center truncate">{el.description}</div>
-                        </div>
-                      ) : (
-                        <div 
-                          className="w-full h-full p-2 flex flex-col items-center justify-center select-none"
-                          style={{ color: system?.color || '#6b7280' }}
-                        >
-                            <div className="text-xs" style={{ opacity: 0.85 }}>[{system?.isSystemInFocus ? 'Software System [In Focus]' : 'Software System'}]</div>
-                            <div className="font-bold text-center">{el.label}</div>
-                            <div className="text-xs text-center truncate" style={{ opacity: 0.85 }}>{el.description}</div>
-                        </div>
-                      )}
-                  </foreignObject>
-              </g>
-            );
-          })}
+          {diagramState.persons.map(person => (
+            <Person
+              key={person.id}
+              element={person}
+              isSelected={!isReadOnly && selectedElement?.id === person.id}
+              onMouseDown={handleElementMouseDown}
+              onHeightChange={handleHeightChange}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+          {diagramState.softwareSystems.map(system => (
+            <SoftwareSystem
+              key={system.id}
+              element={system}
+              isSelected={!isReadOnly && selectedElement?.id === system.id}
+              onMouseDown={handleElementMouseDown}
+              onHeightChange={handleHeightChange}
+              isReadOnly={isReadOnly}
+            />
+          ))}
       </svg>
     </div>
   );

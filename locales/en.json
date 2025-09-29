@@ -146,7 +146,8 @@
     "description": "Description",
     "technology": "Technology",
     "isSystemInFocus": "System in Focus",
-    "relationship": "Relationship"
+    "relationship": "Relationship",
+    "color": "Color"
   },
   "pdf": {
     "generating": "Generating...",

@@ -146,7 +146,8 @@
     "description": "Описание",
     "technology": "Технология",
     "isSystemInFocus": "Система в фокусе",
-    "relationship": "Отношение"
+    "relationship": "Отношение",
+    "color": "Цвет"
   },
   "pdf": {
     "generating": "Создание...",
