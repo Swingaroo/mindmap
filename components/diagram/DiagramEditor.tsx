@@ -212,7 +212,9 @@ const DiagramEditor: FC<DiagramEditorProps> = ({ diagramState, isReadOnly = fals
     }
   };
   
-  const figureMap = new Map(diagramState.figures.map(f => [f.id, f]));
+  // FIX: Add explicit type to `figureMap` to ensure `get` method returns a typed value (`DiagramFigure | undefined`)
+  // instead of `unknown`, resolving multiple downstream type errors.
+  const figureMap: Map<string, DiagramFigure> = new Map(diagramState.figures.map(f => [f.id, f]));
   
   const selectedArrow = selectedElement?.type === 'arrow'
     ? diagramState.arrows.find(a => a.id === selectedElement.id)

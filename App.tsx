@@ -255,7 +255,7 @@ const App: FC = () => {
     
     // Use setTimeout to defer fitView until after the re-render has completed.
     setTimeout(() => {
-        fitView({ nodes: [{ id }], duration: 800, padding: 0.1 });
+        fitView({ nodes: [{ id }], duration: 800, padding: 0.05 });
     }, 0);
   }, [fitView, setNodes]);
 
@@ -289,7 +289,7 @@ const App: FC = () => {
     if (wasReadOnly && !isReadOnly && selectedNode) {
       // A timeout ensures this runs after the DOM has updated and the panel is rendered.
       const timer = setTimeout(() => {
-        fitView({ nodes: [{ id: selectedNode.id }], duration: 400, padding: 0.1 });
+        fitView({ nodes: [{ id: selectedNode.id }], duration: 400, padding: 0.05 });
       }, 100);
       return () => clearTimeout(timer);
     }
@@ -359,7 +359,7 @@ const App: FC = () => {
     if (!isReadOnly) {
         // A timeout ensures this runs after the DOM has updated and the panel is rendered.
         setTimeout(() => {
-            fitView({ nodes: [{ id: node.id }], duration: 400, padding: 0.1 });
+            fitView({ nodes: [{ id: node.id }], duration: 400, padding: 0.05 });
         }, 100);
     }
   }, [isReadOnly, fitView]);
@@ -469,7 +469,8 @@ const App: FC = () => {
       ))];
       
       // Convert images to data URLs to bypass CORS issues in html2canvas
-      const conversionPromises = imageUrls.map(async (src) => {
+      // FIX: Add explicit type `string` to `src` to resolve 'unknown' type error from TypeScript compiler.
+      const conversionPromises = imageUrls.map(async (src: string) => {
         try {
           const response = await fetch(src);
           if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
