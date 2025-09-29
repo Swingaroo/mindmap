@@ -115,6 +115,35 @@ export interface C4SoftwareSystem extends BaseElement {
   color?: string;
 }
 
+export interface C4Database extends BaseElement {
+  label: string;
+  description: string;
+  technology?: string;
+  position: { x: number; y: number };
+  color?: string;
+}
+
+export interface C4Folder extends BaseElement {
+  label: string;
+  description: string;
+  position: { x: number; y: number };
+  color?: string;
+}
+
+export interface C4Application extends BaseElement {
+  label: string;
+  description: string;
+  position: { x: number; y: number };
+  color?: string;
+}
+        
+export interface C4WebApplication extends BaseElement {
+  label: string;
+  description: string;
+  position: { x: number; y: number };
+  color?: string;
+}
+
 export interface C4Relationship extends BaseElement {
   sourceId: string;
   targetId: string;
@@ -125,6 +154,10 @@ export interface C4Relationship extends BaseElement {
 export interface C4SystemContextDiagramState {
   persons: C4Person[];
   softwareSystems: C4SoftwareSystem[];
+  databases?: C4Database[];
+  folders?: C4Folder[];
+  applications?: C4Application[];
+  webApplications?: C4WebApplication[];
   relationships: C4Relationship[];
 }
 

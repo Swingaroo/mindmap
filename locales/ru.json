@@ -138,6 +138,10 @@
     "done": "Готово",
     "addPerson": "Добавить актора",
     "addSystem": "Добавить систему",
+    "addDatabase": "Добавить БД",
+    "addFolder": "Добавить папку",
+    "addApplication": "Добавить прилож.",
+    "addWebApp": "Добавить веб-прилож.",
     "connect": "Соединить",
     "delete": "Удалить",
     "selectTarget": "Выберите цель...",
@@ -177,6 +181,15 @@
     "c4NewPersonLabel": "Новый актор",
     "c4NewPersonDescription": "Описание актора.",
     "c4NewRelationshipLabel": "Взаимодействует с",
-    "c4NewRelationshipTechnology": "[HTTPS]"
+    "c4NewRelationshipTechnology": "[HTTPS]",
+    "c4NewDatabaseLabel": "Новая БД",
+    "c4NewDatabaseDescription": "Хранит какие-то данные.",
+    "c4NewDatabaseTechnology": "[SQL]",
+    "c4NewFolderLabel": "Новая папка",
+    "c4NewFolderDescription": "Папка с чем-то.",
+    "c4NewApplicationLabel": "Новое приложение",
+    "c4NewApplicationDescription": "Консольное приложение.",
+    "c4NewWebApplicationLabel": "Новое веб-приложение",
+    "c4NewWebApplicationDescription": "Одностраничное приложение."
   }
 }

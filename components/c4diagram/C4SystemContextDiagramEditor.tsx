@@ -1,10 +1,14 @@
 import React, { FC, useState, useRef, MouseEvent, SVGProps, useEffect, useCallback, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { C4SystemContextDiagramState, C4Person, C4SoftwareSystem, C4Relationship } from '../../types';
+import { C4SystemContextDiagramState, C4Person, C4SoftwareSystem, C4Relationship, C4Database, C4Folder, C4Application, C4WebApplication } from '../../types';
 import Button from '../ui/Button';
 import { TFunction } from '../../i18n';
 import Person from './figures/Person';
 import SoftwareSystem from './figures/SoftwareSystem';
+import Database from './figures/Database';
+import Folder from './figures/Folder';
+import Application from './figures/Application';
+import WebApplication from './figures/WebApplication';
 
 interface C4EditorProps {
   diagramState: C4SystemContextDiagramState;
@@ -35,11 +39,15 @@ const HEAD_RADIUS = 39.6;
 const HEAD_Y_OFFSET = -40.04;
 const HEAD_VISIBLE_HEIGHT = Math.abs(HEAD_Y_OFFSET) + HEAD_RADIUS;
 
+type C4PlacableElement = C4Person | C4SoftwareSystem | C4Database | C4Folder | C4Application | C4WebApplication;
+type C4ElementType = 'person' | 'system' | 'database' | 'folder' | 'application' | 'webApplication';
+type SelectedElementType = C4ElementType | 'relationship';
+
 
 const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadOnly = false, onChange, onDoneEditing, height, viewBox, t }) => {
-  const [selectedElement, setSelectedElement] = useState<{ type: 'person' | 'system' | 'relationship'; id: string } | null>(null);
+  const [selectedElement, setSelectedElement] = useState<{ type: SelectedElementType; id: string } | null>(null);
   const [connecting, setConnecting] = useState<{ sourceId: string } | null>(null);
-  const [placingElementType, setPlacingElementType] = useState<'person' | 'system' | null>(null);
+  const [placingElementType, setPlacingElementType] = useState<C4ElementType | null>(null);
   const [dragging, setDragging] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
   const [elementHeights, setElementHeights] = useState<Record<string, number>>({});
   const svgRef = useRef<SVGSVGElement>(null);
@@ -124,38 +132,45 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
   const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
     if (placingElementType) {
       const { x, y } = getSVGPoint(e);
+      const allSystems = [
+        ...(diagramState.softwareSystems || []),
+        ...(diagramState.databases || []),
+        ...(diagramState.folders || []),
+        ...(diagramState.applications || []),
+        ...(diagramState.webApplications || []),
+      ];
+      const nextColorIndex = allSystems.length % C4_SYSTEM_COLORS.length;
+      const newColor = C4_SYSTEM_COLORS[nextColorIndex];
+
       if (placingElementType === 'person') {
-        const newPerson: C4Person = {
-          id: uuidv4(),
-          label: t('defaults.c4NewPersonLabel'),
-          description: t('defaults.c4NewPersonDescription'),
-          position: { x, y },
-        };
+        const newPerson: C4Person = { id: uuidv4(), label: t('defaults.c4NewPersonLabel'), description: t('defaults.c4NewPersonDescription'), position: { x, y } };
         updateState({ persons: [...diagramState.persons, newPerson] });
       } else if (placingElementType === 'system') {
-        const nextColorIndex = diagramState.softwareSystems.length % C4_SYSTEM_COLORS.length;
-        const newColor = C4_SYSTEM_COLORS[nextColorIndex];
-
-        const newSystem: C4SoftwareSystem = {
-          id: uuidv4(),
-          label: t('defaults.c4NewExternalSystemLabel'),
-          description: t('defaults.c4NewExternalSystemDescription'),
-          isSystemInFocus: false,
-          position: { x, y },
-          color: newColor,
-        };
+        const newSystem: C4SoftwareSystem = { id: uuidv4(), label: t('defaults.c4NewExternalSystemLabel'), description: t('defaults.c4NewExternalSystemDescription'), isSystemInFocus: false, position: { x, y }, color: newColor };
         updateState({ softwareSystems: [...diagramState.softwareSystems, newSystem] });
+      } else if (placingElementType === 'database') {
+        const newDb: C4Database = { id: uuidv4(), label: t('defaults.c4NewDatabaseLabel'), description: t('defaults.c4NewDatabaseDescription'), technology: t('defaults.c4NewDatabaseTechnology'), position: { x, y }, color: newColor };
+        updateState({ databases: [...(diagramState.databases || []), newDb] });
+      } else if (placingElementType === 'folder') {
+        const newFolder: C4Folder = { id: uuidv4(), label: t('defaults.c4NewFolderLabel'), description: t('defaults.c4NewFolderDescription'), position: { x, y }, color: newColor };
+        updateState({ folders: [...(diagramState.folders || []), newFolder] });
+      } else if (placingElementType === 'application') {
+        const newApp: C4Application = { id: uuidv4(), label: t('defaults.c4NewApplicationLabel'), description: t('defaults.c4NewApplicationDescription'), position: { x, y }, color: newColor };
+        updateState({ applications: [...(diagramState.applications || []), newApp] });
+      } else if (placingElementType === 'webApplication') {
+        const newWebApp: C4WebApplication = { id: uuidv4(), label: t('defaults.c4NewWebApplicationLabel'), description: t('defaults.c4NewWebApplicationDescription'), position: { x, y }, color: newColor };
+        updateState({ webApplications: [...(diagramState.webApplications || []), newWebApp] });
       }
+
       setPlacingElementType(null);
     } else if (e.target === e.currentTarget) {
-      // Only deselect if the click target is the SVG background itself
       setSelectedElement(null);
       setConnecting(null);
     }
   };
 
 
-  const handleElementMouseDown = (e: MouseEvent, element: C4Person | C4SoftwareSystem) => {
+  const handleElementMouseDown = (e: MouseEvent, element: C4PlacableElement, type: C4ElementType) => {
     if (isReadOnly || placingElementType) { e.stopPropagation(); return; }
     e.stopPropagation();
 
@@ -174,8 +189,7 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
       return;
     }
     
-    const elementType = 'isSystemInFocus' in element ? 'system' : 'person';
-    setSelectedElement({ type: elementType, id: element.id });
+    setSelectedElement({ type, id: element.id });
     const { x, y } = getSVGPoint(e as unknown as React.MouseEvent);
     setDragging({ id: element.id, offsetX: x - element.position.x, offsetY: y - element.position.y });
   };
@@ -185,9 +199,14 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
     const { x, y } = getSVGPoint(e as unknown as React.MouseEvent);
     const newPos = { x: x - dragging.offsetX, y: y - dragging.offsetY };
     
-    const newPersons = diagramState.persons.map(p => p.id === dragging.id ? { ...p, position: newPos } : p);
-    const newSystems = diagramState.softwareSystems.map(s => s.id === dragging.id ? { ...s, position: newPos } : s);
-    updateState({ persons: newPersons, softwareSystems: newSystems });
+    updateState({
+      persons: diagramState.persons.map(p => p.id === dragging.id ? { ...p, position: newPos } : p),
+      softwareSystems: diagramState.softwareSystems.map(s => s.id === dragging.id ? { ...s, position: newPos } : s),
+      databases: (diagramState.databases || []).map(d => d.id === dragging.id ? { ...d, position: newPos } : d),
+      folders: (diagramState.folders || []).map(f => f.id === dragging.id ? { ...f, position: newPos } : f),
+      applications: (diagramState.applications || []).map(a => a.id === dragging.id ? { ...a, position: newPos } : a),
+      webApplications: (diagramState.webApplications || []).map(w => w.id === dragging.id ? { ...w, position: newPos } : w),
+    });
   };
   
   const handleMouseUp = () => setDragging(null);
@@ -196,36 +215,34 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
     if (!selectedElement) return;
     const { type, id } = selectedElement;
 
-    let newPersons = diagramState.persons;
-    let newSystems = diagramState.softwareSystems;
+    let { persons, softwareSystems, databases, folders, applications, webApplications, relationships } = diagramState;
 
-    if (type === 'person') {
-      newPersons = diagramState.persons.filter(p => p.id !== id);
-    } else if (type === 'system') {
-      newSystems = diagramState.softwareSystems.filter(s => s.id !== id);
-    } else if (type === 'relationship') {
-      updateState({ relationships: diagramState.relationships.filter(r => r.id !== id) });
-    }
+    if (type === 'person') persons = persons.filter(p => p.id !== id);
+    else if (type === 'system') softwareSystems = softwareSystems.filter(s => s.id !== id);
+    else if (type === 'database') databases = (databases || []).filter(d => d.id !== id);
+    else if (type === 'folder') folders = (folders || []).filter(f => f.id !== id);
+    else if (type === 'application') applications = (applications || []).filter(a => a.id !== id);
+    else if (type === 'webApplication') webApplications = (webApplications || []).filter(w => w.id !== id);
+    else if (type === 'relationship') relationships = relationships.filter(r => r.id !== id);
     
-    // Also delete relationships connected to a deleted element
-    if (type === 'person' || type === 'system') {
-        const newRelationships = diagramState.relationships.filter(r => r.sourceId !== id && r.targetId !== id);
-        updateState({
-            persons: newPersons,
-            softwareSystems: newSystems,
-            relationships: newRelationships,
-        });
+    if (type !== 'relationship') {
+        relationships = relationships.filter(r => r.sourceId !== id && r.targetId !== id);
     }
 
+    updateState({ persons, softwareSystems, databases, folders, applications, webApplications, relationships });
     setSelectedElement(null);
   };
   
   const allElementsMap = useMemo(() => {
-    const map = new Map<string, C4Person | C4SoftwareSystem>();
+    const map = new Map<string, C4PlacableElement>();
     diagramState.persons.forEach(p => map.set(p.id, p));
     diagramState.softwareSystems.forEach(s => map.set(s.id, s));
+    (diagramState.databases || []).forEach(d => map.set(d.id, d));
+    (diagramState.folders || []).forEach(f => map.set(f.id, f));
+    (diagramState.applications || []).forEach(a => map.set(a.id, a));
+    (diagramState.webApplications || []).forEach(w => map.set(w.id, w));
     return map;
-  }, [diagramState.persons, diagramState.softwareSystems]);
+  }, [diagramState]);
 
   const selectedItem = selectedElement
     ? selectedElement.type === 'relationship'
@@ -237,16 +254,15 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
     if (!selectedItem || !selectedElement) return;
     const { type, id } = selectedElement;
     
-    if (type === 'person') {
-        const newPersons = diagramState.persons.map(p => p.id === id ? { ...p, [key]: value } : p);
-        updateState({ persons: newPersons });
-    } else if (type === 'system') {
-        const newSystems = diagramState.softwareSystems.map(s => s.id === id ? { ...s, [key]: value } : s);
-        updateState({ softwareSystems: newSystems });
-    } else if (type === 'relationship') {
-        const newRels = diagramState.relationships.map(r => r.id === id ? { ...r, [key]: value } : r);
-        updateState({ relationships: newRels });
-    }
+    const updater = (arr: any[] | undefined) => (arr || []).map(el => el.id === id ? { ...el, [key]: value } : el);
+
+    if (type === 'person') updateState({ persons: updater(diagramState.persons) });
+    else if (type === 'system') updateState({ softwareSystems: updater(diagramState.softwareSystems) });
+    else if (type === 'database') updateState({ databases: updater(diagramState.databases) });
+    else if (type === 'folder') updateState({ folders: updater(diagramState.folders) });
+    else if (type === 'application') updateState({ applications: updater(diagramState.applications) });
+    else if (type === 'webApplication') updateState({ webApplications: updater(diagramState.webApplications) });
+    else if (type === 'relationship') updateState({ relationships: updater(diagramState.relationships) });
   };
 
   const svgCursorClass = placingElementType ? 'cursor-crosshair' : (isReadOnly ? '' : 'cursor-grab active:cursor-grabbing');
@@ -257,6 +273,10 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
         <div className="absolute top-0 left-0 right-0 z-10 p-2 bg-white/90 backdrop-blur-sm border-b rounded-t-md flex flex-wrap gap-2 items-center">
             <Button onClick={() => setPlacingElementType('person')} variant={placingElementType === 'person' ? 'secondary' : 'outline'} size="sm">{t('c4diagramEditor.addPerson')}</Button>
             <Button onClick={() => setPlacingElementType('system')} variant={placingElementType === 'system' ? 'secondary' : 'outline'} size="sm">{t('c4diagramEditor.addSystem')}</Button>
+            <Button onClick={() => setPlacingElementType('database')} variant={placingElementType === 'database' ? 'secondary' : 'outline'} size="sm">{t('c4diagramEditor.addDatabase')}</Button>
+            <Button onClick={() => setPlacingElementType('folder')} variant={placingElementType === 'folder' ? 'secondary' : 'outline'} size="sm">{t('c4diagramEditor.addFolder')}</Button>
+            <Button onClick={() => setPlacingElementType('application')} variant={placingElementType === 'application' ? 'secondary' : 'outline'} size="sm">{t('c4diagramEditor.addApplication')}</Button>
+            <Button onClick={() => setPlacingElementType('webApplication')} variant={placingElementType === 'webApplication' ? 'secondary' : 'outline'} size="sm">{t('c4diagramEditor.addWebApp')}</Button>
             <div className="w-px h-6 bg-gray-300 mx-1"></div>
             <Button onClick={() => setConnecting({ sourceId: selectedElement?.id! })} disabled={!selectedElement || selectedElement.type === 'relationship'} variant={connecting ? 'secondary' : 'outline'} size="sm">
                 {connecting ? t('c4diagramEditor.selectTarget') : t('c4diagramEditor.connect')}
@@ -284,10 +304,10 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
                       <textarea value={selectedItem.description} onChange={e => handlePropertyChange('description', e.target.value)} rows={3} className="w-full mt-1 px-2 py-1 border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
                   </div>
                 )}
-                {'technology' in selectedItem && (
+                {'technology' in selectedItem && (selectedElement?.type === 'relationship' || selectedElement?.type === 'database') && (
                   <div>
                       <label className="block text-xs font-medium text-gray-500">{t('c4diagramEditor.technology')}</label>
-                      <input type="text" value={selectedItem.technology || ''} onChange={e => handlePropertyChange('technology', e.target.value)} className="w-full mt-1 px-2 py-1 border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+                      <input type="text" value={(selectedItem as C4Relationship | C4Database).technology || ''} onChange={e => handlePropertyChange('technology', e.target.value)} className="w-full mt-1 px-2 py-1 border border-gray-300 rounded-md shadow-sm text-xs focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
                   </div>
                 )}
                 {'isSystemInFocus' in selectedItem && (
@@ -296,22 +316,23 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
                         <span>{t('c4diagramEditor.isSystemInFocus')}</span>
                         <input type="checkbox" checked={(selectedItem as C4SoftwareSystem).isSystemInFocus} onChange={e => handlePropertyChange('isSystemInFocus', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
                     </label>
-                    
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mt-2">{t('c4diagramEditor.color')}</label>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {C4_SYSTEM_COLORS.map(color => (
-                          <button
-                            key={color}
-                            onClick={() => handlePropertyChange('color', color)}
-                            className={`w-6 h-6 rounded-full border-2 transition-colors ${(selectedItem as C4SoftwareSystem).color === color ? 'border-indigo-600' : 'border-transparent'} hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1`}
-                            style={{ backgroundColor: color }}
-                            aria-label={`Select color ${color}`}
-                          />
-                        ))}
-                      </div>
-                    </div>
                   </>
+                )}
+                {selectedElement?.type !== 'person' && selectedElement?.type !== 'relationship' && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mt-2">{t('c4diagramEditor.color')}</label>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {C4_SYSTEM_COLORS.map(color => (
+                        <button
+                          key={color}
+                          onClick={() => handlePropertyChange('color', color)}
+                          className={`w-6 h-6 rounded-full border-2 transition-colors ${(selectedItem as C4SoftwareSystem).color === color ? 'border-indigo-600' : 'border-transparent'} hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1`}
+                          style={{ backgroundColor: color }}
+                          aria-label={`Select color ${color}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 )}
             </div>
         </div>
@@ -324,8 +345,8 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
               const target = allElementsMap.get(rel.targetId);
               if (!source || !target) return null;
               
-              const getElementMetrics = (element: C4Person | C4SoftwareSystem) => {
-                  const isPerson = !('isSystemInFocus' in element);
+              const getElementMetrics = (element: C4PlacableElement) => {
+                  const isPerson = 'isSystemInFocus' in element ? false : !('technology' in element); // crude check for person
                   if (isPerson) {
                       const totalHeight = elementHeights[element.id] || MIN_BODY_HEIGHT + HEAD_VISIBLE_HEIGHT;
                       const bodyHeight = totalHeight - HEAD_VISIBLE_HEIGHT;
@@ -419,6 +440,46 @@ const C4SystemContextDiagramEditor: FC<C4EditorProps> = ({ diagramState, isReadO
               key={system.id}
               element={system}
               isSelected={!isReadOnly && selectedElement?.id === system.id}
+              onMouseDown={handleElementMouseDown}
+              onHeightChange={handleHeightChange}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+          {(diagramState.databases || []).map(db => (
+            <Database
+              key={db.id}
+              element={db}
+              isSelected={!isReadOnly && selectedElement?.id === db.id}
+              onMouseDown={handleElementMouseDown}
+              onHeightChange={handleHeightChange}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+          {(diagramState.folders || []).map(folder => (
+            <Folder
+              key={folder.id}
+              element={folder}
+              isSelected={!isReadOnly && selectedElement?.id === folder.id}
+              onMouseDown={handleElementMouseDown}
+              onHeightChange={handleHeightChange}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+          {(diagramState.applications || []).map(app => (
+            <Application
+              key={app.id}
+              element={app}
+              isSelected={!isReadOnly && selectedElement?.id === app.id}
+              onMouseDown={handleElementMouseDown}
+              onHeightChange={handleHeightChange}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+          {(diagramState.webApplications || []).map(webApp => (
+            <WebApplication
+              key={webApp.id}
+              element={webApp}
+              isSelected={!isReadOnly && selectedElement?.id === webApp.id}
               onMouseDown={handleElementMouseDown}
               onHeightChange={handleHeightChange}
               isReadOnly={isReadOnly}

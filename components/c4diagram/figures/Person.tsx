@@ -4,7 +4,7 @@ import { C4Person } from '../../../types';
 interface PersonProps {
   element: C4Person;
   isSelected: boolean;
-  onMouseDown: (e: MouseEvent, element: C4Person) => void;
+  onMouseDown: (e: MouseEvent, element: C4Person, type: 'person') => void;
   onHeightChange: (id: string, height: number) => void;
   isReadOnly?: boolean;
 }
@@ -35,7 +35,7 @@ const Person: FC<PersonProps> = ({ element, isSelected, onMouseDown, onHeightCha
   return (
     <g
       transform={`translate(${element.position.x}, ${element.position.y})`}
-      onMouseDown={(e) => onMouseDown(e, element)}
+      onMouseDown={(e) => onMouseDown(e, element, 'person')}
       className={isReadOnly ? '' : 'cursor-pointer'}
     >
       <g

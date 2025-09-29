@@ -138,6 +138,10 @@
     "done": "Done",
     "addPerson": "Add Person",
     "addSystem": "Add System",
+    "addDatabase": "Add Database",
+    "addFolder": "Add Folder",
+    "addApplication": "Add App",
+    "addWebApp": "Add Web App",
     "connect": "Connect",
     "delete": "Delete",
     "selectTarget": "Select Target...",
@@ -177,6 +181,15 @@
     "c4NewPersonLabel": "New Person",
     "c4NewPersonDescription": "Description of person.",
     "c4NewRelationshipLabel": "Interacts with",
-    "c4NewRelationshipTechnology": "[HTTPS]"
+    "c4NewRelationshipTechnology": "[HTTPS]",
+    "c4NewDatabaseLabel": "New Database",
+    "c4NewDatabaseDescription": "Stores some data.",
+    "c4NewDatabaseTechnology": "[SQL]",
+    "c4NewFolderLabel": "New Folder",
+    "c4NewFolderDescription": "A folder of things.",
+    "c4NewApplicationLabel": "New Application",
+    "c4NewApplicationDescription": "A command-line app.",
+    "c4NewWebApplicationLabel": "New Web App",
+    "c4NewWebApplicationDescription": "A single page app."
   }
 }
