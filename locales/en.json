@@ -150,23 +150,5 @@
     "newRichTextElementContent": "<p>New rich text content...</p>",
     "newLinkElementContent": "Link to another view",
     "newDiagramElementCaption": "A new diagram"
-  },
-  "initialNodes": {
-    "welcome": {
-      "element2_content_diagram": "This is an example of a more complex diagram representing a simple web service architecture. You can interact with it in **Edit Mode**.",
-      "diagram_caption": "Example Web Service Architecture",
-      "diagramFig1_label": "Start Here",
-      "diagramFig2_label": "Go Next",
-      "diagramArrow1_label": "Connector"
-    },
-    "howItWorks": {
-      "title": "Markdown Typography Guide",
-      "element1_content": "# Markdown Samples\n\nThis view demonstrates various Markdown elements you can use.\n\n---\n\n## Typography\n\n*   **Bold Text**\n*   *Italic Text*\n*   `Inline Code`\n\n## Lists\n\n1.  First ordered list item\n2.  Another item\n    *   Unordered sub-list.\n\n## Block Elements\n\n> This is a blockquote. It's great for highlighting important information or quotes from a source.\n\n```javascript\n// This is a code block\nfunction greet(name) {\n  console.log(`Hello, ${name}!`);\n}\n```\n\n## Links\n\nYou can also add standard Markdown links like this one to [Google](https://www.google.com)."
-    },
-    "sampleImage": {
-      "title": "Sample Image View",
-      "imageSrc": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
-      "imageCaption": "This is a sample image with a caption."
-    }
   }
 }

@@ -1,0 +1,2179 @@
+{
+  "nodes": [
+    {
+      "id": "test-node-1",
+      "type": "viewNode",
+      "position": {
+        "x": 100,
+        "y": 5
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Executive Summary - View 1",
+        "elements": [
+          {
+            "id": "75eb1dac-2136-4f41-81a8-9f171bef6f2e",
+            "type": "text",
+            "content": "Это пример более сложной диаграммы, представляющей простую архитектуру веб-сервиса. Вы можете взаимодействовать с ней в **Режиме редактирования**.",
+            "style": "body"
+          },
+          {
+            "id": "a3d8a2df-aa56-42b2-815c-70844e5dfaca",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "cbcc5baf-a58e-4293-a0db-198d4d292a70",
+                  "figureType": "actor",
+                  "position": {
+                    "x": 29.859703063964844,
+                    "y": 300
+                  },
+                  "label": "Users",
+                  "data": {
+                    "dau": 2000000
+                  },
+                  "showData": true
+                },
+                {
+                  "id": "2bf6b3b3-4453-4925-b2bb-13badbc54450",
+                  "figureType": "cloud",
+                  "position": {
+                    "x": 162.9905242919922,
+                    "y": 300.88787841796875
+                  },
+                  "label": "Internet"
+                },
+                {
+                  "id": "836bd3a9-ee0c-42b3-b883-db1e8aa73cf0",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 400,
+                    "y": 300
+                  },
+                  "label": "Load Balancer\n(nginx)",
+                  "data": {
+                    "rps": 50000
+                  },
+                  "showData": true
+                },
+                {
+                  "id": "c00851db-c7fb-4766-a245-126fc2ca9a45",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 549.2897338867188,
+                    "y": 200
+                  },
+                  "label": "Web Server 1\n(Node.js)",
+                  "data": {
+                    "rps": 25000
+                  },
+                  "showData": true
+                },
+                {
+                  "id": "6f42b9bc-9570-4713-bce8-7c02031d7aa0",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 550,
+                    "y": 400
+                  },
+                  "label": "Web Server 2\n(Node.js)",
+                  "data": {
+                    "rps": 25000
+                  },
+                  "showData": true
+                },
+                {
+                  "id": "71462cf2-6e28-428c-b746-827274c6c907",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 767.4767456054688,
+                    "y": 226.6355438232422
+                  },
+                  "label": "Cache\n(Redis)",
+                  "showData": false
+                },
+                {
+                  "id": "8ca36df6-91f8-42c0-a6cc-4c887ec552ca",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 763.92529296875,
+                    "y": 352.94384765625
+                  },
+                  "label": "Database\n(Postgres)",
+                  "data": {
+                    "rps": 100000
+                  },
+                  "showData": true
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "24ed7002-59a6-4ab4-bb37-efe7f56c4a50",
+                  "type": "arrow",
+                  "sourceId": "cbcc5baf-a58e-4293-a0db-198d4d292a70",
+                  "targetId": "2bf6b3b3-4453-4925-b2bb-13badbc54450",
+                  "label": "",
+                  "arrowType": "one-end"
+                },
+                {
+                  "id": "bc585a89-6c3e-462c-81f0-f226189b29f2",
+                  "type": "arrow",
+                  "sourceId": "2bf6b3b3-4453-4925-b2bb-13badbc54450",
+                  "targetId": "836bd3a9-ee0c-42b3-b883-db1e8aa73cf0",
+                  "label": "",
+                  "arrowType": "one-end",
+                  "data": {
+                    "traffic": 500
+                  },
+                  "showData": true
+                },
+                {
+                  "id": "0339b51a-f3a3-4b42-a8df-26177cf51271",
+                  "type": "arrow",
+                  "sourceId": "836bd3a9-ee0c-42b3-b883-db1e8aa73cf0",
+                  "targetId": "c00851db-c7fb-4766-a245-126fc2ca9a45",
+                  "label": "",
+                  "arrowType": "one-end"
+                },
+                {
+                  "id": "015433dd-3846-4d8b-84d7-6d9245cc14c1",
+                  "type": "arrow",
+                  "sourceId": "836bd3a9-ee0c-42b3-b883-db1e8aa73cf0",
+                  "targetId": "6f42b9bc-9570-4713-bce8-7c02031d7aa0",
+                  "label": "",
+                  "arrowType": "one-end"
+                },
+                {
+                  "id": "40e1f558-c50b-436d-840f-a9e892fbe177",
+                  "type": "arrow",
+                  "sourceId": "c00851db-c7fb-4766-a245-126fc2ca9a45",
+                  "targetId": "71462cf2-6e28-428c-b746-827274c6c907",
+                  "label": "read/write",
+                  "arrowType": "both-ends"
+                },
+                {
+                  "id": "2ce22620-a4a3-4d57-b110-f38bc6508a3e",
+                  "type": "arrow",
+                  "sourceId": "c00851db-c7fb-4766-a245-126fc2ca9a45",
+                  "targetId": "8ca36df6-91f8-42c0-a6cc-4c887ec552ca",
+                  "label": "read/write",
+                  "arrowType": "both-ends"
+                },
+                {
+                  "id": "4f247890-13a6-4000-975a-5f7816d519ae",
+                  "type": "arrow",
+                  "sourceId": "6f42b9bc-9570-4713-bce8-7c02031d7aa0",
+                  "targetId": "71462cf2-6e28-428c-b746-827274c6c907",
+                  "label": "read/write",
+                  "arrowType": "both-ends"
+                },
+                {
+                  "id": "f8ca1cd2-b1bd-4cb1-9daf-97b79f4d50ae",
+                  "type": "arrow",
+                  "sourceId": "6f42b9bc-9570-4713-bce8-7c02031d7aa0",
+                  "targetId": "8ca36df6-91f8-42c0-a6cc-4c887ec552ca",
+                  "label": "read/write",
+                  "arrowType": "both-ends"
+                }
+              ]
+            },
+            "caption": "Пример архитектуры веб-сервиса",
+            "height": 475,
+            "viewBox": [
+              -30.140296936035156,
+              135,
+              872.6170425415039,
+              359.4
+            ]
+          }
+        ]
+      },
+      "selected": true,
+      "width": 1024,
+      "height": 768,
+      "dragging": false
+    },
+    {
+      "id": "test-node-2",
+      "type": "viewNode",
+      "position": {
+        "x": 100,
+        "y": 805
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Deep Dive on Topic 2",
+        "elements": [
+          {
+            "id": "1ed99be2-e5d5-40dc-bb50-369c98891a44",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-3",
+      "type": "viewNode",
+      "position": {
+        "x": 100,
+        "y": 1605
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Q4 Financials for View 3",
+        "elements": [
+          {
+            "id": "c4286278-79eb-4ab5-9f1d-9c3ad16e1f8c",
+            "type": "text",
+            "content": "This view (No. **3**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "0591c4f7-9817-470e-8e53-88c97f4987da",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 3"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-4",
+      "type": "viewNode",
+      "position": {
+        "x": 100,
+        "y": 2405
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "A Comprehensive Review of the Strategic Initiatives for Fiscal Year 2025 - Focus Area 4",
+        "elements": [
+          {
+            "id": "776b7fcb-ce7c-45c1-a533-86782cc06397",
+            "type": "text",
+            "content": "This view (No. **4**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "06272b36-956e-4d55-a34f-49d0aa35d690",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "bc78ee90-1720-4039-8b7a-6a36d784c23d",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "53d2914c-6f04-4c05-bde3-7681ede8fa52",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "b1b4b886-0c03-49e5-a6e0-613193cc635a",
+                  "type": "arrow",
+                  "sourceId": "bc78ee90-1720-4039-8b7a-6a36d784c23d",
+                  "targetId": "53d2914c-6f04-4c05-bde3-7681ede8fa52",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 4",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-5",
+      "type": "viewNode",
+      "position": {
+        "x": 100,
+        "y": 3205
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Exploring the Synergistic Potential between Cross-Functional Teams in the Context of Agile Project Management Methodologies: A Case Study from View 5",
+        "elements": [
+          {
+            "id": "084e20a2-e883-4892-bc3b-a0f7007b42c3",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-6",
+      "type": "viewNode",
+      "position": {
+        "x": 100,
+        "y": 4005
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Key Takeaways: View 6",
+        "elements": [
+          {
+            "id": "eb3e2d05-0ee0-4f31-bda7-849249bb1c4b",
+            "type": "text",
+            "content": "This view (No. **6**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "a05e40cd-dc78-4422-9564-358b3388fb29",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 6"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-7",
+      "type": "viewNode",
+      "position": {
+        "x": 100,
+        "y": 4805
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Appendix 7",
+        "elements": [
+          {
+            "id": "f05d61a9-03d7-45a3-b86d-8e416de9bbf1",
+            "type": "text",
+            "content": "This view (No. **7**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "2530e990-584a-47dd-979d-206abd5f36d8",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "8c3ad298-1f8c-435c-837b-19bd3be24134",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "678c245b-9dcf-4b79-8c89-abf156553bd5",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "ba1cdff8-a21a-45be-b863-4ec122f50d84",
+                  "type": "arrow",
+                  "sourceId": "8c3ad298-1f8c-435c-837b-19bd3be24134",
+                  "targetId": "678c245b-9dcf-4b79-8c89-abf156553bd5",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 7",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-8",
+      "type": "viewNode",
+      "position": {
+        "x": 100,
+        "y": 5605
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Market Analysis - Sector 8",
+        "elements": [
+          {
+            "id": "cd7edce2-9120-4c36-bf04-207ea4e70cdb",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-9",
+      "type": "viewNode",
+      "position": {
+        "x": 100,
+        "y": 6405
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Unpacking the Nuances of Quantum Chromodynamics and Its Unexpected Parallels with 14th-Century Renaissance Art, Specifically Focusing on the Brushstroke Techniques of Early Florentine Masters - An Esoteric Exploration (View 9)",
+        "elements": [
+          {
+            "id": "316e4b8b-c97e-4175-a30b-38a7e76a6a42",
+            "type": "text",
+            "content": "This view (No. **9**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "978b672e-d979-40d0-8038-ff9353484f3b",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 9"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-10",
+      "type": "viewNode",
+      "position": {
+        "x": 100,
+        "y": 7205
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Quick Update #10",
+        "elements": [
+          {
+            "id": "3390c7e2-bbb5-4363-8446-5a575ed854c6",
+            "type": "text",
+            "content": "This view (No. **10**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "b506dc3c-2d9c-440f-8447-0247e02401d3",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "3cec15ec-38eb-4cfe-a158-18e78bc273d0",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "72cc5cc9-4398-454d-80ff-cc1dc60096d8",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "bd2f4e6c-08c1-4f47-9e3d-2235984353ab",
+                  "type": "arrow",
+                  "sourceId": "3cec15ec-38eb-4cfe-a158-18e78bc273d0",
+                  "targetId": "72cc5cc9-4398-454d-80ff-cc1dc60096d8",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 10",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-11",
+      "type": "viewNode",
+      "position": {
+        "x": 100,
+        "y": 8005
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Executive Summary - View 11",
+        "elements": [
+          {
+            "id": "ae8d9c6e-cc1d-4a6a-a664-ee768ea30977",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-12",
+      "type": "viewNode",
+      "position": {
+        "x": 100,
+        "y": 8805
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Deep Dive on Topic 12",
+        "elements": [
+          {
+            "id": "690cd722-882a-4816-88d0-8d2a2227409e",
+            "type": "text",
+            "content": "This view (No. **12**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "c60dd16c-3c5e-4a26-9d86-4bf2a9454248",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 12"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-13",
+      "type": "viewNode",
+      "position": {
+        "x": 1188,
+        "y": 5
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Q2 Financials for View 13",
+        "elements": [
+          {
+            "id": "d982234a-de77-4836-bc92-7c7cd6478324",
+            "type": "text",
+            "content": "This view (No. **13**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "3df57d7b-3e30-446e-8ae2-737811a7e8c4",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "729298d4-85b9-46d1-9428-9f9f1a788ec3",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "91952079-c8a4-47a7-8a9d-6adb9858a0d3",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "e910ad16-c357-4b4d-afd5-06f13115d4c3",
+                  "type": "arrow",
+                  "sourceId": "729298d4-85b9-46d1-9428-9f9f1a788ec3",
+                  "targetId": "91952079-c8a4-47a7-8a9d-6adb9858a0d3",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 13",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-14",
+      "type": "viewNode",
+      "position": {
+        "x": 1188,
+        "y": 805
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "A Comprehensive Review of the Strategic Initiatives for Fiscal Year 2026 - Focus Area 14",
+        "elements": [
+          {
+            "id": "8100e95d-0f10-45df-837c-219f81d5e137",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-15",
+      "type": "viewNode",
+      "position": {
+        "x": 1188,
+        "y": 1605
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Exploring the Synergistic Potential between Cross-Functional Teams in the Context of Agile Project Management Methodologies: A Case Study from View 15",
+        "elements": [
+          {
+            "id": "4555630b-1606-4aaa-87b1-96d67b3307dc",
+            "type": "text",
+            "content": "This view (No. **15**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "1e14bf6a-abaf-4f4d-8a0c-a3b1ad6561e8",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 15"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-16",
+      "type": "viewNode",
+      "position": {
+        "x": 1188,
+        "y": 2405
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Key Takeaways: View 16",
+        "elements": [
+          {
+            "id": "ca0ac37b-9825-4008-81b8-a0aa447cf560",
+            "type": "text",
+            "content": "This view (No. **16**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "efdb85fa-8d21-4739-9ae8-7d0539c3b914",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "ed95305d-1a87-4e4d-accb-ae6caf99dc4b",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "2cb2d2e1-1602-47ac-a888-f1a8bafe821e",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "74dfdf92-867f-43a4-9e30-71f4f1e7bfc5",
+                  "type": "arrow",
+                  "sourceId": "ed95305d-1a87-4e4d-accb-ae6caf99dc4b",
+                  "targetId": "2cb2d2e1-1602-47ac-a888-f1a8bafe821e",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 16",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-17",
+      "type": "viewNode",
+      "position": {
+        "x": 1188,
+        "y": 3205
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Appendix 17",
+        "elements": [
+          {
+            "id": "22c164ee-bbcd-4276-afb1-7e3f4b96c274",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-18",
+      "type": "viewNode",
+      "position": {
+        "x": 1188,
+        "y": 4005
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Market Analysis - Sector 18",
+        "elements": [
+          {
+            "id": "67ca68c0-40a5-46ff-ac31-76aa256b995f",
+            "type": "text",
+            "content": "This view (No. **18**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "eae21556-f899-4fa2-af6b-0c6a1d29304b",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 18"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-19",
+      "type": "viewNode",
+      "position": {
+        "x": 1188,
+        "y": 4805
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Unpacking the Nuances of Quantum Chromodynamics and Its Unexpected Parallels with 14th-Century Renaissance Art, Specifically Focusing on the Brushstroke Techniques of Early Florentine Masters - An Esoteric Exploration (View 19)",
+        "elements": [
+          {
+            "id": "5d90cc95-e66f-4e48-a971-9fb9d21f6264",
+            "type": "text",
+            "content": "This view (No. **19**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "f1d5ca0f-630e-4b08-ac95-cd3c879f3732",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "a3fb6ebe-12fe-4b4b-9bc1-3dbb99b957d4",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "e5be4684-de1a-4962-badc-722fb0b30f7f",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "d90697a2-0711-48cc-aab4-62b88834b620",
+                  "type": "arrow",
+                  "sourceId": "a3fb6ebe-12fe-4b4b-9bc1-3dbb99b957d4",
+                  "targetId": "e5be4684-de1a-4962-badc-722fb0b30f7f",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 19",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-20",
+      "type": "viewNode",
+      "position": {
+        "x": 2276,
+        "y": 5
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Quick Update #20",
+        "elements": [
+          {
+            "id": "d1057aed-9605-43ea-9aef-eef809bc3423",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-21",
+      "type": "viewNode",
+      "position": {
+        "x": 2276,
+        "y": 805
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Executive Summary - View 21",
+        "elements": [
+          {
+            "id": "58fb1220-a3a9-4518-8741-3712abddccf6",
+            "type": "text",
+            "content": "This view (No. **21**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "5773dacb-c54d-417f-b5fb-4d6a8ece0d41",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 21"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-22",
+      "type": "viewNode",
+      "position": {
+        "x": 2276,
+        "y": 1605
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Deep Dive on Topic 22",
+        "elements": [
+          {
+            "id": "13c64c80-ac6a-4a3f-87e6-912727003227",
+            "type": "text",
+            "content": "This view (No. **22**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "b125c529-8890-4c99-b573-36b4e72ce01a",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "7e801eaa-e84b-42fc-8017-2a68671fefe1",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "c9390a3c-8530-47d6-a740-d95b6293ad04",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "73d6094f-ba57-4d8d-8108-92740454fb48",
+                  "type": "arrow",
+                  "sourceId": "7e801eaa-e84b-42fc-8017-2a68671fefe1",
+                  "targetId": "c9390a3c-8530-47d6-a740-d95b6293ad04",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 22",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-23",
+      "type": "viewNode",
+      "position": {
+        "x": 2276,
+        "y": 2405
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Q4 Financials for View 23",
+        "elements": [
+          {
+            "id": "9a2748a2-bd00-46ad-bb3a-c8ca891b5b15",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-24",
+      "type": "viewNode",
+      "position": {
+        "x": 2276,
+        "y": 3205
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "A Comprehensive Review of the Strategic Initiatives for Fiscal Year 2027 - Focus Area 24",
+        "elements": [
+          {
+            "id": "15dab1f3-6062-4273-87c2-69f2fa5ba46c",
+            "type": "text",
+            "content": "This view (No. **24**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "ddd0b908-8d5e-47f5-a8ff-7df96e2a7051",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 24"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-25",
+      "type": "viewNode",
+      "position": {
+        "x": 2276,
+        "y": 4005
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Exploring the Synergistic Potential between Cross-Functional Teams in the Context of Agile Project Management Methodologies: A Case Study from View 25",
+        "elements": [
+          {
+            "id": "b466dcd7-dd3d-4345-88c1-30277d6f9e71",
+            "type": "text",
+            "content": "This view (No. **25**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "a84dd1ec-b0c9-4c95-8bdd-44ddf184d280",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "33308929-7666-461f-90ad-ec0fa7e97b8d",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "18dda7d3-58a6-43d2-9222-5c680308a332",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "2d1b3525-2049-4e49-84a0-c5009ba46595",
+                  "type": "arrow",
+                  "sourceId": "33308929-7666-461f-90ad-ec0fa7e97b8d",
+                  "targetId": "18dda7d3-58a6-43d2-9222-5c680308a332",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 25",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-26",
+      "type": "viewNode",
+      "position": {
+        "x": 2276,
+        "y": 4805
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Key Takeaways: View 26",
+        "elements": [
+          {
+            "id": "fd2e2b70-bd50-4b32-84e9-4ede5a138092",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-27",
+      "type": "viewNode",
+      "position": {
+        "x": 2276,
+        "y": 5605
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Appendix 27",
+        "elements": [
+          {
+            "id": "69d26f7e-fca5-45af-9e4e-f2589c6a51c2",
+            "type": "text",
+            "content": "This view (No. **27**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "93698497-c084-463a-b301-e6179d3ea491",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 27"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-28",
+      "type": "viewNode",
+      "position": {
+        "x": 2276,
+        "y": 6405
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Market Analysis - Sector 28",
+        "elements": [
+          {
+            "id": "2a8873ff-9add-4001-a679-38693db59c9d",
+            "type": "text",
+            "content": "This view (No. **28**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "e5b98608-27d5-4c17-a67a-cf8a6356991e",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "af127ebc-9a0b-46cf-853f-d91bacd2c539",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "c5dbcb13-d7e3-48d0-836e-ae29cf79440e",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "d8a0f1bd-0ede-41dc-9531-7ed778d3a3e4",
+                  "type": "arrow",
+                  "sourceId": "af127ebc-9a0b-46cf-853f-d91bacd2c539",
+                  "targetId": "c5dbcb13-d7e3-48d0-836e-ae29cf79440e",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 28",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-29",
+      "type": "viewNode",
+      "position": {
+        "x": 2276,
+        "y": 7205
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Unpacking the Nuances of Quantum Chromodynamics and Its Unexpected Parallels with 14th-Century Renaissance Art, Specifically Focusing on the Brushstroke Techniques of Early Florentine Masters - An Esoteric Exploration (View 29)",
+        "elements": [
+          {
+            "id": "ee3b6d65-73c4-4a24-b838-d76e1d16e835",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-30",
+      "type": "viewNode",
+      "position": {
+        "x": 3364,
+        "y": 5
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Quick Update #30",
+        "elements": [
+          {
+            "id": "61a7eccb-864a-4cec-934b-66aa80071449",
+            "type": "text",
+            "content": "This view (No. **30**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "10909b24-0894-40aa-8214-927a4c066fca",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 30"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-31",
+      "type": "viewNode",
+      "position": {
+        "x": 3364,
+        "y": 805
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Executive Summary - View 31",
+        "elements": [
+          {
+            "id": "d4c784b8-30f0-49f1-8de4-c4b96a7cfb46",
+            "type": "text",
+            "content": "This view (No. **31**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "a281fd4a-4e42-4e8a-ab93-496f06b36c84",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "947a2e8d-5196-4296-bad5-c1396be76935",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "5e6086fb-2b65-4d70-81a4-001bd4814cec",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "10205b61-3fb9-458b-8d31-a678e737f7ce",
+                  "type": "arrow",
+                  "sourceId": "947a2e8d-5196-4296-bad5-c1396be76935",
+                  "targetId": "5e6086fb-2b65-4d70-81a4-001bd4814cec",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 31",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-32",
+      "type": "viewNode",
+      "position": {
+        "x": 3364,
+        "y": 1605
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Deep Dive on Topic 32",
+        "elements": [
+          {
+            "id": "f41da8d5-1c82-4898-b027-be092bc5b756",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-33",
+      "type": "viewNode",
+      "position": {
+        "x": 3364,
+        "y": 2405
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Q2 Financials for View 33",
+        "elements": [
+          {
+            "id": "1fc85d2c-e5b4-4931-b29e-bf2734a97153",
+            "type": "text",
+            "content": "This view (No. **33**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "f2a8d135-0cb5-4fc3-8f57-6bd7a75e8b76",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 33"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-34",
+      "type": "viewNode",
+      "position": {
+        "x": 3364,
+        "y": 3205
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "A Comprehensive Review of the Strategic Initiatives for Fiscal Year 2028 - Focus Area 34",
+        "elements": [
+          {
+            "id": "8d12ac3c-a19d-4436-8eb1-e52a45832855",
+            "type": "text",
+            "content": "This view (No. **34**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "0e8198ad-fa0c-4d54-b47f-79c5a6e2af8b",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "71157a85-ce31-4773-8e6d-7c893aee6049",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "2de8c41a-cab1-4973-9a0f-3f6d472da881",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "a877bf54-befd-48c9-bc87-cf5a00477323",
+                  "type": "arrow",
+                  "sourceId": "71157a85-ce31-4773-8e6d-7c893aee6049",
+                  "targetId": "2de8c41a-cab1-4973-9a0f-3f6d472da881",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 34",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-35",
+      "type": "viewNode",
+      "position": {
+        "x": 4452,
+        "y": 5
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Exploring the Synergistic Potential between Cross-Functional Teams in the Context of Agile Project Management Methodologies: A Case Study from View 35",
+        "elements": [
+          {
+            "id": "1971b442-0f64-48ed-9904-4773464a3982",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-36",
+      "type": "viewNode",
+      "position": {
+        "x": 4452,
+        "y": 805
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Key Takeaways: View 36",
+        "elements": [
+          {
+            "id": "feb6c6fc-09e1-4451-b873-9f45122eebe1",
+            "type": "text",
+            "content": "This view (No. **36**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "f6ca1afe-eecc-4900-b177-14b1adf58b93",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 36"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-37",
+      "type": "viewNode",
+      "position": {
+        "x": 4452,
+        "y": 1605
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Appendix 37",
+        "elements": [
+          {
+            "id": "72a00bc8-d879-4a1f-8df7-75366e15a09e",
+            "type": "text",
+            "content": "This view (No. **37**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "630b29e2-2267-4529-96d3-c73b55bf6a09",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "d7c71112-4bd2-4a44-9b92-f81346c35436",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "5bf01ce9-7b55-4917-ab65-e9ec6f1faa3c",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "5dbd8ae8-403e-4d8b-9680-0f02e9cc13bb",
+                  "type": "arrow",
+                  "sourceId": "d7c71112-4bd2-4a44-9b92-f81346c35436",
+                  "targetId": "5bf01ce9-7b55-4917-ab65-e9ec6f1faa3c",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 37",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-38",
+      "type": "viewNode",
+      "position": {
+        "x": 4452,
+        "y": 2405
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Market Analysis - Sector 38",
+        "elements": [
+          {
+            "id": "d54f1dd0-7086-485a-8d1a-3e104c8f9a0b",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-39",
+      "type": "viewNode",
+      "position": {
+        "x": 4452,
+        "y": 3205
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Unpacking the Nuances of Quantum Chromodynamics and Its Unexpected Parallels with 14th-Century Renaissance Art, Specifically Focusing on the Brushstroke Techniques of Early Florentine Masters - An Esoteric Exploration (View 39)",
+        "elements": [
+          {
+            "id": "b43b8b17-6108-48d1-a006-ef5ab2b2432a",
+            "type": "text",
+            "content": "This view (No. **39**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "e1eb8952-15f3-49b0-94a4-b6f1a488c56c",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 39"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-40",
+      "type": "viewNode",
+      "position": {
+        "x": 4452,
+        "y": 4005
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Quick Update #40",
+        "elements": [
+          {
+            "id": "21154716-686d-419e-a59d-2ffc1c66aa9f",
+            "type": "text",
+            "content": "This view (No. **40**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "7437aaf0-916f-473c-bc06-76efe295bdaf",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "c508eb74-58ca-4901-a572-0881606cc9e1",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "391c5617-c8fe-4d92-b358-781ac027dac5",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "497f11bf-7095-446d-a72c-c4c5924c78bf",
+                  "type": "arrow",
+                  "sourceId": "c508eb74-58ca-4901-a572-0881606cc9e1",
+                  "targetId": "391c5617-c8fe-4d92-b358-781ac027dac5",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 40",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-41",
+      "type": "viewNode",
+      "position": {
+        "x": 4452,
+        "y": 4805
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Executive Summary - View 41",
+        "elements": [
+          {
+            "id": "43bf9d39-5ba1-4bfc-807c-f7ebc7d8b14f",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-42",
+      "type": "viewNode",
+      "position": {
+        "x": 4452,
+        "y": 5605
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Deep Dive on Topic 42",
+        "elements": [
+          {
+            "id": "304840ee-4882-42ec-a442-767e11af9a48",
+            "type": "text",
+            "content": "This view (No. **42**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "c45d62e7-b359-4fe6-954c-3be27ef7c50c",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 42"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-43",
+      "type": "viewNode",
+      "position": {
+        "x": 4452,
+        "y": 6405
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Q4 Financials for View 43",
+        "elements": [
+          {
+            "id": "8cd2d537-7504-4da1-bce0-300028205417",
+            "type": "text",
+            "content": "This view (No. **43**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "6f31c34a-3fad-4180-949e-61a7da66353f",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "84ba3f08-fdfd-43b7-8313-960ebae460ad",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "1857ca3c-cb45-4289-8ac5-2b202db3c214",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "c77bd179-1d60-4ba5-a59d-6766bca05226",
+                  "type": "arrow",
+                  "sourceId": "84ba3f08-fdfd-43b7-8313-960ebae460ad",
+                  "targetId": "1857ca3c-cb45-4289-8ac5-2b202db3c214",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 43",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-44",
+      "type": "viewNode",
+      "position": {
+        "x": 5540,
+        "y": 5
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "A Comprehensive Review of the Strategic Initiatives for Fiscal Year 2029 - Focus Area 44",
+        "elements": [
+          {
+            "id": "99f3bed2-4806-4b8a-94d2-7bd661ac99b4",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-45",
+      "type": "viewNode",
+      "position": {
+        "x": 5540,
+        "y": 805
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Exploring the Synergistic Potential between Cross-Functional Teams in the Context of Agile Project Management Methodologies: A Case Study from View 45",
+        "elements": [
+          {
+            "id": "7b26066f-59cd-4d9f-a9c4-8483f24cc1c3",
+            "type": "text",
+            "content": "This view (No. **45**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "60bcb1be-3d92-437e-9420-7fdd188ce78d",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 45"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-46",
+      "type": "viewNode",
+      "position": {
+        "x": 5540,
+        "y": 1605
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Key Takeaways: View 46",
+        "elements": [
+          {
+            "id": "bbff256a-482c-40b4-83be-af1834e739dd",
+            "type": "text",
+            "content": "This view (No. **46**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "d319bde0-2cbf-4402-9924-215e03023310",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "799d447b-e624-42d1-906d-50c286805a29",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "2ac954fe-1fbe-4272-aee4-06c4beed2242",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "4d6d667c-dbb9-4116-832f-e0f7dd32c421",
+                  "type": "arrow",
+                  "sourceId": "799d447b-e624-42d1-906d-50c286805a29",
+                  "targetId": "2ac954fe-1fbe-4272-aee4-06c4beed2242",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 46",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-47",
+      "type": "viewNode",
+      "position": {
+        "x": 5540,
+        "y": 2405
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Appendix 47",
+        "elements": [
+          {
+            "id": "a5060ef7-a49f-4515-96ef-f9b3d09e2e26",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-48",
+      "type": "viewNode",
+      "position": {
+        "x": 5540,
+        "y": 3205
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Market Analysis - Sector 48",
+        "elements": [
+          {
+            "id": "93122092-f63a-4615-9a81-b4535e28d0d5",
+            "type": "text",
+            "content": "This view (No. **48**) contains a sample image.",
+            "style": "body"
+          },
+          {
+            "id": "6d4d960e-0b13-494e-9718-b18cb35200e7",
+            "type": "image",
+            "src": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
+            "caption": "Sample image in view 48"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-49",
+      "type": "viewNode",
+      "position": {
+        "x": 5540,
+        "y": 4005
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Unpacking the Nuances of Quantum Chromodynamics and Its Unexpected Parallels with 14th-Century Renaissance Art, Specifically Focusing on the Brushstroke Techniques of Early Florentine Masters - An Esoteric Exploration (View 49)",
+        "elements": [
+          {
+            "id": "d4bed3e4-cf60-4ec6-8ac8-8c14ece57b42",
+            "type": "text",
+            "content": "This view (No. **49**) contains a sample diagram.",
+            "style": "body"
+          },
+          {
+            "id": "9f5a9b1c-4960-489c-9180-4933197aa284",
+            "type": "diagram",
+            "diagramState": {
+              "figures": [
+                {
+                  "id": "db618c0c-616f-4fbc-b129-35779c4a6ecc",
+                  "figureType": "rectangle",
+                  "position": {
+                    "x": 150,
+                    "y": 150
+                  },
+                  "label": "Блок\r\nдиаграммы"
+                },
+                {
+                  "id": "ccc4250e-d8fb-4fec-a3bd-eeedc0104631",
+                  "figureType": "circle",
+                  "position": {
+                    "x": 450,
+                    "y": 150
+                  },
+                  "label": "Кружок"
+                }
+              ],
+              "arrows": [
+                {
+                  "id": "f7b96c5a-e71e-4321-9866-34518a6e5ade",
+                  "type": "arrow",
+                  "sourceId": "db618c0c-616f-4fbc-b129-35779c4a6ecc",
+                  "targetId": "ccc4250e-d8fb-4fec-a3bd-eeedc0104631",
+                  "label": "Стрелочка",
+                  "arrowType": "one-end"
+                }
+              ]
+            },
+            "caption": "Sample diagram in view 49",
+            "height": 300
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "id": "test-node-50",
+      "type": "viewNode",
+      "position": {
+        "x": 5540,
+        "y": 4805
+      },
+      "style": {
+        "width": "1024px",
+        "height": "768px"
+      },
+      "data": {
+        "title": "Quick Update #50",
+        "elements": [
+          {
+            "id": "5198f620-1b08-41b9-aead-ecf0c96c763b",
+            "type": "text",
+            "content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com).",
+            "style": "body"
+          }
+        ]
+      },
+      "selected": false,
+      "width": 1024,
+      "height": 768
+    }
+  ]
+}

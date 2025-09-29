@@ -17,7 +17,7 @@ import ReactFlow, {
 import { v4 as uuidv4 } from 'uuid';
 import showdown from 'showdown';
 
-import { getInitialNodes, viewSizeOptions } from './constants';
+import { viewSizeOptions } from './constants';
 import { Presentation, TextStyle, ViewNodeData, ViewElement, DiagramElement, ImageElement } from './types';
 import ViewNode from './components/ViewNode';
 import Toolbar from './components/Toolbar';
@@ -165,7 +165,7 @@ const App: FC = () => {
   const { t, locale } = useTranslation();
   const { fitView, screenToFlowPosition } = useReactFlow();
   
-  const [nodes, setNodes] = useState<Node<ViewNodeData>[]>(() => getInitialNodes(t));
+  const [nodes, setNodes] = useState<Node<ViewNodeData>[]>([]);
   const [selectedNode, setSelectedNode] = useState<Node<ViewNodeData> | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(true);
   const [isPlacingView, setIsPlacingView] = useState(false);
@@ -180,6 +180,35 @@ const App: FC = () => {
   useEffect(() => {
     prevIsReadOnlyRef.current = isReadOnly;
   });
+  
+  useEffect(() => {
+      const loadInitialPresentation = async () => {
+        try {
+          const response = await fetch('/initial-presentation.json');
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const presentation: Presentation = await response.json();
+          if (presentation.nodes) {
+            const nodesToLoad = presentation.nodes.map(n => ({...n, selected: false}));
+            const firstNode = findFirstNavNode(nodesToLoad);
+            
+            setNodes(nodesToLoad);
+            if (firstNode) {
+              setFocusOnNodeId(firstNode.id);
+            }
+          } else {
+             console.error('Invalid initial presentation format: `nodes` array not found.');
+          }
+        } catch (error) {
+          console.error('Error loading initial presentation:', error);
+          // If loading fails, the app will start with a blank canvas, which is acceptable.
+        }
+      };
+
+      loadInitialPresentation();
+  }, []); // Empty dependency array ensures this runs only once on mount.
+
 
   useEffect(() => {
     const currentlySelected = nodes.find(n => n.selected);
@@ -259,25 +288,15 @@ const App: FC = () => {
     }, 0);
   }, [fitView, setNodes]);
 
-  // Set initial focus target after mount
-  useEffect(() => {
-    const firstNode = findFirstNavNode(nodes);
-    if (firstNode) {
-        // Delay to allow React Flow's initial fitView to complete before we override it.
-        const timer = setTimeout(() => {
-            setFocusOnNodeId(firstNode.id);
-        }, 100); 
-        return () => clearTimeout(timer);
-    }
-    // We only want this to run once on mount. `nodes` is stable on first render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // Effect to perform focus when target is set
   useEffect(() => {
     if (focusOnNodeId) {
-      onFocus(focusOnNodeId);
-      setFocusOnNodeId(null); // Reset after focusing
+        // Delay to allow React Flow's initial fitView to complete before we override it.
+        const timer = setTimeout(() => {
+            onFocus(focusOnNodeId);
+            setFocusOnNodeId(null); // Reset after focusing
+        }, 100); 
+        return () => clearTimeout(timer);
     }
   }, [focusOnNodeId, onFocus]);
 

@@ -150,23 +150,5 @@
     "newRichTextElementContent": "<p>Новый форматированный текст...</p>",
     "newLinkElementContent": "Ссылка на другой слайд",
     "newDiagramElementCaption": "Новая диаграмма"
-  },
-  "initialNodes": {
-    "welcome": {
-      "element2_content_diagram": "Это пример более сложной диаграммы, представляющей простую архитектуру веб-сервиса. Вы можете взаимодействовать с ней в **Режиме редактирования**.",
-      "diagram_caption": "Пример архитектуры веб-сервиса",
-      "diagramFig1_label": "Блок\r\nдиаграммы",
-      "diagramFig2_label": "Кружок",
-      "diagramArrow1_label": "Стрелочка"
-    },
-    "howItWorks": {
-      "title": "Руководство по типографике Markdown",
-      "element1_content": "# Примеры Markdown\n\nЭтот слайд демонстрирует различные элементы Markdown, которые вы можете использовать.\n\n---\n\n## Типографика\n\n*   **Жирный текст**\n*   *Курсивный текст*\n*   `Встроенный код`\n\n## Списки\n\n1.  Первый элемент нумерованного списка\n2.  Другой элемент\n    *   Ненумерованный под-список.\n\n## Блочные элементы\n\n> Это цитата. Она отлично подходит для выделения важной информации или цитат из источника.\n\n```javascript\n// Это блок кода\nfunction greet(name) {\n  console.log(`Привет, ${name}!`);\n}\n```\n\n## Ссылки\n\nВы также можете добавлять стандартные ссылки Markdown, как эта, на [Google](https://www.google.com)."
-    },
-    "sampleImage": {
-      "title": "Пример слайда с изображением",
-      "imageSrc": "https://raw.githubusercontent.com/yavuzceliker/sample-images/refs/heads/main/docs/image-1019.jpg",
-      "imageCaption": "Это пример изображения с подписью."
-    }
   }
 }
